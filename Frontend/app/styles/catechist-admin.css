@@ -1,0 +1,141 @@
+.catechist-list {
+  display: grid;
+  gap: 9px;
+}
+
+.catechist-row {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr) auto auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .78);
+}
+
+.catechist-avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #f4e8d3;
+  color: #9d7130;
+}
+
+.catechist-info {
+  display: grid;
+  gap: 4px;
+}
+
+.catechist-info strong {
+  color: var(--ink);
+  font: 600 14px Arial;
+}
+
+.catechist-info span {
+  color: var(--muted);
+  font: 12px Arial;
+}
+
+.catechist-group,
+.catechist-status {
+  white-space: nowrap;
+  color: var(--muted);
+  font: 12px Arial;
+}
+
+.catechist-status {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #edf7ef;
+  color: #35734a;
+}
+
+.catechist-status.paused {
+  background: #f7f0e4;
+  color: #9b7132;
+}
+
+.catechist-status.ended {
+  background: #f8eaea;
+  color: #9b454c;
+}
+
+@media (max-width: 700px) {
+  .catechist-row {
+    grid-template-columns: auto 1fr;
+  }
+
+  .catechist-group,
+  .catechist-status,
+  .catechist-row .admin-row-actions {
+    grid-column: 2;
+  }
+
+  .catechist-row .admin-row-actions {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-editor-actions {
+    flex-direction: column-reverse;
+  }
+
+  .admin-editor-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-toast {
+    right: 14px;
+    bottom: 14px;
+    left: 14px;
+    min-width: 0;
+  }
+}
+
+.admin-card-actions {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.admin-card-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, .14);
+  color: inherit;
+  font: 10px Arial, sans-serif;
+}
+
+.admin-card-actions button:hover {
+  background: rgba(255, 255, 255, .28);
+}
+
+.program-row .admin-card-actions {
+  margin-left: auto;
+}
+
+.catechist-card .admin-card-actions {
+  margin-left: auto;
+}
+
+.catechist-card .admin-card-actions button {
+  color: var(--muted);
+  background: transparent;
+  border-color: var(--line);
+}
+
+.catechist-card .admin-card-actions button:hover {
+  color: var(--wine);
+  border-color: var(--gold);
+}

@@ -1,0 +1,21 @@
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const path = require('node:path')
+
+const read = (file) => fs.readFileSync(path.join(__dirname, '..', file), 'utf8')
+const layout = read('app/layout.tsx')
+const globals = read('app/globals.css')
+const baseStyles = read('app/styles/site-base.css')
+
+assert.match(layout, /from 'next\/font\/google'/, 'fonts must be bundled with Next.js')
+assert.match(layout, /subsets:\s*\['latin-ext'\]/, 'DM Sans must include Vietnamese characters via latin-ext')
+assert.match(layout, /subsets:\s*\['vietnamese'\]/, 'display fonts must include the Vietnamese subset')
+assert.match(layout, /--font-sans/, 'the sans font must be exposed as a CSS variable')
+assert.match(layout, /--font-serif/, 'the serif font must be exposed as a CSS variable')
+assert.match(layout, /--font-display/, 'the display font must be exposed as a CSS variable')
+assert.doesNotMatch(globals, /fonts\.googleapis\.com/, 'the browser must not depend on Google Fonts at runtime')
+assert.match(baseStyles, /font-family:\s*var\(--font-sans\)/, 'body must use the bundled sans font')
+assert.match(baseStyles, /font-family:\s*var\(--font-serif\)/, 'headings must use the bundled serif font')
+assert.match(baseStyles, /font-family:\s*var\(--font-display\)/, 'display headings must use the bundled display font')
+
+console.log('Font configuration supports Vietnamese and is self-hosted.')

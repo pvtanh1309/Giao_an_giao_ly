@@ -1,0 +1,22 @@
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const path = require('node:path')
+
+const read = (file) => fs.readFileSync(path.join(__dirname, '..', file), 'utf8')
+const page = read('app/page.tsx')
+const lessonDialogs = read('components/lesson-dialogs.tsx')
+const programDialog = read('components/program-schedule-dialog.tsx')
+
+assert.match(page, /const \[editingLesson/, 'Page must keep an in-place lesson editing state')
+assert.match(page, /const \[editingProgram/, 'Page must keep an in-place program editing state')
+assert.match(lessonDialogs, /isEditing: boolean/, 'Lesson display must support edit mode')
+assert.match(lessonDialogs, /onBeginEdit:/, 'Lesson display must enter edit mode from its own page')
+assert.match(lessonDialogs, /onSave:/, 'Lesson display must save changes in place')
+assert.match(lessonDialogs, /onCancelEdit:/, 'Lesson display must cancel changes in place')
+assert.match(lessonDialogs, /editable=\{isEditing\}/, 'Lesson content editor must be editable only in its displayed edit mode')
+assert.match(programDialog, /isEditing: boolean/, 'Program display must support edit mode')
+assert.match(programDialog, /ProgramScheduleEditor/, 'Program schedule must be editable directly where it is displayed')
+assert.match(programDialog, /onSave:/, 'Program display must save changes in place')
+assert.match(programDialog, /onCancelEdit:/, 'Program display must cancel changes in place')
+
+console.log('Inline admin editing is wired into both displayed content views.')

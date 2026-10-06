@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import './styles/site-base.css';
+@import './styles/hero.css';
+@import './styles/content.css';
+@import './styles/dialogs.css';
+@import './styles/catechist-cards.css';
+@import './styles/auth.css';
+@import './styles/admin.css';
+@import './styles/theme.css';
+@import './styles/rich-text.css';
+@import './styles/catechist-admin.css';
+@import './styles/accounts.css';
+@import './styles/lesson-reading.css';
+@import './styles/program-reading.css';
+@import './styles/reference-reading.css';
+@custom-variant dark (&:is(.dark *));

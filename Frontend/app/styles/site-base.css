@@ -1,0 +1,264 @@
+:root {
+  --ink: #24354a;
+  --muted: #718095;
+  --cream: #f7f4ee;
+  --paper: #fffdf9;
+  --line: #e5e2da;
+  --blue: #2d6a91;
+  --blue-deep: #1d4568;
+  --gold: #b68a3b;
+  --wine: #8d4d51;
+  --accent-teal: #287A86;
+  --accent-teal-rgb: 40, 122, 134;
+  --accent-coral: #AC5A62;
+  --accent-coral-rgb: 172, 90, 98;
+  --surface-blue: #e8f2f3;
+  --surface-rose: #f8eceb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.site-shell.view-overview #lesson-plans,
+.site-shell.view-overview #programs,
+.site-shell.view-lessons #overview,
+.site-shell.view-lessons .stats-strip,
+.site-shell.view-lessons #programs,
+.site-shell.view-programs #overview,
+.site-shell.view-programs .stats-strip,
+.site-shell.view-programs #lesson-plans,
+.site-shell.view-catechists #overview,
+.site-shell.view-catechists .stats-strip,
+.site-shell.view-catechists #lesson-plans,
+.site-shell.view-catechists #programs {
+  display: none;
+}
+
+.site-shell.view-accounts #overview,
+.site-shell.view-accounts .stats-strip,
+.site-shell.view-accounts #lesson-plans,
+.site-shell.view-accounts #programs {
+  display: none;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-sans), Arial, sans-serif;
+}
+
+h1,
+h2,
+h3,
+.brand strong,
+.footer-brand strong {
+  font-family: var(--font-serif), Georgia, serif;
+}
+
+.hero-note,
+.program-row h3,
+.lesson-card h3 {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+::selection {
+  background: #e5c978;
+  color: var(--blue-deep);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.site-shell {
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 8% 20%, rgba(var(--accent-teal-rgb), .07), transparent 38%),
+    radial-gradient(ellipse at 92% 48%, rgba(var(--accent-coral-rgb), .055), transparent 34%),
+    var(--cream);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(255, 253, 249, .93);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(14px);
+}
+
+.topbar-inner {
+  max-width: 1180px;
+  height: 76px;
+  margin: auto;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.brand,
+.nav-link,
+.icon-button,
+.login-button,
+.menu-button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 0;
+}
+
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  color: var(--gold);
+  transition: transform .25s ease, background-color .25s ease, border-color .25s ease, color .25s ease;
+}
+
+.parish-logo-image {
+  display: block;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(67, 33, 111, .24);
+  border-radius: 50%;
+  background: #fff;
+  object-fit: contain;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.brand:hover .parish-logo-image {
+  transform: scale(1.04);
+  box-shadow: 0 3px 10px rgba(67, 33, 111, .18);
+}
+
+.brand:hover .brand-mark {
+  transform: rotate(-8deg) scale(1.06);
+  border-color: var(--accent-teal);
+  background: var(--surface-blue);
+  color: var(--accent-teal);
+}
+
+.brand strong,
+.brand small,
+.footer-brand strong,
+.footer-brand small {
+  display: block;
+}
+
+.brand strong,
+.footer-brand strong {
+  font-size: 16px;
+  letter-spacing: .04em;
+}
+
+.brand small,
+.footer-brand small {
+  margin-top: 2px;
+  color: var(--muted);
+  font: 10px/1.2 Arial, sans-serif;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-left: auto;
+}
+
+.nav-link {
+  padding: 9px 0;
+  color: var(--muted);
+  font: 13px Arial, sans-serif;
+  position: relative;
+  transition: color .2s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--blue-deep);
+}
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--gold);
+}
+
+.admin-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-button {
+  color: var(--muted);
+  padding: 8px;
+}
+
+.login-button,
+.primary-button,
+.secondary-button,
+.outline-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border-radius: 3px;
+  font: 12px Arial, sans-serif;
+  transition: .2s ease;
+}
+
+.login-button {
+  padding: 11px 16px;
+  background: var(--blue-deep);
+  color: white;
+}
+
+.login-button:hover,
+.primary-button:hover {
+  background: #153853;
+  transform: translateY(-1px);
+}
+
+.menu-button {
+  display: none;
+  padding: 7px;
+}
+
