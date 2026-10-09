@@ -1,0 +1,3 @@
+Access token: Dung de goi API
+ID token: Chua thong tin nguoi dung, dung de xac dinh user la ai
+refresh_token: Thời gian user có thể làm việc mà không bị log out

@@ -1,0 +1,13 @@
+output "user_pool_id" { value = module.identity.user_pool_id }
+output "app_client_id" { value = module.identity.app_client_id }
+output "issuer_url" { value = module.identity.issuer_url }
+output "content_api_endpoint" { value = module.content_api.api_endpoint }
+output "users_api_endpoint" { value = module.user_api.api_endpoint }
+output "app_bucket_name" { value = module.app_hosting.app_bucket_name }
+output "cloudfront_domain_name" { value = module.app_hosting.cloudfront_domain_name }
+output "cloudfront_distribution_id" { value = module.app_hosting.cloudfront_distribution_id }
+output "frontend_url" { value = module.app_hosting.frontend_url }
+output "table_name" { value = module.database.table_name }
+output "content_stream_failure_queue_url" { value = module.content_api.stream_failure_queue_url }
+output "users_stream_failure_queue_url" { value = module.user_api.stream_failure_queue_url }
+output "alarm_topic_arn" { value = aws_sns_topic.alarms.arn }

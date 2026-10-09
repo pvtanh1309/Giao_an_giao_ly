@@ -1,12 +1,16 @@
 .codex-worktrees/
 .codex-remote-attachments/*
+.venv/
+.superpowers/
 
 .superpowers/*
+docs/*
 
 infrastructure/bootstrap/terraform.tfvars
 **/.terraform/
 **/terraform.tfstate
 **/terraform.tfstate.*
+**/.terraform.*
 **/*.tfvars
 **/*.tfvars.json
 **/*.tfplan
@@ -26,3 +30,16 @@ Frontend/.env*
 !Frontend/.env.example
 
 Backend/docs/*
+!Backend/docs/api-contract-v1.md
+!Backend/docs/backend-database-design.md
+!Backend/docs/backend-implementation-plan.md
+!Backend/docs/deployment-runbook.md
+.venv/
+.tools/
+.cache/
+Backend/dist/
+**/__pycache__/
+**/.pytest_cache/
+**/*.pyc
+
+TODO-INDEX.md
