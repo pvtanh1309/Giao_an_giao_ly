@@ -116,7 +116,7 @@ authenticated -> anonymous (logout/session invalid)
 
 Context cung cấp:
 
-- `status`: `loading | anonymous | authenticating | authenticated`;
+- `status`: `loading | anonymous | authenticating | new-password-required | authenticated`;
 - `user`;
 - `error` dành cho lỗi đăng nhập hoặc khôi phục phiên;
 - `login(email, password)`;
