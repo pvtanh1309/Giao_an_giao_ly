@@ -1,4 +1,6 @@
 export type { ReferenceCategory, ReferenceDocument, ReferenceListItem } from './reference-content'
+export type { AppRole } from './auth/types'
+import type { AppRole } from './auth/types'
 
 export const industryColorHex = {
     pink: '#FDD2DC',
@@ -79,8 +81,6 @@ export type Catechist = {
     accompanyingClass: string
     status: CatechistStatus
 }
-
-export type AppRole = 'reader' | 'editor' | 'admin'
 
 export type AccountStatus = 'Hoạt động' | 'Vô hiệu hóa' | 'Đã lưu trữ'
 
