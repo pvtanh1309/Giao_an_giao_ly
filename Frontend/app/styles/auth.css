@@ -145,25 +145,18 @@
   background: #e9f2f4;
 }
 
-.demo-accounts {
+.auth-form button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.auth-loading-panel {
   display: grid;
-  gap: 5px;
-  margin-top: 28px;
-  padding: 14px 16px;
-  border-left: 3px solid var(--gold);
-  background: #f7f1e7;
+  min-height: 100vh;
+  place-items: center;
+  padding: 32px;
+  background: var(--paper);
   color: var(--muted);
-  font: 11px Arial;
-}
-
-.demo-accounts strong {
-  color: var(--ink);
-  font: 600 12px var(--font-serif), serif;
-}
-
-.demo-accounts b {
-  color: var(--wine);
-  margin-right: 5px;
 }
 
 @media (max-width: 800px) {

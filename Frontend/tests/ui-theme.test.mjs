@@ -7,7 +7,7 @@ const heroStyles = readFileSync(new URL('../app/styles/hero.css', import.meta.ur
 const contentStyles = readFileSync(new URL('../app/styles/content.css', import.meta.url), 'utf8')
 const programScheduleEditor = readFileSync(new URL('../components/program-schedule-editor.tsx', import.meta.url), 'utf8')
 const siteHeader = readFileSync(new URL('../components/site-header.tsx', import.meta.url), 'utf8')
-const loginPage = readFileSync(new URL('../app/page.tsx', import.meta.url), 'utf8')
+const loginScreen = readFileSync(new URL('../components/auth-screen.tsx', import.meta.url), 'utf8')
 
 test('the site theme defines colorful accents without replacing the parish palette', () => {
     assert.ok(/--accent-teal:\s*#287A86/i.test(siteStyles), 'define the teal accent token')
@@ -34,7 +34,7 @@ test('decorative motion is disabled for users who prefer reduced motion', () => 
 
 test('the parish youth logo is shown in the site header and login brand', () => {
     assert.ok(siteHeader.includes('parish-logo-image'), 'show the parish logo in the navigation brand')
-    assert.ok(loginPage.includes('parish-logo-image'), 'show the parish logo in the login brand')
+    assert.ok(loginScreen.includes('parish-logo-image'), 'show the parish logo in the login brand')
 })
 
 test('the parish youth logo is stored as a local public asset', () => {

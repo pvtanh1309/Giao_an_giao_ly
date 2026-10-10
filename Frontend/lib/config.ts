@@ -55,5 +55,11 @@ export function loadPublicConfig(env: Record<string, string | undefined>): Publi
 }
 
 export function getPublicConfig(): PublicConfig {
-    return loadPublicConfig(process.env)
+    return loadPublicConfig({
+        NEXT_PUBLIC_AWS_REGION: process.env.NEXT_PUBLIC_AWS_REGION,
+        NEXT_PUBLIC_COGNITO_USER_POOL_ID: process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID,
+        NEXT_PUBLIC_COGNITO_CLIENT_ID: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID,
+        NEXT_PUBLIC_CONTENT_API_URL: process.env.NEXT_PUBLIC_CONTENT_API_URL,
+        NEXT_PUBLIC_USERS_API_URL: process.env.NEXT_PUBLIC_USERS_API_URL,
+    })
 }

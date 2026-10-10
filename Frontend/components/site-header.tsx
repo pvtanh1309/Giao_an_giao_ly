@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { LogIn, Menu, X } from 'lucide-react'
-import type { AppRole } from '../lib/content-data'
+import type { AppRole } from '../lib/auth/types'
 
 type SiteHeaderProps = {
     activeNav: string

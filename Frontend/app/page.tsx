@@ -1,9 +1,7 @@
 'use client'
 
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import {
-  ArrowRight,
   BookOpen,
   CalendarDays,
   ChevronDown,
@@ -11,7 +9,6 @@ import {
   FileText,
   Heart,
   LayoutDashboard,
-  LogIn,
   Menu,
   Plus,
   Pencil,
@@ -36,6 +33,8 @@ import { ProgramReadingPage } from '../components/program-reading-page'
 import { ReferenceDirectory } from '../components/reference-directory'
 import { ReferenceReadingPage } from '../components/reference-reading-page'
 import { SystemAccountDirectory } from '../components/system-account-directory'
+import { AuthScreen } from '../components/auth-screen'
+import { useAuth } from '../components/auth-provider'
 import {
   catechists,
   createEmptyProgramScheduleRow,
@@ -48,7 +47,6 @@ import {
   programs,
   systemAccounts,
   type AccountStatus,
-  type AppRole,
   type Catechist,
   type CatechistStatus,
   type Lesson,
@@ -62,13 +60,9 @@ import { getDashboardMetrics } from '../lib/dashboard-metrics'
 import type { ReferenceCategory, ReferenceDocument } from '../lib/reference-content'
 
 export default function Page({ initialView = 'overview' }: { initialView?: 'overview' | 'lessons' | 'programs' | 'catechists' | 'accounts' }) {
+  const { status, user, logout } = useAuth()
   const [activeNav, setActiveNav] = useState(initialView === 'lessons' ? 'Giáo án' : initialView === 'programs' ? 'Chương trình học' : initialView === 'catechists' ? 'Giáo lý viên' : initialView === 'accounts' ? 'Tài khoản hệ thống' : 'Tổng quan')
   const [mobileMenu, setMobileMenu] = useState(false)
-  const [currentUser, setCurrentUser] = useState<AppRole | null>(null)
-  const [authReady, setAuthReady] = useState(false)
-  const [authEmail, setAuthEmail] = useState('')
-  const [authPassword, setAuthPassword] = useState('')
-  const [authError, setAuthError] = useState('')
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null)
   const [selectedProgramLevel, setSelectedProgramLevel] = useState<string | null>(null)
   const [selectedProgramSublevel, setSelectedProgramSublevel] = useState<string | null>(null)
@@ -116,13 +110,6 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   const selectedReferenceForReading = referenceList.find((reference) => reference.id === selectedReferenceId)
   const selectedProgramForReading = programList.find((program) => program.id === selectedProgramId)
   const dashboardMetrics = getDashboardMetrics(lessonList)
-
-  useEffect(() => {
-    const savedUser = sessionStorage.getItem('giao-ly-user')
-    if (savedUser === 'reader' || savedUser === 'editor' || savedUser === 'admin') setCurrentUser(savedUser)
-    if (savedUser === 'user') setCurrentUser('reader')
-    setAuthReady(true)
-  }, [])
 
   useEffect(() => {
     const syncSelectionFromUrl = () => {
@@ -305,27 +292,6 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
     else setSelectedProgramId(null)
   }
 
-  const handleAuth = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setAuthError('')
-    if ((authEmail === 'user@gmail.com' || authEmail === 'reader@gmail.com') && authPassword === '123') {
-      sessionStorage.setItem('giao-ly-user', 'reader')
-      setCurrentUser('reader')
-      return
-    }
-    if (authEmail === 'editor@gmail.com' && authPassword === '123') {
-      sessionStorage.setItem('giao-ly-user', 'editor')
-      setCurrentUser('editor')
-      return
-    }
-    if (authEmail === 'admin@gmail.com' && authPassword === '123') {
-      sessionStorage.setItem('giao-ly-user', 'admin')
-      setCurrentUser('admin')
-      return
-    }
-    setAuthError('Email hoặc mật khẩu chưa đúng. Hãy thử tài khoản demo được hướng dẫn bên dưới.')
-  }
-
   const closeAdminEditor = () => {
     setAdminEditor(null)
     setAdminEditingLabel(null)
@@ -421,57 +387,17 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
     closeAdminEditor()
   }
 
-  if (!authReady || !currentUser) {
+  if (status === 'loading') {
     return (
-      <main className="auth-shell">
-        <div className="auth-art" aria-hidden="true">
-          <img src="/images/auth-church-group.png" alt="Cộng đoàn giáo lý viên trước nhà thờ" />
-          <div className="auth-art-overlay" />
-        </div>
-        <section className="auth-panel">
-          <div className="auth-brand">
-            <Image
-              className="parish-logo-image auth-parish-logo"
-              src="/images/logo-thieu-nhi.jpg"
-              alt="Logo Đoàn Thiếu nhi Thánh Thể Giáo xứ Thái An"
-              width={56}
-              height={56}
-            />
-            <span><strong>Giáo lý</strong><small>Giáo phận Việt Nam</small></span>
-          </div>
-          <div className="auth-copy">
-            <span className="section-kicker">Kho tài liệu giáo lý Công giáo</span>
-            <h1>Cùng nhau lớn lên<br /><em>trong đức tin</em></h1>
-            <p>Nơi giáo lý viên tìm thấy những bài học, chương trình và cảm hứng để đồng hành cùng các em.</p>
-          </div>
-          <form className="auth-form" onSubmit={handleAuth}>
-            <div className="auth-heading">
-              <span className="section-kicker">Chào mừng trở lại</span>
-              <h2>Đăng nhập tài khoản</h2>
-            </div>
-            <label>
-              Email
-              <input required type="email" value={authEmail} onChange={(event) => setAuthEmail(event.target.value)} placeholder="user@gmail.com" />
-            </label>
-            <label>
-              Mật khẩu
-              <input required type="password" value={authPassword} onChange={(event) => setAuthPassword(event.target.value)} placeholder="123" />
-            </label>
-            {authError && <p className="auth-error">{authError}</p>}
-            <button className="primary-button full" type="submit">
-              Vào trang tổng quan <ArrowRight size={17} />
-            </button>
-          </form>
-          <div className="demo-accounts">
-            <strong>Tài khoản xem thử</strong>
-            <span><b>Reader</b> user@gmail.com · 123</span>
-            <span><b>Editor</b> editor@gmail.com · 123</span>
-            <span><b>Admin</b> admin@gmail.com · 123</span>
-          </div>
-        </section>
+      <main className="auth-loading-panel" aria-busy="true">
+        <p>Đang khôi phục phiên đăng nhập…</p>
       </main>
     )
   }
+
+  if (status !== 'authenticated' || !user) return <AuthScreen />
+
+  const currentUser = user.role
 
   return (
     <main className={`site-shell view-${initialView}`}>
@@ -480,11 +406,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         mobileMenu={mobileMenu}
         currentUser={currentUser}
         onNavigate={navigateTo}
-        onLogout={() => {
-          sessionStorage.removeItem("giao-ly-user");
-          setCurrentUser(null);
-          navigateTo("/");
-        }}
+        onLogout={logout}
         onToggleMenu={() => setMobileMenu(!mobileMenu)}
       />
 

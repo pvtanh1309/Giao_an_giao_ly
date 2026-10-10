@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
+import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 
@@ -61,4 +62,11 @@ test('content data re-exports the shared AppRole type', () => {
     ], { encoding: 'utf8' })
 
     assert.equal(result.status, 0, result.stdout + result.stderr)
+})
+
+test('browser config uses statically analyzable NEXT_PUBLIC environment access', async () => {
+    const configSource = await readFile(new URL('../lib/config.ts', import.meta.url), 'utf8')
+    for (const key of Object.keys(completeEnv)) {
+        assert.match(configSource, new RegExp(`process\\.env\\.${key}\\b`))
+    }
 })

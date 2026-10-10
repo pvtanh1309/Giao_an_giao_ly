@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Be_Vietnam_Pro, Fraunces, Playfair_Display } from 'next/font/google'
+import { Providers } from './providers'
 import './globals.css'
 
 const sans = Be_Vietnam_Pro({
@@ -60,7 +61,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${sans.variable} ${serif.variable} ${display.variable}`}>
       <body className="antialiased">
-        {children}
+        <Providers>{children}</Providers>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
