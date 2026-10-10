@@ -15,6 +15,7 @@ import { createCognitoAuth } from '../lib/auth/cognito.ts'
 import {
     authReducer,
     completeNewPasswordAuthSession,
+    getAccessTokenAuthSession,
     initialAuthState,
     invalidateAuthSession,
     loginAuthSession,
@@ -94,7 +95,10 @@ export function AuthProvider({ children, client }: { children: ReactNode; client
         }
     }, [getClient])
 
-    const getAccessToken = useCallback(() => getClient().getAccessToken(), [getClient])
+    const getAccessToken = useCallback(
+        () => getAccessTokenAuthSession(getClient(), dispatch),
+        [getClient],
+    )
     const value = useMemo<AuthContextValue>(() => ({
         status: state.status,
         user: state.user,

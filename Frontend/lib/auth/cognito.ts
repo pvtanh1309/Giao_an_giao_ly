@@ -25,6 +25,7 @@ type AuthenticationCallbacks = {
 }
 
 type CognitoUserPort = {
+    setAuthenticationFlowType(authenticationFlowType: string): string
     authenticateUser(details: unknown, callbacks: AuthenticationCallbacks): void
     completeNewPasswordChallenge(
         newPassword: string,
@@ -121,6 +122,7 @@ export function createCognitoAuth(
         signIn(email, password) {
             const user = new sdk.CognitoUser({ Username: email, Pool: pool, Storage: storage })
             const details = new sdk.AuthenticationDetails({ Username: email, Password: password })
+            user.setAuthenticationFlowType('USER_PASSWORD_AUTH')
 
             return new Promise<AuthResult>((resolve, reject) => {
                 user.authenticateUser(details, {
@@ -167,8 +169,6 @@ export function createCognitoAuth(
                         }
                     },
                     onFailure() {
-                        challengedUser = null
-                        activeUser = null
                         reject(new Error('Không thể đặt mật khẩu mới. Vui lòng thử lại.'))
                     },
                 })

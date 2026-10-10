@@ -9,6 +9,7 @@ import {
     completeNewPasswordAuthSession,
     initialAuthState,
     invalidateAuthSession,
+    getAccessTokenAuthSession,
     loginAuthSession,
     restoreAuthSession,
 } from '../lib/auth/state.ts'
@@ -89,6 +90,26 @@ test('unauthorized invalidation signs out locally and returns the reducer action
     let signOuts = 0
     assert.deepEqual(invalidateAuthSession(client({ signOut: () => { signOuts += 1 } })), { type: 'UNAUTHORIZED' })
     assert.equal(signOuts, 1)
+})
+
+test('token refresh failure signs out and dispatches unauthorized before rejecting safely', async () => {
+    let signOuts = 0
+    const actions = []
+    const failingClient = client({
+        getAccessToken: async () => { throw new Error('refresh token private detail') },
+        signOut: () => { signOuts += 1 },
+    })
+
+    await assert.rejects(
+        getAccessTokenAuthSession(failingClient, (action) => actions.push(action)),
+        (error) => {
+            assert.match(error.message, /hết hạn/i)
+            assert.doesNotMatch(error.message, /private|refresh token/i)
+            return true
+        },
+    )
+    assert.equal(signOuts, 1)
+    assert.deepEqual(actions, [{ type: 'UNAUTHORIZED' }])
 })
 
 test('provider restores in an effect and its context matches the public contract', async () => {

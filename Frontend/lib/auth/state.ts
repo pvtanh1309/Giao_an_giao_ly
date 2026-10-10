@@ -84,3 +84,15 @@ export function invalidateAuthSession(client: AuthClient): AuthAction {
     client.signOut()
     return { type: 'UNAUTHORIZED' }
 }
+
+export async function getAccessTokenAuthSession(
+    client: AuthClient,
+    dispatch: (action: AuthAction) => void,
+): Promise<string> {
+    try {
+        return await client.getAccessToken()
+    } catch {
+        dispatch(invalidateAuthSession(client))
+        throw new Error('Phiên đăng nhập đã hết hạn.')
+    }
+}

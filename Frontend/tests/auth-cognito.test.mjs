@@ -35,6 +35,7 @@ function createFakeSdk() {
         authSession: session(),
         completeMode: 'success',
         completeSession: session({ token: 'new-password-token' }),
+        authenticationFlow: null,
         currentUser: null,
         poolData: null,
         authDetails: null,
@@ -60,6 +61,11 @@ function createFakeSdk() {
             if (state.authMode === 'failure') callbacks.onFailure(new Error('UserNotFoundException: private detail'))
             else if (state.authMode === 'challenge') callbacks.newPasswordRequired?.({}, [])
             else callbacks.onSuccess(state.authSession)
+        }
+
+        setAuthenticationFlowType(flow) {
+            state.authenticationFlow = flow
+            return flow
         }
 
         completeNewPasswordChallenge(password, attributes, callbacks) {
@@ -109,6 +115,7 @@ test('creates the SDK boundary with explicit Node storage and signs in successfu
     assert.equal(state.poolData.Storage, storage)
     const result = await auth.signIn('reader@example.test', 'secret-password')
 
+    assert.equal(state.authenticationFlow, 'USER_PASSWORD_AUTH')
     assert.equal(state.authDetails.data.Username, 'reader@example.test')
     assert.equal(state.authDetails.data.Password, 'secret-password')
     assert.deepEqual(result, {
@@ -168,4 +175,18 @@ test('retains a challenged user only until new-password completion', async () =>
     assert.equal(state.completions[0].user, challengedUser)
     assert.equal(state.completions[0].password, 'new-secret-password')
     await assert.rejects(auth.completeNewPassword('another-password'), /yêu cầu đặt mật khẩu mới/i)
+})
+
+test('keeps the challenged user retryable after new-password completion fails', async () => {
+    const { state, sdk } = createFakeSdk()
+    state.authMode = 'challenge'
+    state.completeMode = 'failure'
+    const auth = createCognitoAuth(config, { storage: createStorage(), sdk })
+
+    await auth.signIn('reader@example.test', 'temporary-password')
+    await assert.rejects(auth.completeNewPassword('weak-password'), /đặt mật khẩu mới/i)
+
+    state.completeMode = 'success'
+    assert.equal((await auth.completeNewPassword('ValidPassword1')).accessToken, 'new-password-token')
+    assert.equal(state.completions.length, 2)
 })
