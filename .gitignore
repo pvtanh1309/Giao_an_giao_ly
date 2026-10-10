@@ -1,4 +1,5 @@
 .codex-worktrees/
+.worktrees/
 .codex-remote-attachments/*
 .venv/
 .superpowers/
