@@ -128,6 +128,7 @@ resource "aws_apigatewayv2_route" "routes" {
   authorizer_id        = aws_apigatewayv2_authorizer.jwt.id
   authorization_scopes = ["aws.cognito.signin.user.admin"]
 }
+
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.api.id
   name        = "$default"
@@ -143,6 +144,7 @@ resource "aws_apigatewayv2_stage" "default" {
   }
   tags = var.tags
 }
+
 resource "aws_lambda_permission" "gateway" {
   statement_id  = "AllowHttpApi"
   action        = "lambda:InvokeFunction"
@@ -150,6 +152,7 @@ resource "aws_lambda_permission" "gateway" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
 }
+
 resource "aws_lambda_event_source_mapping" "cleanup" {
   event_source_arn                   = var.stream_arn
   function_name                      = aws_lambda_function.api.arn
@@ -170,6 +173,7 @@ resource "aws_lambda_event_source_mapping" "cleanup" {
   }
   depends_on = [aws_iam_role_policy.lambda]
 }
+
 resource "aws_cloudwatch_metric_alarm" "lambda" {
   for_each            = toset(["Errors", "Throttles"])
   alarm_name          = "${local.name}-${lower(each.value)}"
@@ -185,6 +189,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda" {
   alarm_actions       = var.alarm_topic_arn == null ? [] : [var.alarm_topic_arn]
   tags                = var.tags
 }
+
 resource "aws_cloudwatch_metric_alarm" "iterator_age" {
   alarm_name          = "${local.name}-iterator-age"
   namespace           = "AWS/Lambda"

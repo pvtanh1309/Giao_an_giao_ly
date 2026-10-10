@@ -16,11 +16,15 @@ def parse_request(event, request_id=None):
     try:
         if event.get("isBase64Encoded"):
             raw = base64.b64decode(raw, validate=True).decode("utf-8")
+
         if not isinstance(raw, str) or len(raw.encode("utf-8")) > 300 * 1024:
             raise ApiError(413, "CONTENT_TOO_LARGE", "Request vượt giới hạn 300 KB.")
+        
         body = json.loads(raw, parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
+
         if not isinstance(body, dict):
             raise ValueError()
+        
     except (ValueError, TypeError, UnicodeError):
         raise ApiError(400, "VALIDATION_ERROR", "Body phải là JSON object hợp lệ.") from None
     return {"body": body, "path_parameters": event.get("pathParameters") or {},
@@ -44,6 +48,7 @@ def dispatch(event, routes, request_id=None):
 def handle(event, context, routes, stream_handler):
     if "Records" in event:
         return stream_handler(event, context)
+    
     request_id = event.get("requestContext", {}).get("requestId") or getattr(context, "aws_request_id", None) or str(uuid.uuid4())
     try:
         data = dispatch(event, routes, request_id)

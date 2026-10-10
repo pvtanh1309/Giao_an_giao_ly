@@ -1,18 +1,21 @@
-"""DynamoDB adapter with conditional atomic writes and paginated queries."""
 import os
 from shared.errors import ApiError
 from shared.models import public
+import boto3
+from botocore.config import Config
+from boto3.dynamodb.types import TypeSerializer, TypeDeserializer
 
 clean = public
 
-
 class Store:
     def __init__(self, client=None, table_name=None):
-        import boto3
-        from botocore.config import Config
-        from boto3.dynamodb.types import TypeSerializer, TypeDeserializer
         self.client = client or boto3.client("dynamodb", config=Config(
-            connect_timeout=3, read_timeout=5, retries={"mode": "standard", "max_attempts": 2}))
+            connect_timeout=3, 
+            read_timeout=5, 
+            retries={
+                "mode": "standard", 
+                "max_attempts": 2}
+            ))
         self.table = table_name or os.environ["TABLE_NAME"]
         self.serializer = TypeSerializer()
         self.deserializer = TypeDeserializer()
@@ -40,7 +43,6 @@ class Store:
         return self._query(KeyConditionExpression="PK = :pk", ExpressionAttributeValues=self.encode({":pk": pk}), ConsistentRead=True)
 
     def transact_get(self, keys):
-        """Read a revision snapshot with serializable isolation against transaction writes."""
         if not keys or len(keys) > 100:
             raise ValueError("Transaction reads need between 1 and 100 keys")
         response = self.client.transact_get_items(TransactItems=[

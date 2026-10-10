@@ -1,4 +1,3 @@
-"""Upload URL issuance and idempotent TTL stream cleanup."""
 from boto3.dynamodb.types import TypeDeserializer
 from shared.models import epoch, now, new_id
 from content_api.repositories.dynamodb import get_store

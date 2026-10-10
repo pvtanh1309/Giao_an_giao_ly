@@ -8,7 +8,7 @@ def invalid(field, message="Invalid value."):
     raise ApiError(400, "VALIDATION_ERROR", message, [{"field": field, "message": message}])
 
 
-def array(value, field, maximum=500):
+def  array(value, field, maximum=500):
     if not isinstance(value, list) or len(value) > maximum:
         invalid(field)
     return value

@@ -6,3 +6,4 @@ from content_api.services.media import handle_stream
 
 def lambda_handler(event, context):
     return handle(event, context, ROUTES, handle_stream)
+ 

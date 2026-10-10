@@ -1,27 +1,36 @@
-"""Trust only claims supplied by the configured Gateway JWT authorizer."""
 import json
 import os
 import re
 from shared.errors import ApiError
+from shared.db import Store
 
 
 def principal_from_event(event):
     claims = event.get("requestContext", {}).get("authorizer", {}).get("jwt", {}).get("claims", {})
+
+    # Check claim from payload after decrypt jwt
     if not isinstance(claims, dict) or not isinstance(claims.get("sub"), str) or not claims["sub"]:
         raise ApiError(401, "UNAUTHORIZED", "Cần đăng nhập.")
     if claims.get("token_use") != "access":
         raise ApiError(401, "UNAUTHORIZED", "Cần access token hợp lệ.")
+    
     client = os.environ.get("USER_POOL_CLIENT_ID")
-    if client and claims.get("client_id") != client:
+
+    # Check cognito_pool_client from payload
+    if (client) and (claims.get("client_id") != client):
         raise ApiError(401, "UNAUTHORIZED", "Token không thuộc ứng dụng.")
+    
     groups = claims.get("cognito:groups", [])
+
+    if not isinstance(groups, list) or any(not isinstance(g, str) for g in groups):
+            groups = []
+
     if isinstance(groups, str):
         try:
             groups = json.loads(groups)
         except ValueError:
             groups = re.split(r"[\s,]+", groups.strip("[] "))
-    if not isinstance(groups, list) or any(not isinstance(g, str) for g in groups):
-        groups = []
+
     return {"sub": claims["sub"], "groups": tuple(g for g in groups if g in {"admin", "editor", "reader"})}
 
 
@@ -31,8 +40,6 @@ def require_groups(principal, allowed_groups):
 
 
 def require_active_account(principal, event):
-    """JWT signatures survive Cognito disable; enforce current application status."""
-    from shared.db import Store
     account = Store().get("ACCOUNT#" + principal["sub"])
     if (not account or account.get("accountStatus") != "ACTIVE"
             or account.get("pendingAction") in {"disable", "archive"}):
