@@ -1,4 +1,3 @@
-"""LESSON route services."""
 from .content import Content
 
 

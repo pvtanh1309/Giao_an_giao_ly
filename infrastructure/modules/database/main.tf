@@ -23,8 +23,10 @@ resource "aws_dynamodb_table" "app" {
       attribute_name = "GSI1SK"
       key_type       = "RANGE"
     }
-    projection_type    = "INCLUDE"
-    non_key_attributes = ["entityType", "lessonId", "programId", "referenceId", "catechistId", "cognitoSub", "title", "normalizedTitle", "summary", "description", "level", "sublevel", "lessonNumber", "durationMinutes", "category", "name", "normalizedName", "email", "normalizedEmail", "phone", "group", "role", "status", "accountStatus", "hasDraft", "hasPublished", "version", "createdAt", "updatedAt", "publishedAt", "deletedAt", "purgeAt", "createdBy", "updatedBy", "publishedBy"]
+    # Every GSI1 consumer only reads PK from the index, then fetches the full
+    # item from the base table. KEYS_ONLY avoids DynamoDB's 20-attribute
+    # INCLUDE projection limit and keeps large revision documents off the index.
+    projection_type = "KEYS_ONLY"
   }
   ttl {
     attribute_name = "purgeAt"

@@ -1,7 +1,3 @@
-"""Explicit operator command to seed an initial admin; never run by Terraform.
-
-Password is prompted without echo and never written to a file, command argument or log.
-"""
 import argparse
 import getpass
 from pathlib import Path
@@ -21,22 +17,35 @@ def main():
     parser.add_argument("--region", default="ap-southeast-1")
     parser.add_argument("--profile")
     parser.add_argument("--expected-account-id", required=True)
+
     args = parser.parse_args()
+
     session = boto3.Session(profile_name=args.profile, region_name=args.region)
+
     identity = session.client("sts").get_caller_identity()
+
     if identity["Account"] != args.expected_account_id:
         parser.error("AWS account does not match --expected-account-id")
+
     client = session.client("cognito-idp")
+
     store = Store(session.client("dynamodb"), args.table_name)
+
     pool = client.describe_user_pool(UserPoolId=args.pool_id)["UserPool"]
     print(f"Account {identity['Account']}; pool {pool['Name']}; table {args.table_name}")
+
     if input("Type CREATE ADMIN to continue: ") != "CREATE ADMIN":
         return
+    
     password = getpass.getpass("Permanent password: ")
+
     if password != getpass.getpass("Confirm password: "):
         parser.error("Passwords do not match")
+
     username = None
+
     item = None
+
     try:
         user = client.admin_create_user(UserPoolId=args.pool_id, Username=args.email, MessageAction="SUPPRESS",
                                         UserAttributes=[{"Name": "email", "Value": args.email}, {"Name": "email_verified", "Value": "true"}])["User"]

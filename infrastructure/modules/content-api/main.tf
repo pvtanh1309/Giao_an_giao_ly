@@ -119,6 +119,7 @@ resource "aws_apigatewayv2_integration" "lambda" {
   payload_format_version = "2.0"
   timeout_milliseconds   = 29000
 }
+
 resource "aws_apigatewayv2_route" "routes" {
   for_each             = local.routes
   api_id               = aws_apigatewayv2_api.api.id
@@ -204,6 +205,7 @@ resource "aws_cloudwatch_metric_alarm" "iterator_age" {
   alarm_actions       = var.alarm_topic_arn == null ? [] : [var.alarm_topic_arn]
   tags                = var.tags
 }
+
 resource "aws_cloudwatch_metric_alarm" "stream_failures" {
   alarm_name          = "${local.name}-stream-failures"
   namespace           = "AWS/SQS"
@@ -218,6 +220,7 @@ resource "aws_cloudwatch_metric_alarm" "stream_failures" {
   alarm_actions       = var.alarm_topic_arn == null ? [] : [var.alarm_topic_arn]
   tags                = var.tags
 }
+
 resource "aws_apigatewayv2_domain_name" "api" {
   count       = var.domain_name == null ? 0 : 1
   domain_name = var.domain_name
@@ -234,12 +237,14 @@ resource "aws_apigatewayv2_domain_name" "api" {
   }
   tags = var.tags
 }
+
 resource "aws_apigatewayv2_api_mapping" "api" {
   count       = var.domain_name == null ? 0 : 1
   api_id      = aws_apigatewayv2_api.api.id
   domain_name = aws_apigatewayv2_domain_name.api[0].id
   stage       = aws_apigatewayv2_stage.default.id
 }
+
 resource "aws_route53_record" "api" {
   count   = var.domain_name != null && var.hosted_zone_id != null ? 1 : 0
   zone_id = var.hosted_zone_id

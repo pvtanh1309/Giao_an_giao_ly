@@ -1,4 +1,3 @@
-"""Strict content payload validation."""
 from shared.errors import ApiError
 from shared.validation import fields, text, integer, version
 from shared.tiptap_validator import validate_document, validate_revision_size

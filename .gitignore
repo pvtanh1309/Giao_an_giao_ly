@@ -23,7 +23,7 @@ Frontend/.superpowers
 Frontend/.next/
 Frontend/AGENTS.md 
 Frontend/CLAUDE.md
-Frontend/out/
+Frontend/out/*
 Frontend/coverage/
 Frontend/*.tsbuildinfo
 Frontend/*.log
@@ -44,3 +44,4 @@ Backend/dist/
 **/*.pyc
 
 TODO-INDEX.md
+**/DEV-RUNBOOK.md
