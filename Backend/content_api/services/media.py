@@ -30,14 +30,19 @@ def handle_stream(event, context):
     store = None
     objects = None
     for record in event.get("Records", []):
+
         if record.get("eventName") != "REMOVE":
             continue
+
         image = record.get("dynamodb", {}).get("OldImage", {})
         try:
             item = {key: deserializer.deserialize(value) for key, value in image.items()}
             if item.get("entityType") != "MEDIA" or not item.get("purgeAt") or item["purgeAt"] > epoch():
                 continue
-            media_id, lesson_id = item.get("mediaId"), item.get("lessonId")
+            
+            lesson_id = item.get("lessonId")
+            media_id = item.get("mediaId")
+
             if not isinstance(media_id, str) or not isinstance(lesson_id, str):
                 continue
             if item.get("PK") != "MEDIA#" + media_id or item.get("SK") != "PROFILE" or item.get("objectKey") != "lesson-media/" + lesson_id + "/" + media_id:
