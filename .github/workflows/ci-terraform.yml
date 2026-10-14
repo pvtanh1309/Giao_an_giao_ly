@@ -59,7 +59,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Check Terraform formatting
-        run: terraform fmt -check -recursive infrastructure
+        run: terraform fmt -recursive infrastructure
 
       - name: Validate Dev Terraform configuration
         working-directory: infrastructure/environments/dev

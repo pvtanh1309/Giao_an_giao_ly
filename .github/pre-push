@@ -1,0 +1,9 @@
+#! /bin/sh
+set -eu
+
+terraform fmt -recursive infrastructure
+
+if ! git diff --quiet HEAD -- infrastructure; then
+    echo "Terraform có thay đổi chưa commit. Hãy review, commit rồi push lại"
+    exit 1
+fi
