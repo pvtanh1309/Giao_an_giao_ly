@@ -1,5 +1,3 @@
-"""Record the source SHA and checksums of the packaged Lambda ZIPs."""
-
 import hashlib
 import json
 import os

@@ -1,5 +1,3 @@
-"""Require a successful path filter and the expected CI job result."""
-
 import os
 import sys
 
