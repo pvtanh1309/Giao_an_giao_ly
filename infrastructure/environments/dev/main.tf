@@ -30,16 +30,19 @@ module "app_hosting" {
   certificate_arn          = var.frontend_certificate_arn
   hosted_zone_id           = var.hosted_zone_id
 }
+
 resource "aws_sns_topic" "alarms" {
   name = "${var.project_name}-${var.environment}-alarms"
   tags = local.tags
 }
+
 resource "aws_sns_topic_subscription" "email" {
   count     = var.notification_email == null ? 0 : 1
   topic_arn = aws_sns_topic.alarms.arn
   protocol  = "email"
   endpoint  = var.notification_email
 }
+
 module "content_api" {
   source               = "../../modules/content-api"
   environment          = var.environment
@@ -62,6 +65,7 @@ module "content_api" {
   certificate_arn      = var.api_certificate_arn
   hosted_zone_id       = var.hosted_zone_id
 }
+
 module "user_api" {
   source               = "../../modules/user-api"
   environment          = var.environment
@@ -82,6 +86,7 @@ module "user_api" {
   certificate_arn      = var.api_certificate_arn
   hosted_zone_id       = var.hosted_zone_id
 }
+
 resource "aws_budgets_budget" "monthly" {
   count        = var.budget_email == null ? 0 : 1
   name         = "${var.project_name}-${var.environment}-monthly"
@@ -100,6 +105,8 @@ resource "aws_budgets_budget" "monthly" {
     notification_type          = "ACTUAL"
     subscriber_email_addresses = [var.budget_email]
   }
+  
+  # Alert when forecast budget overcome 100  
   notification {
     comparison_operator        = "GREATER_THAN"
     threshold                  = 100
