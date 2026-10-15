@@ -22,14 +22,14 @@ def principal_from_event(event):
     
     groups = claims.get("cognito:groups", [])
 
-    if not isinstance(groups, list) or any(not isinstance(g, str) for g in groups):
-            groups = []
-
     if isinstance(groups, str):
         try:
             groups = json.loads(groups)
         except ValueError:
             groups = re.split(r"[\s,]+", groups.strip("[] "))
+
+    if not isinstance(groups, list) or any(not isinstance(g, str) for g in groups):
+        groups = []
 
     return {"sub": claims["sub"], "groups": tuple(g for g in groups if g in {"admin", "editor", "reader"})}
 

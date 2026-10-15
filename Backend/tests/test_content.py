@@ -281,7 +281,7 @@ def test_http_authorization_and_real_dispatch(monkeypatch):
     import content_api.services.content as content
     store = MemoryStore()
     store.items['ACCOUNT#reader', 'PROFILE'] = {'accountStatus': 'ACTIVE', 'role': 'EDITOR'}
-    monkeypatch.setattr('shared.db.Store', lambda: store)
+    monkeypatch.setattr('shared.auth.Store', lambda: store)
     monkeypatch.setattr(content, "get_store", lambda: store)
     event = {"version": "2.0", "routeKey": "POST /manage/lessons", "body": json.dumps(payload("LESSON")), "requestContext": {"requestId": "r1", "authorizer": {"jwt": {"claims": {"sub": "reader", "token_use": "access", "cognito:groups": "reader"}}}}}
     assert lambda_handler(event, None)["statusCode"] == 403

@@ -361,7 +361,7 @@ def test_http_boundary_enforces_group_and_serializes_safe_creation(env, monkeypa
     from users_api.handler import lambda_handler
     store, _ = env
     store.items['ACCOUNT#admin-1', 'PROFILE'] = {'accountStatus': 'ACTIVE', 'role': 'ADMIN'}
-    monkeypatch.setattr('shared.db.Store', lambda: store)
+    monkeypatch.setattr('shared.auth.Store', lambda: store)
     event = {'routeKey': 'POST /admin/accounts', 'requestContext': {'requestId': 'http-test',
              'authorizer': {'jwt': {'claims': {'sub': 'admin-1', 'cognito:groups': ['admin'],
                                                'token_use': 'access'}}}},

@@ -21,11 +21,24 @@ def event(groups=("reader",), token_use="access"):
         "claims": {"sub": "subject", "token_use": token_use, "cognito:groups": list(groups)}}}}}
 
 
-@pytest.mark.parametrize("groups", [["reader"], '["reader"]', '[reader]', 'reader,editor'])
+@pytest.mark.parametrize("groups", [["reader"], 'reader', '["reader"]', '[reader]', 'reader,editor'])
 def test_verified_group_formats(groups):
     request = event()
     request["requestContext"]["authorizer"]["jwt"]["claims"]["cognito:groups"] = groups
     assert "reader" in principal_from_event(request)["groups"]
+
+
+@pytest.mark.parametrize("groups", [None, 42, {}, ["reader", None],
+                                    'null', '42', '{"admin": true}', '"admin"',
+                                    '["reader", {}]'])
+def test_malformed_groups_grant_no_permissions(groups):
+    request = event()
+    request["requestContext"]["authorizer"]["jwt"]["claims"]["cognito:groups"] = groups
+    principal = principal_from_event(request)
+    assert principal["groups"] == ()
+    with pytest.raises(ApiError) as failure:
+        require_groups(principal, ("reader", "editor", "admin"))
+    assert failure.value.status == 403
 
 
 def test_id_token_and_unverified_header_rejected():

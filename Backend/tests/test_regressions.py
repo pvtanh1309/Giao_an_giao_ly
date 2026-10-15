@@ -32,7 +32,7 @@ def test_presigned_upload_uses_regional_sigv4(monkeypatch):
 @pytest.mark.parametrize('status,pending', [('DISABLED', None), ('DELETED', None), ('ACTIVE', 'disable'), ('ACTIVE', 'archive')])
 def test_disabled_account_cannot_use_existing_jwt(monkeypatch, status, pending):
     monkeypatch.setenv('TABLE_NAME', 'test')
-    monkeypatch.setattr('shared.db.Store', Mock(return_value=Mock(get=Mock(return_value={
+    monkeypatch.setattr('shared.auth.Store', Mock(return_value=Mock(get=Mock(return_value={
         'accountStatus': status, 'pendingAction': pending, 'role': 'EDITOR'}))))
     with pytest.raises(ApiError) as failure:
         require_active_account({'sub': 'editor', 'groups': ('editor',)}, {})
@@ -41,7 +41,7 @@ def test_disabled_account_cannot_use_existing_jwt(monkeypatch, status, pending):
 
 def test_reenabled_account_rejects_pre_disable_token(monkeypatch):
     monkeypatch.setenv('TABLE_NAME', 'test')
-    monkeypatch.setattr('shared.db.Store', Mock(return_value=Mock(get=Mock(return_value={
+    monkeypatch.setattr('shared.auth.Store', Mock(return_value=Mock(get=Mock(return_value={
         'accountStatus': 'ACTIVE', 'role': 'EDITOR', 'tokenValidAfter': 100}))))
     with pytest.raises(ApiError) as failure:
         require_active_account({'sub': 'editor', 'groups': ('editor',)}, {'requestContext': {'authorizer': {'jwt': {'claims': {'iat': '99'}}}}})
