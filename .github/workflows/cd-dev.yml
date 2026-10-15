@@ -1,0 +1,222 @@
+name: CD-DEV Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options: [dev, prod]
+      backend_run_id:
+        description: Successful Backend CI push run on main containing Lambda artifacts
+        required: true
+        type: string
+      operation:
+        description: Review a plan first; deploy creates and applies a fresh plan
+        required: true
+        default: plan
+        type: choice
+        options: [plan, deploy]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: cd-aws-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    defaults:
+      run:
+        shell: bash
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TARGET_ENV: ${{ inputs.environment }}
+      BACKEND_RUN_ID: ${{ inputs.backend_run_id }}
+      AWS_REGION: ap-southeast-1
+      TF_IN_AUTOMATION: 'true'
+      TF_INPUT: 'false'
+      # Change this through a reviewed commit when upgrading Terraform.
+      TERRAFORM_VERSION: '1.15.0'
+
+    steps:
+      - name: Check out workflow source for validation script
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Validate Backend CI run
+        id: release
+        env:
+            BACKEND_RUN_ID: ${{ inputs.backend_run_id }}
+            GH_REPO: ${{ github.repository }}
+            GH_TOKEN: ${{ github.token }}
+
+        run: |
+            set -euo pipefail
+
+            [[ "$BACKEND_RUN_ID" =~ ^[0-9]+$ ]]
+
+            gh api \
+            "repos/$GH_REPO/actions/runs/$BACKEND_RUN_ID" \
+            > "$RUNNER_TEMP/backend-run.json"
+
+            python3 scripts/cd/validate_backend_run.py
+
+      - name: Check out exact release source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.release.outputs.sha }}
+          persist-credentials: false
+
+      - name: Download Lambda artifacts from selected CI run
+        uses: actions/download-artifact@v6
+        with:
+          name: lambda-release-${{ steps.release.outputs.sha }}
+          path: Backend/dist
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.backend_run_id }}
+
+      - name: Verify manifest and ZIP checksums
+        env:
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          dist = Path('Backend/dist')
+          manifest = json.loads((dist / 'release-manifest.json').read_text())
+          if manifest.get('schemaVersion') != 1 or manifest.get('sourceSha') != os.environ['RELEASE_SHA']:
+              raise SystemExit('Manifest source/schema mismatch')
+          for name in ('content-api.zip', 'users-api.zip'):
+              actual = hashlib.sha256((dist / name).read_bytes()).hexdigest()
+              if actual != manifest['artifacts'][name]['sha256']:
+                  raise SystemExit(f'Checksum mismatch: {name}')
+          PY
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Authenticate to AWS using OIDC
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          allowed-account-ids: ${{ vars.AWS_ACCOUNT_ID }}
+          role-session-name: github-cd-${{ github.run_id }}
+
+      - name: Write environment configuration
+        env:
+          TFVARS_JSON: ${{ secrets.TFVARS_JSON }}
+        run: |
+          set -euo pipefail
+          test -n "$TFVARS_JSON"
+          printf '%s' "$TFVARS_JSON" > "infrastructure/environments/$TARGET_ENV/cd.auto.tfvars.json"
+
+      - name: Initialize and validate Terraform
+        run: |
+          set -euo pipefail
+          terraform -chdir="infrastructure/environments/$TARGET_ENV" init -input=false -lockfile=readonly
+          terraform -chdir="infrastructure/environments/$TARGET_ENV" validate
+
+      - name: Create deployment plan
+        run: |
+          set -euo pipefail
+          terraform -chdir="infrastructure/environments/$TARGET_ENV" plan -input=false -lock-timeout=5m -out=cd.tfplan
+          terraform -chdir="infrastructure/environments/$TARGET_ENV" show -no-color cd.tfplan
+
+      - name: Apply saved plan
+        if: inputs.operation == 'deploy'
+        run: terraform -chdir="infrastructure/environments/$TARGET_ENV" apply -input=false cd.tfplan
+
+      - name: Read deployed outputs
+        if: inputs.operation == 'deploy'
+        run: |
+          set -euo pipefail
+          terraform -chdir="infrastructure/environments/$TARGET_ENV" output -json > "$RUNNER_TEMP/tf-outputs.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          values = json.loads((Path(os.environ['RUNNER_TEMP']) / 'tf-outputs.json').read_text())
+          names = {
+              'NEXT_PUBLIC_COGNITO_USER_POOL_ID': 'user_pool_id',
+              'NEXT_PUBLIC_COGNITO_CLIENT_ID': 'app_client_id',
+              'NEXT_PUBLIC_CONTENT_API_URL': 'content_api_endpoint',
+              'NEXT_PUBLIC_USERS_API_URL': 'users_api_endpoint',
+              'APP_BUCKET': 'app_bucket_name',
+              'DISTRIBUTION_ID': 'cloudfront_distribution_id',
+              'FRONTEND_URL': 'frontend_url',
+          }
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write('NEXT_PUBLIC_AWS_REGION=ap-southeast-1\n')
+              for name, key in names.items():
+                  value = values[key]['value']
+                  if not isinstance(value, str) or not value or '\n' in value or '\r' in value:
+                      raise SystemExit(f'Invalid Terraform output: {key}')
+                  output.write(f'{name}={value}\n')
+          PY
+
+      - name: Set up Node.js
+        if: inputs.operation == 'deploy'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0, matching CI
+        with:
+          node-version: 22.13.0
+
+      - name: Test and build frontend with deployed public configuration
+        if: inputs.operation == 'deploy'
+        working-directory: Frontend
+        run: |
+          set -euo pipefail
+          npm install --global pnpm@12.3.4
+          pnpm install --frozen-lockfile
+          pnpm test
+          pnpm exec tsc --noEmit
+          pnpm build
+          test -f out/index.html
+
+      - name: Upload frontend and invalidate CloudFront
+        if: inputs.operation == 'deploy'
+        run: |
+          set -euo pipefail
+          # Keep old hashed assets for clients with an older cached HTML page.
+          # Scope all uploads to frontend/: the same bucket also stores private lesson media.
+          aws s3 sync Frontend/out/ "s3://$APP_BUCKET/frontend/" --exclude '*' --include '_next/static/*' --cache-control 'public,max-age=31536000,immutable'
+          aws s3 sync Frontend/out/ "s3://$APP_BUCKET/frontend/" --exclude '_next/static/*' --cache-control 'no-cache'
+          invalidation=$(aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths '/*' --query 'Invalidation.Id' --output text)
+          aws cloudfront wait invalidation-completed --distribution-id "$DISTRIBUTION_ID" --id "$invalidation"
+
+      - name: Smoke test public boundary
+        if: inputs.operation == 'deploy'
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --retry 6 --retry-all-errors --retry-delay 10 --max-time 30 "$FRONTEND_URL/" -o /dev/null
+          for api in "$NEXT_PUBLIC_CONTENT_API_URL/lessons" "$NEXT_PUBLIC_USERS_API_URL/catechists"; do
+            status=$(curl --silent --show-error --max-time 30 -o /dev/null -w '%{http_code}' "$api")
+            test "$status" = '401'
+          done
+
+      - name: Summarize release
+        env:
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+          OPERATION: ${{ inputs.operation }}
+        run: |
+          {
+            printf '### CD %s: %s\n' "$TARGET_ENV" "$OPERATION"
+            printf 'Source: `%s`\n\nBackend CI run: `%s`\n' "$RELEASE_SHA" "$BACKEND_RUN_ID"
+          } >> "$GITHUB_STEP_SUMMARY"
