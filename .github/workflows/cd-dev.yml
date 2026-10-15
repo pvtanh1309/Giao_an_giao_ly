@@ -113,6 +113,26 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
+      - name: Show OIDC identity for trust policy diagnosis
+        env:
+          DEPLOY_ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+        run: |
+          python3 - <<'PY'
+          import base64, json, os, urllib.request
+          print('Target role:', os.environ['DEPLOY_ROLE_ARN'])
+          print('Target environment:', os.environ['TARGET_ENV'])
+          url = os.environ['ACTIONS_ID_TOKEN_REQUEST_URL'] + '&audience=sts.amazonaws.com'
+          request = urllib.request.Request(url, headers={
+              'Authorization': 'Bearer ' + os.environ['ACTIONS_ID_TOKEN_REQUEST_TOKEN']
+          })
+          with urllib.request.urlopen(request, timeout=30) as response:
+              token = json.load(response)['value']
+          payload = token.split('.')[1]
+          claims = json.loads(base64.urlsafe_b64decode(payload + '=' * (-len(payload) % 4)))
+          # Display only identity claims; never print the JWT or request token.
+          print(json.dumps({key: claims.get(key) for key in ('iss', 'aud', 'sub')}, indent=2))
+          PY
+
       - name: Authenticate to AWS using OIDC
         uses: aws-actions/configure-aws-credentials@v5
         with:
