@@ -409,7 +409,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         onLogout={logout}
         onToggleMenu={() => setMobileMenu(!mobileMenu)}
       />
-
+ 
       <HeroSection onNavigate={navigateTo} />
       <StatsStrip
         lessonCount={dashboardMetrics.lessonCount}
