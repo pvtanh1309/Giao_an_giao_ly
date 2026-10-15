@@ -13,8 +13,11 @@ def main():
     if not base or set(base) == {"0"}:
         paths = ["."]
     else:
-        # PRs compare from the merge base; pushes compare the two event SHAs.
-        revision = f"{base}...{head}" if os.environ.get("DIFF_MODE") == "three-dot" else f"{base}..{head}"
+        if os.environ.get("DIFF MODE") == "three-dot":
+            revision = f"{base}...{head}"
+        else: 
+            revision = f"{base}..{head}"
+            
         result = subprocess.run(
             ["git", "diff", "--no-renames", "--name-only", "-z", revision],
             check=True,             

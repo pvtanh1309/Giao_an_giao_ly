@@ -1,4 +1,3 @@
-"""Small strict validators shared by request models."""
 from shared.errors import ApiError
 
 
