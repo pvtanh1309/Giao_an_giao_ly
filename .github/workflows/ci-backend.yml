@@ -6,7 +6,6 @@ on:
     paths: ["Backend/**", ".github/workflows/ci-backend.yml"]
   push:
     branches: [main]
-    paths: ["Backend/**", ".github/workflows/ci-backend.yml"]
   merge_group:
     branches: [main]
 
@@ -22,7 +21,9 @@ jobs:
     name: detect-changes
     runs-on: ubuntu-latest
     outputs:
-      relevant: ${{ steps.filter.outputs.backend }}
+      # CD checks out the whole app at this artifact's SHA, including Frontend.
+      # Every main push therefore needs its own tested release artifacts.
+      relevant: ${{ github.event_name == 'push' || steps.filter.outputs.backend == 'true' }}
     steps:
       - name: Check out source and history
         uses: actions/checkout@v7
