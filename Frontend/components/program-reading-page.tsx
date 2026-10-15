@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowLeft, Save, Trash2, X } from 'lucide-react'
 import type { Program } from '../lib/content-data'
-import { defaultProgramScheduleColumns, lessonPlans, programSchedule } from '../lib/content-data'
+import { defaultProgramScheduleColumns, lessonPlans } from '../lib/content-data'
 import { ProgramScheduleCellContent } from './program-schedule-cell-content'
 import { ProgramScheduleEditor } from './program-schedule-editor'
 import { getProgramScheduleCellGroup, isProgramScheduleCellCovered } from '../lib/program-schedule-merges'
@@ -26,7 +26,7 @@ export function ProgramReadingPage({ program, canManage, onSave, onDelete, onBac
     }, [program])
 
     const columns = (editing ? draft.scheduleColumns : program.scheduleColumns) ?? defaultProgramScheduleColumns
-    const schedule = (editing ? draft.schedule : program.schedule) ?? programSchedule
+    const schedule = (editing ? draft.schedule : program.schedule) ?? []
 
     return (
         <section className="program-reading-page" aria-label="Chi tiết chương trình học">

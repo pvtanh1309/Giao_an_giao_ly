@@ -1,0 +1,60 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "DiagnoseDevStageTagAuthorization",
+      "Effect": "Allow",
+      "Action": "apigateway:*",
+      "Resource": [
+        "arn:aws:apigateway:ap-southeast-1::/apis/urm5ushbn9/stages",
+        "arn:aws:apigateway:ap-southeast-1::/apis/tpithbrc0m/stages"
+      ]
+    },
+    {
+      "Sid": "ManageRegionalApiLogDelivery",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogDelivery",
+        "logs:GetLogDelivery",
+        "logs:UpdateLogDelivery",
+        "logs:DeleteLogDelivery",
+        "logs:ListLogDeliveries",
+        "logs:PutResourcePolicy",
+        "logs:DescribeResourcePolicies"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "ap-southeast-1"
+        }
+      }
+    },
+    {
+      "Sid": "TagNewDevEventSourceMappings",
+      "Effect": "Allow",
+      "Action": "lambda:TagResource",
+      "Resource": "arn:aws:lambda:ap-southeast-1:030540333236:event-source-mapping:*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Project": "giaoan",
+          "aws:RequestTag/Environment": "dev"
+        }
+      }
+    },
+    {
+      "Sid": "ManageDevUserPoolMfaConfig",
+      "Effect": "Allow",
+      "Action": [
+        "cognito-idp:GetUserPoolMfaConfig",
+        "cognito-idp:SetUserPoolMfaConfig"
+      ],
+      "Resource": "arn:aws:cognito-idp:ap-southeast-1:030540333236:userpool/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Project": "giaoan",
+          "aws:ResourceTag/Environment": "dev"
+        }
+      }
+    }
+  ]
+}

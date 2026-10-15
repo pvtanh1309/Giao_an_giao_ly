@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   BookOpen,
   CalendarDays,
@@ -34,18 +34,14 @@ import { ReferenceDirectory } from '../components/reference-directory'
 import { ReferenceReadingPage } from '../components/reference-reading-page'
 import { SystemAccountDirectory } from '../components/system-account-directory'
 import { AuthScreen } from '../components/auth-screen'
-import { useAuth } from '../components/auth-provider'
+import { useAuth, useUnauthorizedHandler } from '../components/auth-provider'
+import { getPublicConfig } from '../lib/config'
+import { createUsersApi } from '../lib/api/users'
+import { createAccountManagement } from '../lib/api/account-management'
 import {
-  catechists,
   createEmptyProgramScheduleRow,
   defaultProgramScheduleColumns,
-  defaultLessonScripture,
-  defaultLessonScriptureReference,
-  lessonCatalog,
   lessonPlans,
-  programSchedule,
-  programs,
-  systemAccounts,
   type AccountStatus,
   type Catechist,
   type CatechistStatus,
@@ -60,7 +56,13 @@ import { getDashboardMetrics } from '../lib/dashboard-metrics'
 import type { ReferenceCategory, ReferenceDocument } from '../lib/reference-content'
 
 export default function Page({ initialView = 'overview' }: { initialView?: 'overview' | 'lessons' | 'programs' | 'catechists' | 'accounts' }) {
-  const { status, user, logout } = useAuth()
+  const { status, user, logout, getAccessToken } = useAuth()
+  const onUnauthorized = useUnauthorizedHandler()
+  const accountService = useMemo(() => status === 'authenticated' ? createAccountManagement(createUsersApi({
+    config: getPublicConfig(), getAccessToken, onUnauthorized,
+  })) : null, [status, getAccessToken, onUnauthorized])
+  const [accountsLoading, setAccountsLoading] = useState(true)
+  const [accountsError, setAccountsError] = useState('')
   const [activeNav, setActiveNav] = useState(initialView === 'lessons' ? 'Giáo án' : initialView === 'programs' ? 'Chương trình học' : initialView === 'catechists' ? 'Giáo lý viên' : initialView === 'accounts' ? 'Tài khoản hệ thống' : 'Tổng quan')
   const [mobileMenu, setMobileMenu] = useState(false)
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null)
@@ -81,13 +83,13 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   const [editingLessonTime, setEditingLessonTime] = useState('45 phút')
   const [editingLevel, setEditingLevel] = useState(lessonPlans[0].level)
   const [editingSublevel, setEditingSublevel] = useState('')
-  const [editingSchedule, setEditingSchedule] = useState<ProgramScheduleRow[]>(programSchedule.map((row) => ({ ...row })))
+  const [editingSchedule, setEditingSchedule] = useState<ProgramScheduleRow[]>([])
   const [editingScheduleColumns, setEditingScheduleColumns] = useState<ProgramScheduleColumn[]>(defaultProgramScheduleColumns.map((column) => ({ ...column })))
-  const [lessonList, setLessonList] = useState<Lesson[]>(lessonCatalog.map((lesson) => ({ ...lesson, content: lesson.content ?? lesson.excerpt })))
-  const [programList, setProgramList] = useState<Program[]>(programs)
+  const [lessonList, setLessonList] = useState<Lesson[]>([])
+  const [programList, setProgramList] = useState<Program[]>([])
   const [adminNotice, setAdminNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const [catechistList, setCatechistList] = useState<Catechist[]>(catechists)
-  const [accountList, setAccountList] = useState<SystemAccount[]>(systemAccounts)
+  const [catechistList, setCatechistList] = useState<Catechist[]>([])
+  const [accountList, setAccountList] = useState<SystemAccount[]>([])
   const [lessonQuery, setLessonQuery] = useState('')
   const [referenceQuery, setReferenceQuery] = useState('')
   const [referenceList, setReferenceList] = useState<ReferenceDocument[]>([])
@@ -110,6 +112,30 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   const selectedReferenceForReading = referenceList.find((reference) => reference.id === selectedReferenceId)
   const selectedProgramForReading = programList.find((program) => program.id === selectedProgramId)
   const dashboardMetrics = getDashboardMetrics(lessonList)
+
+  useEffect(() => {
+    if (!accountService || initialView !== 'accounts' || user?.role !== 'admin') return
+    let active = true
+    setAccountsLoading(true)
+    setAccountsError('')
+    setAccountList([])
+    setCatechistList([])
+    void (async () => {
+      try {
+        const profiles = await accountService.listProfiles()
+        const accounts = await accountService.listAccounts(profiles)
+        if (active) {
+          setCatechistList(profiles)
+          setAccountList(accounts)
+        }
+      } catch (error) {
+        if (active) setAccountsError(error instanceof Error ? error.message : 'Không tải được danh sách tài khoản.')
+      } finally {
+        if (active) setAccountsLoading(false)
+      }
+    })()
+    return () => { active = false }
+  }, [accountService, initialView, user?.sub, user?.role])
 
   useEffect(() => {
     const syncSelectionFromUrl = () => {
@@ -427,7 +453,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
           setAdminEditingLabel(null);
           setEditingContent({ title: "", description: "", content: "" });
           setEditingLevel(lessonPlans[0].level);
-          setEditingLessonFields(createEmptyLessonStructuredContent(defaultLessonScripture, defaultLessonScriptureReference))
+          setEditingLessonFields(createEmptyLessonStructuredContent())
           setEditingLessonId(`draft-lesson-${Date.now()}`)
           setEditingLessonTag(`BÀI ${String(lessonList.length + 1).padStart(2, '0')}`)
           setEditingLessonTime('45 phút')
@@ -577,27 +603,29 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         <SystemAccountDirectory
           accounts={accountList}
           catechists={catechistList}
-          onCreate={(account) => {
-            setAccountList((items) => [
-              ...items,
-              {
-                id: `account-${Date.now()}`,
-                email: account.email.trim(),
-                role: account.role,
-                linkedCatechistEmail: account.role === 'editor' ? account.linkedCatechistEmail : undefined,
-                status: 'Hoạt động',
-                createdAt: new Intl.DateTimeFormat('vi-VN').format(new Date()),
-              },
-            ])
+          loading={accountsLoading}
+          loadError={accountsError}
+          onCreate={async (account) => {
+            if (!accountService) throw new Error('Cần đăng nhập để tạo tài khoản.')
+            const saved = await accountService.createAccount(account, catechistList)
+            setAccountList((items) => [...items.filter((item) => item.id !== saved.id), saved])
             setAdminNotice({ type: 'success', text: 'Đã cấp tài khoản mới. Mật khẩu không được hiển thị lại.' })
           }}
-          onResetPassword={(account) => setAdminNotice({ type: 'success', text: `Đã đặt lại mật khẩu cho ${account.email}.` })}
-          onUpdateStatus={(account, status: AccountStatus) => {
-            setAccountList((items) => items.map((item) => item.id === account.id ? { ...item, status } : item))
+          onResetPassword={async (account, password) => {
+            if (!accountService) throw new Error('Cần đăng nhập để đặt lại mật khẩu.')
+            await accountService.resetPassword(account, password)
+            setAdminNotice({ type: 'success', text: `Đã đặt lại mật khẩu cho ${account.email}.` })
+          }}
+          onUpdateStatus={async (account, status: AccountStatus) => {
+            if (!accountService) throw new Error('Cần đăng nhập để cập nhật tài khoản.')
+            const saved = await accountService.updateStatus(account, status, catechistList)
+            setAccountList((items) => items.map((item) => item.id === saved.id ? saved : item))
             setAdminNotice({ type: 'success', text: status === 'Đã lưu trữ' ? `Đã lưu trữ ${account.email} trong 10 ngày.` : `Đã cập nhật trạng thái ${account.email}.` })
           }}
-          onUpdateLink={(account, linkedCatechistEmail) => {
-            setAccountList((items) => items.map((item) => item.id === account.id ? { ...item, linkedCatechistEmail } : item))
+          onUpdateLink={async (account, linkedCatechistId) => {
+            if (!accountService) throw new Error('Cần đăng nhập để cập nhật liên kết.')
+            const saved = await accountService.updateLink(account, linkedCatechistId, catechistList)
+            setAccountList((items) => items.map((item) => item.id === saved.id ? saved : item))
             setAdminNotice({ type: 'success', text: `Đã cập nhật hồ sơ liên kết cho ${account.email}.` })
           }}
         />

@@ -12,6 +12,7 @@
 @import './styles/rich-text.css';
 @import './styles/catechist-admin.css';
 @import './styles/accounts.css';
+@import './styles/password-input.css';
 @import './styles/lesson-reading.css';
 @import './styles/program-reading.css';
 @import './styles/reference-reading.css';

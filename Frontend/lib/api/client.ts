@@ -11,6 +11,7 @@ export type ApiClientOptions = {
 
 export type ApiClient = {
     request<T>(path: string, init?: ApiRequestInit): Promise<T>
+    requestPage<T>(path: string): Promise<{ items: T[]; nextCursor?: string }>
 }
 
 type JsonRecord = Record<string, unknown>
@@ -48,59 +49,67 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
     const baseUrl = options.baseUrl.replace(/\/+$/, '')
     const fetchImpl = options.fetchImpl ?? fetch
 
-    return {
-        async request<T>(path: string, init: ApiRequestInit = {}): Promise<T> {
-            const accessToken = await options.getAccessToken()
-            const headers = new Headers(init.headers)
-            headers.set('Authorization', `Bearer ${accessToken}`)
+    async function request<T>(path: string, init: ApiRequestInit = {}, page = false): Promise<T> {
+        const accessToken = await options.getAccessToken()
+        const headers = new Headers(init.headers)
+        headers.set('Authorization', `Bearer ${accessToken}`)
 
-            const { body, ...requestInit } = init
-            let serializedBody: string | undefined
-            if (body !== undefined) {
-                headers.set('Content-Type', 'application/json')
-                serializedBody = JSON.stringify(body)
-            }
+        const { body, ...requestInit } = init
+        let serializedBody: string | undefined
+        if (body !== undefined) {
+            headers.set('Content-Type', 'application/json')
+            serializedBody = JSON.stringify(body)
+        }
 
-            let response: Response
-            try {
-                response = await fetchImpl(`${baseUrl}/${path.replace(/^\/+/, '')}`, {
-                    ...requestInit,
-                    headers,
-                    body: serializedBody,
-                })
-            } catch {
-                throw new ApiError({
-                    code: 'NETWORK_ERROR',
-                    message: 'Không thể kết nối đến máy chủ. Vui lòng thử lại.',
-                })
-            }
-
-            if (response.status === 204) return undefined as T
-
-            const payload = await readJson(response)
-            if (response.ok) {
-                if (!isRecord(payload) || !Object.hasOwn(payload, 'data')) {
-                    throw new ApiError({
-                        code: 'INVALID_RESPONSE',
-                        message: 'Máy chủ trả về dữ liệu không hợp lệ.',
-                        status: response.status,
-                        requestId: requestIdFrom(payload),
-                    })
-                }
-                return payload.data as T
-            }
-
-            if (response.status === 401) options.onUnauthorized()
-
-            const fallback = fallbackForStatus(response.status)
-            const errorPayload = isRecord(payload) && isRecord(payload.error) ? payload.error : null
-            throw new ApiError({
-                code: errorPayload && typeof errorPayload.code === 'string' ? errorPayload.code : fallback.code,
-                message: errorPayload && typeof errorPayload.message === 'string' ? errorPayload.message : fallback.message,
-                status: response.status,
-                details: errorPayload?.details,
-                requestId: requestIdFrom(payload),
+        let response: Response
+        try {
+            response = await fetchImpl(`${baseUrl}/${path.replace(/^\/+/, '')}`, {
+                ...requestInit,
+                headers,
+                body: serializedBody,
             })
-        },
+        } catch {
+            throw new ApiError({
+                code: 'NETWORK_ERROR',
+                message: 'Không thể kết nối đến máy chủ. Vui lòng thử lại.',
+            })
+        }
+
+        if (response.status === 204) return undefined as T
+
+        const payload = await readJson(response)
+        if (response.ok) {
+            if (!isRecord(payload) || !Object.hasOwn(payload, 'data')) {
+                throw new ApiError({
+                    code: 'INVALID_RESPONSE',
+                    message: 'Máy chủ trả về dữ liệu không hợp lệ.',
+                    status: response.status,
+                    requestId: requestIdFrom(payload),
+                })
+            }
+            if (page) {
+                if (!Array.isArray(payload.data)) {
+                    throw new ApiError({ code: 'INVALID_RESPONSE', message: 'Danh sách trả về không hợp lệ.' })
+                }
+                return { items: payload.data, nextCursor: isRecord(payload.meta) && typeof payload.meta.nextCursor === 'string' ? payload.meta.nextCursor : undefined } as T
+            }
+            return payload.data as T
+        }
+
+        if (response.status === 401) options.onUnauthorized()
+
+        const fallback = fallbackForStatus(response.status)
+        const errorPayload = isRecord(payload) && isRecord(payload.error) ? payload.error : null
+        throw new ApiError({
+            code: errorPayload && typeof errorPayload.code === 'string' ? errorPayload.code : fallback.code,
+            message: errorPayload && typeof errorPayload.message === 'string' ? errorPayload.message : fallback.message,
+            status: response.status,
+            details: errorPayload?.details,
+            requestId: requestIdFrom(payload),
+        })
+    }
+    return {
+        request,
+        requestPage: <T>(path: string) => request<{ items: T[]; nextCursor?: string }>(path, {}, true),
     }
 }

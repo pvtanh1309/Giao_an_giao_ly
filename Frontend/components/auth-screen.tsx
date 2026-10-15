@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import { useEffect, useState, type FormEvent } from 'react'
 
 import { useAuth } from './auth-provider'
+import { PasswordInput } from './password-input'
 
 export function AuthScreen() {
     const { status, error, login, completeNewPassword } = useAuth()
@@ -80,10 +81,12 @@ export function AuthScreen() {
                         </div>
                         <label>
                             Mật khẩu mới
-                            <input
+                            <PasswordInput
+                                key="new-password"
+                                visibilityLabel="mật khẩu mới"
                                 required
                                 minLength={8}
-                                type="password"
+                                disabled={submitting || systemUnavailable}
                                 autoComplete="new-password"
                                 value={newPassword}
                                 onChange={(event) => setNewPassword(event.target.value)}
@@ -91,10 +94,12 @@ export function AuthScreen() {
                         </label>
                         <label>
                             Xác nhận mật khẩu mới
-                            <input
+                            <PasswordInput
+                                key="confirm-new-password"
+                                visibilityLabel="xác nhận mật khẩu mới"
                                 required
                                 minLength={8}
-                                type="password"
+                                disabled={submitting || systemUnavailable}
                                 autoComplete="new-password"
                                 value={confirmation}
                                 onChange={(event) => setConfirmation(event.target.value)}
@@ -124,9 +129,11 @@ export function AuthScreen() {
                         </label>
                         <label>
                             Mật khẩu
-                            <input
+                            <PasswordInput
+                                key="login-password"
+                                visibilityLabel="mật khẩu đăng nhập"
                                 required
-                                type="password"
+                                disabled={submitting || systemUnavailable}
                                 autoComplete="current-password"
                                 value={password}
                                 onChange={(event) => setPassword(event.target.value)}

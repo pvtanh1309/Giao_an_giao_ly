@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createEmptyLessonSections, createLessonFromDraft } from '../lib/lesson-content.ts'
 import { getDashboardMetrics } from '../lib/dashboard-metrics.ts'
-import { createEmptyProgramScheduleRow, industryColorHex, lessonPlans, programs } from '../lib/content-data.ts'
+import { createEmptyProgramScheduleRow, industryColorHex, lessonPlans } from '../lib/content-data.ts'
 import { lessonEditorExtensions } from '../components/rich-text-extensions.ts'
 import { getProgramsForDirectIndustry, getProgramsForIndustry, getProgramsForSublevel } from '../lib/program-navigation.ts'
 
@@ -57,7 +57,7 @@ test('new program schedule rows use only that program’s configured columns', (
     assert.deepEqual(row.values, { 'meeting-date': '', 'leader-note': '' })
 })
 
-test('industry cards and program badges use the requested colors for their levels', () => {
+test('industry cards use the requested colors for their levels', () => {
     const expectedColors = {
         'Chiên con': 'pink',
         'Ấu nhi': 'green-light',
@@ -68,9 +68,6 @@ test('industry cards and program badges use the requested colors for their level
 
     for (const [level, color] of Object.entries(expectedColors)) {
         assert.equal(lessonPlans.find((industry) => industry.level === level)?.color, color)
-
-        const program = programs.find((item) => item.level === level)
-        if (program) assert.equal(program.color, color)
     }
 })
 
