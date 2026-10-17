@@ -37,6 +37,20 @@ export function createLessonFromDraft(draft: NewLessonDraft): Lesson {
     return { ...draft, content: '' }
 }
 
+/** Sort a copy so saving or publishing cannot change the displayed order. */
+export function sortLessonsByNumber(lessons: readonly Lesson[]): Lesson[] {
+    const number = (lesson: Lesson): number => {
+        const value = Number(lesson.tag.match(/\d+/)?.[0])
+        return Number.isSafeInteger(value) && value > 0 ? value : Number.POSITIVE_INFINITY
+    }
+    return [...lessons].sort((left, right) => {
+        const leftNumber = number(left), rightNumber = number(right)
+        if (leftNumber !== rightNumber) return leftNumber - rightNumber
+        return left.title.localeCompare(right.title, 'vi', { numeric: true })
+            || left.id.localeCompare(right.id)
+    })
+}
+
 export function getLessonSections(lesson: Lesson): LessonSection[] {
     const existing = lesson.sections ?? []
     return [

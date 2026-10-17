@@ -2,7 +2,7 @@
 
 import { ArrowRight, BookOpenText, Plus, Search } from 'lucide-react'
 import { industryColorHex, type Industry, type Lesson } from '../lib/content-data'
-import { getLessonSearchText } from '../lib/lesson-content'
+import { getLessonSearchText, sortLessonsByNumber } from '../lib/lesson-content'
 
 type LessonDirectoryProps = {
     canManage: boolean
@@ -27,11 +27,11 @@ export function LessonDirectory({
     onOpenLesson,
     onOpenReferences,
 }: LessonDirectoryProps) {
-    const matchingLessons = lessons.filter((lesson) =>
+    const matchingLessons = sortLessonsByNumber(lessons.filter((lesson) =>
         getLessonSearchText(lesson)
             .toLocaleLowerCase('vi')
             .includes(query.trim().toLocaleLowerCase('vi')),
-    )
+    ))
 
     return (
         <section id="lesson-plans" className="content-section">

@@ -2,6 +2,7 @@
 
 import { ArrowRight, BookOpen, X } from 'lucide-react'
 import type { Industry, Lesson } from '../lib/content-data'
+import { sortLessonsByNumber } from '../lib/lesson-content'
 
 type LessonBrowser = Pick<Industry, 'level' | 'subtitle'>
 
@@ -23,7 +24,7 @@ export function LessonDialogs({ browser, lessons, onCloseBrowser, onSelectLesson
                 <h2>Các bài giáo án</h2>
                 <p>Danh sách giáo án thuộc ngành {browser.level}.</p>
                 <div className="lesson-list">
-                    {lessons.map((lesson) => <div className="lesson-list-item" key={lesson.id}>
+                    {sortLessonsByNumber(lessons).map((lesson) => <div className="lesson-list-item" key={lesson.id}>
                         <button className="lesson-list-card" onClick={() => onSelectLesson(lesson)}>
                             <span className="lesson-list-number">{lesson.tag}</span>
                             <span className="lesson-list-copy"><strong>{lesson.title}</strong><small>{lesson.excerpt}</small></span>
