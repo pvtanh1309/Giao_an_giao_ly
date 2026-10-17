@@ -107,6 +107,9 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   const [programList, setProgramList] = useState<Program[]>([])
   const [adminNotice, setAdminNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [catechistList, setCatechistList] = useState<Catechist[]>([])
+  const [catechistsLoading, setCatechistsLoading] = useState(true)
+  const [catechistsError, setCatechistsError] = useState('')
+  const [catechistsReload, setCatechistsReload] = useState(0)
   const [accountList, setAccountList] = useState<SystemAccount[]>([])
   const [lessonQuery, setLessonQuery] = useState('')
   const [referenceQuery, setReferenceQuery] = useState('')
@@ -204,6 +207,20 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
       setContentBusy(false)
     }
   }
+
+  useEffect(() => {
+    let active = true
+    setCatechistList([])
+    setCatechistsError('')
+    setCatechistsLoading(true)
+    if (!accountService || initialView !== 'catechists') return
+    void accountService.listProfiles().then((profiles) => {
+      if (active) setCatechistList(profiles)
+    }).catch((error) => {
+      if (active) setCatechistsError(error instanceof Error ? error.message : 'Không tải được danh sách giáo lý viên.')
+    }).finally(() => { if (active) setCatechistsLoading(false) })
+    return () => { active = false }
+  }, [accountService, initialView, user?.sub, user?.role, catechistsReload])
 
   useEffect(() => {
     if (!accountService || initialView !== 'accounts' || user?.role !== 'admin') return
@@ -454,9 +471,33 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
     setAdminEditingLabel(null)
   }
 
-  const handleDeleteAdminEditor = () => {
+  const runProfileAction = async (action: () => Promise<void>, message: string): Promise<boolean> => {
+    if (contentInFlight.current || !accountService || !['admin', 'editor'].includes(user?.role ?? '')) return false
+    contentInFlight.current = true
+    setContentBusy(true)
+    setAdminNotice(null)
+    try {
+      await action()
+      setAdminNotice({ type: 'success', text: message })
+      return true
+    } catch (error) {
+      setAdminNotice({ type: 'error', text: error instanceof Error ? error.message : 'Không thể lưu hồ sơ giáo lý viên. Hãy thử lại.' })
+      return false
+    } finally {
+      contentInFlight.current = false
+      setContentBusy(false)
+    }
+  }
+
+  const deleteCatechist = (profile: Catechist) => runProfileAction(async () => {
+    await accountService!.archiveProfile(profile)
+    setCatechistList((items) => items.filter((item) => item.id !== profile.id))
+  }, `Đã lưu trữ giáo lý viên ${profile.name} trên máy chủ.`)
+
+  const handleDeleteAdminEditor = async () => {
     if (adminEditor === 'catechist' && adminEditingLabel) {
-      setCatechistList((items) => items.filter((item) => item.name !== adminEditingLabel))
+      if (await deleteCatechist(editingCatechist)) closeAdminEditor()
+      return
     }
     setAdminNotice({
       type: 'success',
@@ -493,19 +534,14 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
       return
     }
     if (adminEditor === 'catechist') {
-      setCatechistList((items) =>
-        adminEditingLabel
-          ? items.map((item) =>
-            item.name === adminEditingLabel ? { ...item, ...editingCatechist } : item,
-          )
-          : [...items, editingCatechist],
-      )
+      const saved = await runProfileAction(async () => {
+        const profile = await accountService!.saveProfile(editingCatechist)
+        setCatechistList((items) => [...items.filter((item) => item.id !== profile.id), profile]
+          .sort((a, b) => a.name.localeCompare(b.name, 'vi')))
+      }, `${adminEditingLabel ? 'Đã cập nhật' : 'Đã thêm'} giáo lý viên trên máy chủ.`)
+      if (saved) closeAdminEditor()
+      return
     }
-    setAdminNotice({
-      type: 'success',
-      text: `${adminEditingLabel ? 'Đã cập nhật' : 'Đã thêm'} giáo lý viên thành công.`,
-    })
-    closeAdminEditor()
   }
 
   if (status === 'loading') {
@@ -661,6 +697,10 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
       {initialView === "catechists" && (
         <CatechistDirectory
           canManage={currentUser === 'admin' || currentUser === 'editor'}
+          loading={catechistsLoading}
+          busy={contentBusy}
+          loadError={catechistsError}
+          onRetry={() => setCatechistsReload((value) => value + 1)}
           catechists={matchingCatechists}
           query={catechistQuery}
           onQueryChange={setCatechistQuery}
@@ -681,15 +721,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
             setEditingCatechist(catechist);
             setAdminEditor("catechist");
           }}
-          onDelete={(catechist) => {
-            setCatechistList((items) =>
-              items.filter((item) => item.email !== catechist.email),
-            );
-            setAdminNotice({
-              type: "success",
-              text: `Đã xóa giáo lý viên ${catechist.name}.`,
-            });
-          }}
+          onDelete={(catechist) => { void deleteCatechist(catechist) }}
         />
       )}
 

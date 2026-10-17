@@ -34,10 +34,12 @@ def version(payload):
 
 
 def validate_payload(payload, updating=False):
-    fields(payload, {'name', 'email', 'phone', 'group', 'status'} | ({'version'} if updating else set()))
+    fields(payload, {'name', 'email', 'phone', 'group', 'accompanyingClass', 'status'} | ({'version'} if updating else set()))
     result = {'name': text(payload, 'name', 200), 'email': email(payload),
               'phone': text(payload, 'phone', 32, False), 'group': text(payload, 'group', 100, False),
               'status': payload.get('status', 'ACTIVE')}
+    if 'accompanyingClass' in payload:
+        result['accompanyingClass'] = text(payload, 'accompanyingClass', 100, False)
     if result['phone'] and not re.fullmatch(r'\+?[0-9 ()\-]{7,32}', result['phone']):
         invalid('phone')
     if result['status'] not in ('ACTIVE', 'PAUSED', 'INACTIVE'):

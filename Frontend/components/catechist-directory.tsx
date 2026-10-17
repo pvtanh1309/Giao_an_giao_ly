@@ -6,6 +6,10 @@ import type { Catechist } from '../lib/content-data'
 
 type CatechistDirectoryProps = {
     canManage: boolean
+    loading?: boolean
+    busy?: boolean
+    loadError?: string
+    onRetry?: () => void
     catechists: Catechist[]
     query: string
     onQueryChange: (query: string) => void
@@ -16,6 +20,10 @@ type CatechistDirectoryProps = {
 
 export function CatechistDirectory({
     canManage,
+    loading = false,
+    busy = false,
+    loadError = '',
+    onRetry,
     catechists,
     query,
     onQueryChange,
@@ -26,7 +34,7 @@ export function CatechistDirectory({
     const [expandedCatechistEmail, setExpandedCatechistEmail] = useState<string | null>(null)
 
     return (
-        <section className="catechists-section">
+        <section className="catechists-section" aria-busy={loading || busy} inert={busy}>
             <div className="section-heading">
                 <div>
                     <span className="section-kicker">Cộng đoàn phục vụ</span>
@@ -45,7 +53,7 @@ export function CatechistDirectory({
                         />
                     </label>
                     {canManage ? (
-                        <button className="outline-button" onClick={onAdd}>
+                        <button className="outline-button" disabled={loading || Boolean(loadError)} onClick={onAdd}>
                             <Plus size={16} /> Thêm giáo lý viên
                         </button>
                     ) : (
@@ -55,9 +63,11 @@ export function CatechistDirectory({
                     )}
                 </div>
             </div>
-            <div className="catechist-grid">
+            {loading && <p role="status">Đang tải danh sách giáo lý viên…</p>}
+            {loadError && <div role="alert"><p>{loadError}</p><button type="button" className="outline-button" onClick={onRetry}>Thử tải lại</button></div>}
+            {!loading && !loadError && <div className="catechist-grid">
                 {catechists.map((catechist) => (
-                    <article className="catechist-card" key={catechist.email}>
+                    <article className="catechist-card" key={catechist.id ?? catechist.email}>
                         <div className="catechist-avatar" aria-hidden="true">
                             {catechist.name.split(' ').map((part) => part[0]).slice(-2).join('')}
                         </div>
@@ -96,7 +106,7 @@ export function CatechistDirectory({
                     </article>
                 ))}
                 {!catechists.length && <p>Không tìm thấy giáo lý viên phù hợp.</p>}
-            </div>
+            </div>}
         </section>
     )
 }

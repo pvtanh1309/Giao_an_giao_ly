@@ -109,12 +109,15 @@ Mỗi chương trình tự định nghĩa `scheduleColumns`; không dùng bộ c
   "email": "lan@example.com",
   "phone": "0901234567",
   "group": "Ấu Nhi",
+  "accompanyingClass": "Thiếu 2",
   "status": "ACTIVE",
   "version": 1
 }
 ```
 
 `status` nhận `ACTIVE`, `PAUSED`, `INACTIVE`. Hồ sơ có `catechistId` do backend sinh; không dùng Cognito `sub` làm ID vì reader không có hồ sơ, còn account Editor chỉ liên kết với hồ sơ.
+
+Frontend dùng `group` cho **lớp chủ nhiệm**, `accompanyingClass` cho **lớp đồng hành**. Cả hai là chuỗi tùy chọn, tối đa 100 ký tự. Hồ sơ cũ không có `accompanyingClass` hiển thị lớp đồng hành trống; request cập nhật không gửi trường này vẫn giữ giá trị cũ. Tạo hồ sơ không gửi `version`; cập nhật phải gửi `version` của hồ sơ đã đọc gần nhất.
 
 ## 4. Route đọc — mọi vai trò đã đăng nhập
 

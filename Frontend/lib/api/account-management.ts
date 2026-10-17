@@ -23,12 +23,22 @@ type ProfileDto = {
     email: string
     phone: string
     group: string
+    accompanyingClass?: string
     status: 'ACTIVE' | 'PAUSED' | 'INACTIVE'
     version: number
 }
 
 const statusLabels: Record<AccountDto['accountStatus'], AccountStatus> = {
     ACTIVE: 'Hoạt động', DISABLED: 'Vô hiệu hóa', DELETED: 'Đã lưu trữ',
+}
+
+function profileView(profile: ProfileDto): Catechist {
+    return {
+        id: profile.catechistId, version: profile.version,
+        name: profile.name, email: profile.email, phone: profile.phone,
+        homeroomClass: profile.group, accompanyingClass: profile.accompanyingClass ?? '',
+        status: profile.status === 'ACTIVE' ? 'Còn hoạt động' : profile.status === 'PAUSED' ? 'Tạm nghỉ' : 'Đã nghỉ',
+    }
 }
 
 function accountView(item: AccountDto, profiles: Catechist[]): SystemAccount {
@@ -67,12 +77,25 @@ export function createAccountManagement(api: ApiClient) {
     }
     return {
         async listProfiles(): Promise<Catechist[]> {
-            return (await listAll<ProfileDto>('/catechists')).map((profile) => ({
-                id: profile.catechistId, version: profile.version,
-                name: profile.name, email: profile.email, phone: profile.phone,
-                homeroomClass: profile.group, accompanyingClass: '',
-                status: profile.status === 'ACTIVE' ? 'Còn hoạt động' : profile.status === 'PAUSED' ? 'Tạm nghỉ' : 'Đã nghỉ',
-            }))
+            return (await listAll<ProfileDto>('/catechists')).map(profileView)
+        },
+        async saveProfile(profile: Catechist): Promise<Catechist> {
+            if (profile.id && (!Number.isInteger(profile.version) || Number(profile.version) < 1)) throw new Error('Hồ sơ thiếu phiên bản. Hãy tải lại danh sách.')
+            const item = await api.request<ProfileDto>(`/manage/catechists${profile.id ? `/${encodeURIComponent(profile.id)}` : ''}`, {
+                method: profile.id ? 'PUT' : 'POST',
+                body: {
+                    name: profile.name.trim(), email: profile.email.trim(), phone: profile.phone.trim(),
+                    group: profile.homeroomClass.trim(), accompanyingClass: profile.accompanyingClass.trim(),
+                    status: profile.status === 'Còn hoạt động' ? 'ACTIVE' : profile.status === 'Tạm nghỉ' ? 'PAUSED' : 'INACTIVE',
+                    ...(profile.id ? { version: profile.version } : {}),
+                },
+            })
+            if (!item.catechistId || !Number.isInteger(item.version)) throw new Error('Máy chủ trả về hồ sơ không hợp lệ. Hãy tải lại danh sách.')
+            return profileView(item)
+        },
+        async archiveProfile(profile: Catechist) {
+            if (!profile.id) throw new Error('Hồ sơ chưa được lưu trên máy chủ.')
+            await api.request(`/manage/catechists/${encodeURIComponent(profile.id)}`, { method: 'DELETE' })
         },
         async listAccounts(profiles: Catechist[]) {
             return (await listAll<AccountDto>('/admin/accounts')).map((item) => accountView(item, profiles))

@@ -96,7 +96,7 @@ export function AdminEditorDialog({
                 <h2>{editingLabel ? `Sửa ${title}` : `Thêm ${title}`}</h2>
                 <p>
                     {editor === 'catechist'
-                        ? 'Cập nhật thông tin đội ngũ phục vụ. Dữ liệu hiện chỉ lưu trong phiên frontend.'
+                        ? 'Cập nhật thông tin đội ngũ phục vụ. Thay đổi được lưu trên máy chủ.'
                         : 'Lưu bản nháp vào thư viện. Xuất bản khi nội dung đã sẵn sàng cho người đọc.'}
                 </p>
                 <label>
