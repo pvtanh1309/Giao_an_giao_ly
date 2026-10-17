@@ -1,17 +1,16 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
-import { clampLessonImageWidth, lessonImageWidths } from '../lib/lesson-media.ts'
+import { clampLessonImageWidth } from '../lib/lesson-media.ts'
 import { lessonEditorExtensions } from '../components/rich-text-extensions.ts'
 
 const source = async (path) => readFile(new URL(path, import.meta.url), 'utf8')
 
-test('lesson images default to 220px and stay within supported size choices', () => {
-    assert.deepEqual(lessonImageWidths, [140, 220, 320])
+test('lesson images default to 220px and preserve custom pixel widths', () => {
     assert.equal(clampLessonImageWidth(undefined), 220)
-    assert.equal(clampLessonImageWidth(75), 140)
-    assert.equal(clampLessonImageWidth(255), 220)
-    assert.equal(clampLessonImageWidth(900), 320)
+    assert.equal(clampLessonImageWidth(75), 75)
+    assert.equal(clampLessonImageWidth(255), 255)
+    assert.equal(clampLessonImageWidth(900), 900)
 })
 
 test('inline lesson images are responsive and expose accessible zoom activation', async () => {

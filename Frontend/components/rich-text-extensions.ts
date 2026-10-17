@@ -5,6 +5,8 @@ import { FontSize } from '@tiptap/extension-text-style/font-size'
 import TextAlign from '@tiptap/extension-text-align'
 import { TextStyle } from '@tiptap/extension-text-style'
 import StarterKit from '@tiptap/starter-kit'
+import { clampLessonImageWidth } from '../lib/lesson-media.ts'
+import { lessonImageNodeView } from './lesson-image-node-view.ts'
 
 const Column = Node.create({
     name: 'column',
@@ -72,17 +74,13 @@ const Indent = Extension.create({
     },
 })
 
-const clampImageWidth = (width: number) => [140, 220, 320].reduce((closest, candidate) =>
-    Math.abs(candidate - width) < Math.abs(closest - width) ? candidate : closest,
-    220,
-)
-
 const LessonImage = Node.create({
     name: 'image',
     group: 'inline',
     inline: true,
     draggable: true,
     atom: true,
+    addNodeView: () => lessonImageNodeView,
     addAttributes() {
         return {
             mediaId: {
@@ -114,7 +112,7 @@ const LessonImage = Node.create({
     },
     parseHTML: () => [{ tag: 'img[data-lesson-image]' }],
     renderHTML: ({ HTMLAttributes }) => {
-        const width = clampImageWidth(Number(HTMLAttributes['data-width']))
+        const width = clampLessonImageWidth(Number(HTMLAttributes['data-width']))
         const alignment = HTMLAttributes['data-alignment'] ?? 'center'
         return ['img', mergeAttributes(HTMLAttributes, {
             'data-lesson-image': 'true',

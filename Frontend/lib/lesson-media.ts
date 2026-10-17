@@ -1,14 +1,13 @@
 import type { JSONContent } from '@tiptap/react'
 
 export const maxLessonImageBytes = 5 * 1024 * 1024
-export const lessonImageWidths = [140, 220, 320] as const
+export const minLessonImageWidth = 40
+export const maxLessonImageWidth = 1600
 const acceptedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp'])
 
 export function clampLessonImageWidth(width: number | undefined | null): number {
     if (!Number.isFinite(width)) return 220
-    return lessonImageWidths.reduce((closest, candidate) =>
-        Math.abs(candidate - Number(width)) < Math.abs(closest - Number(width)) ? candidate : closest,
-    220)
+    return Math.min(maxLessonImageWidth, Math.max(minLessonImageWidth, Math.round(Number(width))))
 }
 
 export type LessonImageValidation = { ok: true } | { ok: false; reason: string }

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useEditorState, type Editor } from '@tiptap/react'
-import { lessonImageWidths, uploadLessonImage } from '../lib/lesson-media'
+import { clampLessonImageWidth, minLessonImageWidth, maxLessonImageWidth, uploadLessonImage } from '../lib/lesson-media'
 
 type RichTextToolbarProps = {
     editor: Editor
@@ -178,9 +178,23 @@ export function RichTextToolbar({ editor, mode = 'lesson', lessonId, getAccessTo
                 />
                 {!lessonId && <span className="lesson-image-upload-status">Lưu nháp giáo án trước khi chèn ảnh.</span>}
                 {editor.isActive('image') && <>
-                    <select aria-label="Kích thước ảnh" value={editor.getAttributes('image').width ?? 220} onChange={(event) => editor.chain().focus().updateAttributes('image', { width: Number(event.target.value) }).run()}>
-                        {lessonImageWidths.map((width) => <option key={width} value={width}>{width}px</option>)}
-                    </select>
+                    <label className="lesson-image-width">Rộng
+                        <input
+                            key={`${formatting.image?.mediaId}:${formatting.image?.width}`}
+                            type="number" aria-label="Kích thước ảnh" title="Chiều rộng ảnh (40–1600 px)"
+                            min={minLessonImageWidth} max={maxLessonImageWidth} step={1}
+                            defaultValue={formatting.image?.width ?? 220}
+                            onBlur={(event) => {
+                                const value = event.currentTarget.valueAsNumber
+                                const width = clampLessonImageWidth(value)
+                                event.currentTarget.value = String(width)
+                                if (!editor.isDestroyed && editor.isActive('image')) editor.commands.updateAttributes('image', { width })
+                            }}
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur(); editor.commands.focus() }
+                            }}
+                        />px
+                    </label>
                     <select aria-label="Căn lề ảnh" value={editor.getAttributes('image').alignment ?? 'center'} onChange={(event) => editor.chain().focus().updateAttributes('image', { alignment: event.target.value }).run()}>
                         <option value="left">Trái</option><option value="center">Giữa</option><option value="right">Phải</option>
                     </select>

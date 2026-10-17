@@ -52,7 +52,7 @@ def _attrs(kind, attrs):
             bad("mediaId không hợp lệ.")
         if name == "alt" and (not isinstance(value, str) or len(value) > 500):
             bad("Alt không hợp lệ.")
-        if name == "width" and (type(value) is not int or value not in {140, 220, 320}):
+        if name == "width" and (type(value) is not int or not 40 <= value <= 1600):
             bad("Kích thước ảnh không hợp lệ.")
         if name == "alignment" and value not in {"left", "center", "right"}:
             bad("Căn ảnh không hợp lệ.")
