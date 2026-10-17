@@ -157,6 +157,30 @@
   line-height: 1.35;
 }
 
+/* Each column starts at the same inset, including headings and saved lists.
+   Keep block margins inside the column instead of collapsing through it. */
+.rich-text-content .tiptap .rich-text-column {
+  display: flow-root;
+}
+
+.rich-text-content .tiptap .rich-text-column > :first-child {
+  margin-top: 0;
+}
+
+.rich-text-content .tiptap .rich-text-column > :last-child {
+  margin-bottom: 0;
+}
+
+.rich-text-content .tiptap .rich-text-column > ul,
+.rich-text-content .tiptap .rich-text-column > ol {
+  margin-block: 0 10px;
+  padding-inline-start: 1.5em;
+}
+
+.rich-text-content .tiptap .rich-text-column li > p {
+  margin-block: 0;
+}
+
 .rich-text-content .tiptap hr {
   margin: 16px 0;
   border: 0;

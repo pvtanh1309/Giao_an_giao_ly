@@ -6,6 +6,7 @@ import type { Lesson, LessonProgressionStep, LessonSection } from '../lib/conten
 import { lessonPlans } from '../lib/content-data'
 import { getLessonSections } from '../lib/lesson-content'
 import { LessonRichTextEditor } from './lesson-rich-text-editor'
+import { LessonPreparationField } from './lesson-preparation-field'
 
 export type LessonReadingPageProps = {
     lesson: Lesson
@@ -49,7 +50,6 @@ export function LessonReadingPage({ lesson, canManage, onSave, onPublish, onDele
             <div className="reading-toolbar">
                 <button className="secondary-button" onClick={onBack}><ArrowLeft size={16} /> Danh sách giáo án</button>
                 {canManage && !editing && <button className="outline-button" onClick={() => setEditing(true)}>Chỉnh sửa trực tiếp</button>}
-                {canManage && !editing && lesson.hasDraft && <button className="primary-button" onClick={() => onPublish(lesson)}>Xuất bản</button>}
                 {canManage && editing && <div className="reading-actions">
                     <button className="secondary-button" onClick={() => { setDraft(lesson); setEditing(false) }}><X size={16} /> Hủy</button>
                     <button className="primary-button" onClick={async () => { if (await onSave({ ...draft, sections })) setEditing(false) }}><Save size={16} /> Lưu nháp</button>
@@ -57,8 +57,12 @@ export function LessonReadingPage({ lesson, canManage, onSave, onPublish, onDele
                 </div>}
             </div>
 
+            {canManage && lesson.hasDraft && <aside className="lesson-draft-notice" aria-label="Trạng thái xuất bản">
+                <p role="status">Bản nháp đã lưu. Xuất bản để tài khoản Reader đọc được.</p>
+                {!editing && <button className="primary-button" onClick={() => onPublish(lesson)}>Xuất bản</button>}
+            </aside>}
+
             <article className="lesson-reading-paper">
-                {canManage && lesson.hasDraft && <p role="status">Bản nháp đã lưu. Xuất bản để tài khoản Reader đọc được.</p>}
                 <header className="lesson-reading-header">
                     <div className="lesson-reading-scripture">
                         {editing ? <>
@@ -82,7 +86,7 @@ export function LessonReadingPage({ lesson, canManage, onSave, onPublish, onDele
                 <div className="lesson-reading-intro">
                     {richField('Ý chính', (editing ? draft : lesson).keyPoints, (value) => update({ keyPoints: value }))}
                     {richField('Tâm tình', (editing ? draft : lesson).sentiment, (value) => update({ sentiment: value }))}
-                    {richField('Chuẩn bị', (editing ? draft : lesson).preparation, (value) => update({ preparation: value }))}
+                    <LessonPreparationField key={`${lesson.id}-${editing ? 'edit' : 'view'}`} content={(editing ? draft : lesson).preparation} editable={editing} lessonId={lesson.id} getAccessToken={getAccessToken} onUploadStateChange={onUploadStateChange} onChange={(preparation) => update({ preparation })} />
                 </div>
 
                 <section className="lesson-progression">
@@ -112,19 +116,6 @@ export function LessonReadingPage({ lesson, canManage, onSave, onPublish, onDele
                     </section>)}
                 </div>
 
-                {(editing || lesson.content?.trim()) && <section className="lesson-legacy-content">
-                    <h2>Nội dung hiện có</h2>
-                    <LessonRichTextEditor
-                        key={`legacy-${editing ? 'edit' : 'view'}`}
-                        ariaLabel="Nội dung hiện có"
-                        content={editing ? draft.content : lesson.content}
-                        editable={editing}
-                        lessonId={lesson.id}
-                        getAccessToken={getAccessToken}
-                        onUploadStateChange={onUploadStateChange}
-                        onChange={(content) => update({ content })}
-                    />
-                </section>}
             </article>
         </section>
     )

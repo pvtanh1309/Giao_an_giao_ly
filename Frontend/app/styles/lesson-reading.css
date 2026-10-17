@@ -17,6 +17,22 @@
 .reading-actions { justify-content: flex-end; flex-wrap: wrap; }
 .reading-toolbar button { min-height: 42px; }
 
+.lesson-draft-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 12px 16px;
+  border: 1px solid #e5d6b7;
+  border-radius: 8px;
+  background: #fff7e6;
+  color: #705525;
+}
+.lesson-draft-notice p { flex: 1 1 240px; margin: 0; font-size: 14px; line-height: 1.5; }
+.lesson-draft-notice button { flex-shrink: 0; min-height: 42px; }
+
 .lesson-reading-paper,
 .program-reading-paper {
   padding: clamp(26px, 5vw, 64px);
@@ -27,9 +43,11 @@
 
 .lesson-reading-paper { font: 17px/1.82 var(--font-sans), Arial, sans-serif; }
 .lesson-reading-header { text-align: center; padding: 0 0 30px; border-bottom: 1px solid #e8e1d5; }
-.lesson-reading-scripture { max-width: 760px; margin: 0 auto 24px; color: #795052; text-align: left; }
+.lesson-reading-scripture { max-width: 760px; margin: 0 auto 24px; color: #795052; text-align: center; }
 .lesson-reading-scripture blockquote { margin: 0 0 5px; font: italic 20px/1.55 var(--font-sans), Arial, sans-serif; }
-.lesson-reading-scripture cite { display: block; text-align: right; font-size: 15px; }
+.lesson-reading-scripture cite { display: block; text-align: center; font-size: 15px; }
+.lesson-reading-scripture textarea,
+.lesson-reading-scripture input { text-align: center; }
 .lesson-reading-scripture textarea,
 .lesson-reading-scripture input,
 .lesson-reading-metadata input,
@@ -56,6 +74,8 @@
 .lesson-progression h2,
 .lesson-legacy-content h2 { margin: 0 0 8px; color: #8d4d51; }
 .lesson-reading-field h3 { font-size: 19px; }
+.lesson-optional-field-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.lesson-optional-field-heading h3 { margin: 0; }
 .lesson-reading-page .rich-text-editor,
 .lesson-reading-page .rich-text-content { font: inherit; }
 .lesson-reading-page .rich-text-editor.is-readonly { border: 0; background: transparent; }

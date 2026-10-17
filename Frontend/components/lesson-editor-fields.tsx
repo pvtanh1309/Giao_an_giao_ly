@@ -4,6 +4,7 @@ import { Plus, Trash2 } from 'lucide-react'
 import type { LessonStructuredContent } from '../lib/lesson-content'
 import { lessonSectionTitles } from '../lib/lesson-content'
 import { LessonRichTextEditor } from './lesson-rich-text-editor'
+import { LessonPreparationField } from './lesson-preparation-field'
 
 type LessonEditorFieldsProps = {
     description: string
@@ -52,11 +53,11 @@ export function LessonEditorFields({
             {([
                 ['Ý chính', 'keyPoints'],
                 ['Tâm tình', 'sentiment'],
-                ['Chuẩn bị', 'preparation'],
             ] as const).map(([label, key]) => <section className="lesson-reading-field" key={key}>
                 <h3>{label}</h3>
                 <LessonRichTextEditor ariaLabel={label} content={fields[key]} lessonId={lessonId} getAccessToken={getAccessToken} onChange={(value) => update({ [key]: value })} />
             </section>)}
+            <LessonPreparationField content={fields.preparation} lessonId={lessonId} getAccessToken={getAccessToken} onChange={(preparation) => update({ preparation })} />
             <section className="lesson-progression">
                 <h2>Gợi ý tiến trình lên lớp</h2>
                 <button type="button" className="outline-button" onClick={() => update({ progression: [...fields.progression, { teacherActivity: '', learnerActivity: '' }] })}><Plus size={15} /> Thêm bước</button>
