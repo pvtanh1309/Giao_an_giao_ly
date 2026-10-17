@@ -31,7 +31,7 @@ data "aws_iam_policy_document" "lambda" {
             "dynamodb:DeleteItem",
             "dynamodb:ConditionCheckItem"
         ]
-        resources = "${var.table_arn}"
+        resources = [var.table_arn]
     }
 
     statement {
@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "lambda" {
             "dynamodb:GetRecords",
             "dynamodb:GetShardIterator",
       ]
-      resources = "${var.stream_arn}"
+      resources = [var.stream_arn]
     }
 
     statement {
@@ -60,7 +60,7 @@ data "aws_iam_policy_document" "lambda" {
       actions = [
         "dynamodb:ListStreams"
       ]
-      resources = "*"
+      resources = ["*"]
     }
 
     statement {
@@ -68,7 +68,7 @@ data "aws_iam_policy_document" "lambda" {
       actions = [
         "sqs:SendMessage"
       ]
-      resources = aws_sqs_queue.stream_failures.arn
+      resources = [aws_sqs_queue.stream_failures.arn]
     }
 
     statement {
@@ -80,7 +80,7 @@ data "aws_iam_policy_document" "lambda" {
         "s3:DeleteObject", 
         "s3:DeleteObjectVersion"
       ]
-      resources = "${var.app_bucket_arn}/lesson-media/*"
+      resources = ["${var.app_bucket_arn}/lesson-media/*"]
     }
 
     statement {
@@ -88,7 +88,7 @@ data "aws_iam_policy_document" "lambda" {
       actions = [
         "s3:ListBucketVersions"
       ]
-      resources = "${var.app_bucket_arn}"
+      resources = [var.app_bucket_arn]
       condition {
         test = "StringLike"
         variable = "s3:prefix"
