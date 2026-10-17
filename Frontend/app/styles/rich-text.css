@@ -1,11 +1,15 @@
 .rich-text-editor {
-  overflow: hidden;
+  /* Clip rounded corners without creating a scroll container for the toolbar. */
+  overflow: clip;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--paper);
 }
 
 .rich-text-toolbar {
+  position: sticky;
+  top: var(--rich-text-toolbar-top, calc(var(--site-header-height, 76px) + 1px));
+  z-index: 10;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -13,6 +17,12 @@
   padding: 8px;
   border-bottom: 1px solid var(--line);
   background: #f7f5f0;
+  box-shadow: 0 2px 4px rgba(24, 39, 53, .08);
+}
+
+.admin-editor-modal,
+.schedule-format-dialog {
+  --rich-text-toolbar-top: 0px;
 }
 
 .rich-text-toolbar button {
@@ -156,6 +166,16 @@
 }
 
 @media (max-width: 600px) {
+  .rich-text-toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+  }
+
+  .rich-text-toolbar > * {
+    flex-shrink: 0;
+  }
 
   .rich-text-content .tiptap .rich-text-columns,
   .rich-text-content .tiptap .rich-text-columns[data-columns="3"] {

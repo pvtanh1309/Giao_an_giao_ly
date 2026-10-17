@@ -82,8 +82,9 @@ button {
 }
 
 .site-shell {
+  --site-header-height: 76px;
   min-height: 100vh;
-  overflow: hidden;
+  overflow-x: clip;
   background:
     radial-gradient(ellipse at 8% 20%, rgba(var(--accent-teal-rgb), .07), transparent 38%),
     radial-gradient(ellipse at 92% 48%, rgba(var(--accent-coral-rgb), .055), transparent 34%),
@@ -101,7 +102,7 @@ button {
 
 .topbar-inner {
   max-width: 1180px;
-  height: 76px;
+  height: var(--site-header-height);
   margin: auto;
   padding: 0 28px;
   display: flex;

@@ -103,6 +103,33 @@ def test_tiptap_frontend_subset():
     assert validate_document(doc) == doc
 
 
+@pytest.mark.parametrize('node', [
+    {'type': 'hardBreak', 'marks': [{'type': 'textStyle', 'attrs': {'fontSize': '24px'}}]},
+    {'type': 'hardBreak', 'marks': [{'type': 'bold'}, {'type': 'italic'}, {'type': 'underline'}]},
+    {'type': 'image', 'attrs': {'mediaId': 'media_abc', 'width': 220},
+     'marks': [{'type': 'textStyle', 'attrs': {'color': '#000000'}}]},
+])
+def test_tiptap_accepts_formatting_on_inline_nodes(node):
+    doc = {'type': 'doc', 'content': [{'type': 'paragraph', 'content': [node]}]}
+    assert validate_document(doc, allow_images=True) == doc
+
+
+@pytest.mark.parametrize('node', [
+    {'type': 'hardBreak', 'marks': 'bold'},
+    {'type': 'hardBreak', 'marks': [{'type': 'script'}]},
+    {'type': 'hardBreak', 'marks': [{'type': 'link', 'attrs': {'href': 'javascript:alert(1)'}}]},
+    {'type': 'image', 'attrs': {'mediaId': 'media_abc'},
+     'marks': [{'type': 'textStyle', 'attrs': {'color': 'red;display:none'}}]},
+    {'type': 'paragraph', 'marks': [{'type': 'bold'}]},
+    {'type': 'horizontalRule', 'marks': [{'type': 'bold'}]},
+    {'type': 'hardBreak', 'marks': [{'type': 'bold'}] * 11},
+])
+def test_tiptap_still_rejects_malformed_or_unsafe_inline_marks(node):
+    content = [node] if node['type'] in {'paragraph', 'horizontalRule'} else [{'type': 'paragraph', 'content': [node]}]
+    with pytest.raises(ApiError):
+        validate_document({'type': 'doc', 'content': content}, allow_images=True)
+
+
 @pytest.mark.parametrize("node", [
     {"type": "script"},
     {"type": "image", "attrs": {"mediaId": "media_abc", "src": "https://evil"}},

@@ -160,8 +160,11 @@
 }
 
 @media (max-width: 800px) {
+  .site-shell {
+    --site-header-height: 68px;
+  }
+
   .topbar-inner {
-    height: 68px;
     padding: 0 20px;
   }
 

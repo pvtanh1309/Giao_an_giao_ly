@@ -32,7 +32,9 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    environment: ${{ inputs.environment }}
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.deployed.outputs.frontend_url }}
     permissions:
       contents: read
       actions: read
@@ -166,6 +168,7 @@ jobs:
         run: terraform -chdir="infrastructure/environments/$TARGET_ENV" apply -input=false cd.tfplan
 
       - name: Read deployed outputs
+        id: deployed
         if: inputs.operation == 'deploy'
         run: |
           set -euo pipefail
@@ -182,6 +185,7 @@ jobs:
               'APP_BUCKET': 'app_bucket_name',
               'DISTRIBUTION_ID': 'cloudfront_distribution_id',
               'FRONTEND_URL': 'frontend_url',
+              'CLOUDFRONT_DOMAIN': 'cloudfront_domain_name',
           }
           with open(os.environ['GITHUB_ENV'], 'a') as output:
               output.write('NEXT_PUBLIC_AWS_REGION=ap-southeast-1\n')
@@ -190,6 +194,8 @@ jobs:
                   if not isinstance(value, str) or not value or '\n' in value or '\r' in value:
                       raise SystemExit(f'Invalid Terraform output: {key}')
                   output.write(f'{name}={value}\n')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f"frontend_url={values['frontend_url']['value']}\n")
           PY
 
       - name: Set up Node.js
@@ -218,6 +224,7 @@ jobs:
           # Scope all uploads to frontend/: the same bucket also stores private lesson media.
           aws s3 sync Frontend/out/ "s3://$APP_BUCKET/frontend/" --exclude '*' --include '_next/static/*' --cache-control 'public,max-age=31536000,immutable'
           aws s3 sync Frontend/out/ "s3://$APP_BUCKET/frontend/" --exclude '_next/static/*' --cache-control 'no-cache'
+          aws cloudfront wait distribution-deployed --id "$DISTRIBUTION_ID"
           invalidation=$(aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths '/*' --query 'Invalidation.Id' --output text)
           aws cloudfront wait invalidation-completed --distribution-id "$DISTRIBUTION_ID" --id "$invalidation"
 
@@ -239,4 +246,9 @@ jobs:
           {
             printf '### CD %s: %s\n' "$TARGET_ENV" "$OPERATION"
             printf 'Source: `%s`\n\nBackend CI run: `%s`\n' "$RELEASE_SHA" "$BACKEND_RUN_ID"
+            if [ "$OPERATION" = 'deploy' ]; then
+              printf '\nWebsite: [%s](%s)\n' "$FRONTEND_URL" "$FRONTEND_URL"
+              printf '\nCloudFront: [https://%s](https://%s)\n' "$CLOUDFRONT_DOMAIN" "$CLOUDFRONT_DOMAIN"
+              printf '\nCloudFront deployment, cache invalidation and smoke tests completed successfully.\n'
+            fi
           } >> "$GITHUB_STEP_SUMMARY"

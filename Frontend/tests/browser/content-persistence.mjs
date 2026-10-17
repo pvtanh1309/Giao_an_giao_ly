@@ -96,16 +96,52 @@ try {
     const fill = (selector, text) => evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing input');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(e,${JSON.stringify(text)});e.dispatchEvent(new Event('input',{bubbles:true}))})()`)
     const navigate = async (pathname) => { await command('Page.navigate', { url: origin + pathname }); await wait("!document.body.innerText.includes('Đang tải thư viện') && document.querySelector('button') && !document.querySelector('.auth-screen')") }
 
+    const checkStickyToolbar = async (editorSelector, scrollSelector) => {
+        await evaluate(`document.querySelector(${JSON.stringify(editorSelector)}).focus()`)
+        await command('Input.insertText', { text: Array.from({ length: 80 }, (_, i) => `Nội dung dài dòng ${i + 1}`).join('\n') })
+        await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(editorSelector)}).closest('.rich-text-editor');
+            const s=${scrollSelector ? `document.querySelector(${JSON.stringify(scrollSelector)})` : 'null'};
+            if(s)s.scrollTop+=e.getBoundingClientRect().top-s.getBoundingClientRect().top+450;
+            else window.scrollTo({top:window.scrollY+e.getBoundingClientRect().top+450,behavior:'instant'})})()`)
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        const geometry = await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(editorSelector)}).closest('.rich-text-editor');
+            const toolbar=e.querySelector('.rich-text-toolbar').getBoundingClientRect();
+            const s=${scrollSelector ? `document.querySelector(${JSON.stringify(scrollSelector)})` : 'null'};
+            const top=s?s.getBoundingClientRect().top+parseFloat(getComputedStyle(s).borderTopWidth)+parseFloat(getComputedStyle(s).paddingTop):document.querySelector('.topbar').getBoundingClientRect().bottom;
+            return {toolbarTop:toolbar.top,toolbarBottom:toolbar.bottom,expectedTop:top,editorBottom:e.getBoundingClientRect().bottom}})()`)
+        assert.ok(geometry.toolbarTop >= geometry.expectedTop - 2 && geometry.toolbarTop <= geometry.expectedTop + 2,
+            `toolbar remains visible at its scroll boundary: ${JSON.stringify(geometry)}`)
+        assert.ok(geometry.editorBottom > geometry.toolbarBottom + 100)
+    }
+
     await navigate('/lesson-plans')
     await wait("[...document.querySelectorAll('button')].some(e=>e.textContent.includes('Thêm giáo án'))")
     await click('Thêm giáo án')
     await fill('.admin-editor-modal input', 'Giáo án kiểm tra lưu thật')
+    await wait("document.querySelector('.admin-editor-modal [aria-label=\"Ý chính\"]')")
+    await checkStickyToolbar('.admin-editor-modal [aria-label="Ý chính"]', '.admin-editor-modal-lesson')
+    await evaluate("(()=>{const e=document.querySelector('.admin-editor-modal [aria-label=\"Ý chính\"]');e.focus();const r=document.createRange();r.selectNodeContents(e);const s=getSelection();s.removeAllRanges();s.addRange(r)})()")
+    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Backspace', code: 'Backspace', windowsVirtualKeyCode: 8 })
+    await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Backspace', code: 'Backspace', windowsVirtualKeyCode: 8 })
+    console.log('PASS toolbar follows scrolling inside the lesson dialog')
     await click('Lưu nháp', '.admin-editor-modal button')
     await wait("document.querySelector('.lesson-reading-page h1')?.textContent==='Giáo án kiểm tra lưu thật'")
     const lessonUrl = await evaluate('location.pathname+location.search')
     await command('Page.reload'); await wait("document.querySelector('.lesson-reading-page h1')?.textContent==='Giáo án kiểm tra lưu thật'")
     await click('Chỉnh sửa trực tiếp')
     await wait("document.querySelector('.lesson-reading-page input[type=file]')")
+    await checkStickyToolbar('.lesson-reading-page [aria-label="Ý chính"]')
+    await command('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true })
+    await checkStickyToolbar('.lesson-reading-page [aria-label="Ý chính"]')
+    assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth'), true)
+    assert.equal(await evaluate("document.querySelector('.lesson-reading-page [aria-label=\"Ý chính\"]').closest('.rich-text-editor').querySelector('.rich-text-toolbar').getBoundingClientRect().height <= 80"), true)
+    assert.equal(await evaluate("(()=>{const t=document.querySelector('.lesson-reading-page [aria-label=\"Ý chính\"]').closest('.rich-text-editor').querySelector('.rich-text-toolbar');t.scrollLeft=200;return t.scrollLeft>0})()"), true)
+    await evaluate("document.querySelector('.lesson-reading-page [aria-label=\"Tâm tình\"]').scrollIntoView({block:'start',behavior:'instant'})")
+    assert.equal(await evaluate("document.querySelector('.lesson-reading-page [aria-label=\"Ý chính\"]').closest('.rich-text-editor').querySelector('.rich-text-toolbar').getBoundingClientRect().bottom <= document.querySelector('.topbar').getBoundingClientRect().bottom+2"), true)
+    await command('Emulation.clearDeviceMetricsOverride')
+    await click('Hủy', '.lesson-reading-page button')
+    await click('Chỉnh sửa trực tiếp')
+    console.log('PASS toolbar stays below the header on desktop/mobile and leaves with its editor')
     const selectParagraph = async (index) => {
         await evaluate(`(()=>{const e=document.querySelector('[aria-label="Ý chính"]');e.focus();const p=e.querySelectorAll('p')[${index}];const r=document.createRange();r.selectNodeContents(p);const s=getSelection();s.removeAllRanges();s.addRange(r)})()`)
         await new Promise((resolve) => setTimeout(resolve, 50))
@@ -129,14 +165,36 @@ try {
     await command('Input.dispatchKeyEvent', { type: 'keyDown', key: ' ', code: 'Space', text: ' ', windowsVirtualKeyCode: 32 })
     await command('Input.dispatchKeyEvent', { type: 'keyUp', key: ' ', code: 'Space', windowsVirtualKeyCode: 32 })
     if (await evaluate("!!document.querySelector('[aria-label=\"Tâm tình\"] ol') || document.querySelector('[aria-label=\"Tâm tình\"]').textContent!=='1. '")) editorFailures.push('typing 1. + Space unexpectedly creates a list')
+    for (const marker of ['-', '*', '+']) {
+        await evaluate("(()=>{const e=document.querySelector('[aria-label=\"Chuẩn bị\"]');e.focus();const r=document.createRange();r.selectNodeContents(e);const s=getSelection();s.removeAllRanges();s.addRange(r)})()")
+        await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Backspace', code: 'Backspace', windowsVirtualKeyCode: 8 })
+        await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Backspace', code: 'Backspace', windowsVirtualKeyCode: 8 })
+        await command('Input.insertText', { text: marker })
+        await command('Input.dispatchKeyEvent', { type: 'keyDown', key: ' ', code: 'Space', text: ' ', windowsVirtualKeyCode: 32 })
+        await command('Input.dispatchKeyEvent', { type: 'keyUp', key: ' ', code: 'Space', windowsVirtualKeyCode: 32 })
+        const actual = await evaluate("({text:document.querySelector('[aria-label=\"Chuẩn bị\"]').textContent,list:!!document.querySelector('[aria-label=\"Chuẩn bị\"] ul')})")
+        if (actual.text !== `${marker} ` || actual.list) editorFailures.push(`typing ${marker} + Space unexpectedly creates a list`)
+    }
     const defaultColor = await evaluate("getComputedStyle(document.querySelector('[aria-label=\"Tâm tình\"] p')).color")
     if (defaultColor !== 'rgb(0, 0, 0)') editorFailures.push(`default text is ${defaultColor}, expected black`)
     assert.deepEqual(editorFailures, [])
-    console.log('PASS font size follows selection; literal numbered headings and default black text')
+    console.log('PASS font size follows selection; literal numbered/bullet prefixes and default black text')
+    await evaluate("(()=>{const e=document.querySelector('[aria-label=\"Tâm tình\"]');e.focus();const r=document.createRange();r.selectNodeContents(e);r.collapse(false);const s=getSelection();s.removeAllRanges();s.addRange(r);e.closest('.rich-text-editor').querySelector('button[aria-label=\"In đậm\"]').click()})()")
+    await command('Input.insertText', { text: 'Định dạng' })
+    await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, modifiers: 8 })
+    await command('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Enter', code: 'Enter', windowsVirtualKeyCode: 13, modifiers: 8 })
+    await command('Input.insertText', { text: 'Xuống dòng' })
+    await evaluate("(()=>{const e=document.querySelector('[aria-label=\"Tâm tình\"]');e.focus();const r=document.createRange();r.selectNodeContents(e);const s=getSelection();s.removeAllRanges();s.addRange(r)})()")
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    await evaluate("(()=>{const e=document.querySelector('[aria-label=\"Tâm tình\"]').closest('.rich-text-editor').querySelector('select[aria-label=\"Cỡ chữ\"]');e.value='24px';e.dispatchEvent(new Event('change',{bubbles:true}))})()")
     await click('Lưu nháp', '.lesson-reading-page button')
-    await wait("!!document.querySelector('.lesson-reading-page h1')")
+    await wait("document.querySelector('.lesson-reading-page h1') || document.querySelector('.admin-toast.error')")
+    assert.equal(await evaluate("document.querySelector('.admin-toast.error')?.innerText ?? ''"), '', 'formatted Shift+Enter must save without a marks validation error')
     await command('Page.reload')
-    await wait("document.querySelector('[aria-label=\"Tâm tình\"]')?.textContent==='1. '")
+    await wait("document.querySelector('[aria-label=\"Tâm tình\"]')?.textContent==='1. Định dạngXuống dòng'")
+    assert.equal(await evaluate("!!document.querySelector('[aria-label=\"Tâm tình\"] br')"), true)
+    console.log('PASS formatted soft line break saves and reloads with its formatting')
+    assert.equal(await evaluate("document.querySelector('[aria-label=\"Chuẩn bị\"]').textContent"), '+ ')
     assert.equal(await evaluate("document.querySelector('[aria-label=\"Ý chính\"] p:nth-child(2) span').style.fontSize"), '24px')
     await click('Chỉnh sửa trực tiếp')
     const imageFile = path.join(profile, 'probe.png')

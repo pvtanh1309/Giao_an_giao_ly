@@ -62,6 +62,33 @@ def payload(kind):
 
 
 @pytest.mark.parametrize("kind", ["LESSON", "PROGRAM", "REFERENCE"])
+def test_formatted_soft_break_survives_draft_update_and_publish(kind):
+    store = MemoryStore()
+    service = Content(kind, store)
+    document = {'type': 'doc', 'content': [{'type': 'paragraph', 'content': [
+        {'type': 'text', 'text': 'Dòng đầu', 'marks': [{'type': 'textStyle', 'attrs': {'fontSize': '24px'}}]},
+        {'type': 'hardBreak', 'marks': [{'type': 'textStyle', 'attrs': {'fontSize': '24px'}}]},
+        {'type': 'text', 'text': 'Dòng sau', 'marks': [{'type': 'bold'}]},
+    ]}]}
+    body = payload(kind)
+    if kind == 'LESSON':
+        body['keyPoints'] = document
+    elif kind == 'PROGRAM':
+        body['schedule'][0]['values']['content'] = document
+    else:
+        body['content'] = document
+    created = service.create_draft(request(body, kind), EDITOR)
+    identifier = created[kind.lower() + 'Id']
+    saved = service.save_draft(request(dict(body, version=1), kind, identifier), EDITOR)
+    assert saved['version'] == 2
+    service.publish(request({'version': 2}, kind, identifier), EDITOR)
+    reloaded = service.get_published(request(kind=kind, identifier=identifier), EDITOR)
+    stored_document = (reloaded['keyPoints'] if kind == 'LESSON' else
+                       reloaded['schedule'][0]['values']['content'] if kind == 'PROGRAM' else reloaded['content'])
+    assert stored_document == document
+
+
+@pytest.mark.parametrize("kind", ["LESSON", "PROGRAM", "REFERENCE"])
 def test_revision_visibility_version_and_atomic_publish(kind):
     store = MemoryStore()
     service = Content(kind, store)

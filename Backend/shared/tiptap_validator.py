@@ -117,7 +117,9 @@ def validate_document(document, allow_images=False):
         elif "text" in node:
             bad("Chỉ text node có text.")
         marks = node.get("marks", [])
-        if not isinstance(marks, list) or (marks and kind != "text") or len(marks) > 10:
+        # Selecting and formatting across a soft break or image can mark those
+        # inline nodes too. Validate their marks with the same allowlist as text.
+        if not isinstance(marks, list) or (marks and kind not in INLINE) or len(marks) > 10:
             bad("Marks không hợp lệ.")
         for mark in marks:
             if not isinstance(mark, dict) or set(mark) - {"type", "attrs"} or not isinstance(mark.get("type"), str) or mark["type"] not in MARKS:
