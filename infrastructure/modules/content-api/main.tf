@@ -55,20 +55,7 @@ resource "aws_iam_role" "lambda" {
 resource "aws_iam_role_policy" "lambda" {
   name = local.name
   role = aws_iam_role.lambda.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      { Effect = "Allow", Action = ["logs:CreateLogStream", "logs:PutLogEvents"], Resource = "${aws_cloudwatch_log_group.lambda.arn}:*" },
-      { Effect = "Allow", Action = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:DeleteItem", "dynamodb:ConditionCheckItem"], Resource = var.table_arn },
-      { Effect = "Allow", Action = ["dynamodb:Query"], Resource = [var.table_arn, "${var.table_arn}/index/GSI1"] },
-      { Effect = "Allow", Action = ["dynamodb:DescribeStream", "dynamodb:GetRecords", "dynamodb:GetShardIterator"], Resource = var.stream_arn },
-      # ListStreams does not support resource-level IAM restrictions.
-      { Effect = "Allow", Action = ["dynamodb:ListStreams"], Resource = "*" },
-      { Effect = "Allow", Action = ["sqs:SendMessage"], Resource = aws_sqs_queue.stream_failures.arn },
-      { Effect = "Allow", Action = ["s3:GetObject", "s3:GetObjectVersion", "s3:PutObject", "s3:DeleteObject", "s3:DeleteObjectVersion"], Resource = "${var.app_bucket_arn}/lesson-media/*" },
-      { Effect = "Allow", Action = ["s3:ListBucketVersions"], Resource = var.app_bucket_arn, Condition = { StringLike = { "s3:prefix" = ["lesson-media/*"] } } }
-    ]
-  })
+  policy = data.aws_iam_policy_document.lambda.json
 }
 resource "aws_lambda_function" "api" {
   function_name    = local.name

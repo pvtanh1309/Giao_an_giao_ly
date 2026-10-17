@@ -1,5 +1,7 @@
 # Terraform application infrastructure
 
+Runbook vận hành CI/CD bằng tiếng Việt: [RUNBOOK-CICD.md](RUNBOOK-CICD.md). Bao gồm thiết lập OIDC/IAM, phát hành phiên bản mới, rollback, các sự cố đã gặp và trade-offs.
+
 Dev/prod roots each call the shared identity, database, app-hosting, content-api and user-api modules. Each environment has an independent Cognito pool, DynamoDB table, versioned S3 bucket, CloudFront distribution, two HTTP APIs and two Lambda functions. Bootstrap/state resources are separate.
 
 Build Python artifacts first: `python Backend/scripts/package_lambdas.py` from repo root. Modules consume Backend/dist/content-api.zip and users-api.zip. Configure terraform.tfvars using the environment example, then init, validate and review plan in that environment.

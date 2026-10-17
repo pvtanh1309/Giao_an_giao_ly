@@ -1,5 +1,7 @@
 # Backend deployment runbook
 
+> Runbook vận hành CI/CD hiện tại bằng tiếng Việt: [RUNBOOK-CICD.md](../../infrastructure/RUNBOOK-CICD.md). Tài liệu bên dưới được giữ làm tham chiếu triển khai backend ban đầu; các câu “chưa deploy/chưa tích hợp CI/CD” phản ánh thời điểm viết bản gốc, không phải kết luận về hệ thống hiện tại. Quy trình phát hành/rollback hiện dùng artifact của Backend CI như runbook mới mô tả.
+
 ## 1. Local verification and packaging
 
 Use Python 3.12 and Terraform >=1.15. Install Backend/requirements-dev.txt in a virtual environment, then run `python -m pytest -q` from Backend. From repo root run `python Backend/scripts/package_lambdas.py`.

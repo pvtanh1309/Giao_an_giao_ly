@@ -48,4 +48,5 @@ Backend/dist/
 TODO-INDEX.md
 **/DEV-RUNBOOK.md
 
-
+Backend/docs/deployment-runbook.md
+**/infrastructure/RUNBOOK-CICD.md
