@@ -12,7 +12,7 @@
 
 data "aws_iam_policy_document" "lambda" {
     statement {
-        effect      = "allow"
+        effect      = "Allow"
         actions     = [
             "logs:CreateLogStream",
             "logs:PutLogEvents",
@@ -23,7 +23,7 @@ data "aws_iam_policy_document" "lambda" {
     }
 
     statement {
-      effect    = "allow"
+      effect    = "Allow"
       actions   = [
             "dynamodb:GetItem",
             "dynamodb:PutItem",
@@ -35,7 +35,7 @@ data "aws_iam_policy_document" "lambda" {
     }
 
     statement {
-        effect = "allow"
+        effect = "Allow"
         actions = [
             "dynamodb:Query"
         ]
@@ -46,7 +46,7 @@ data "aws_iam_policy_document" "lambda" {
     }
 
     statement {
-      effect = "allow"
+      effect = "Allow"
       actions = [
             "dynamodb:DescribeStream",
             "dynamodb:GetRecords",
@@ -56,7 +56,7 @@ data "aws_iam_policy_document" "lambda" {
     }
 
     statement {
-      effect = "allow"
+      effect = "Allow"
       actions = [
         "dynamodb:ListStreams"
       ]
@@ -64,7 +64,7 @@ data "aws_iam_policy_document" "lambda" {
     }
 
     statement {
-      effect = "allow"
+      effect = "Allow"
       actions = [
         "sqs:SendMessage"
       ]
@@ -72,7 +72,7 @@ data "aws_iam_policy_document" "lambda" {
     }
 
     statement {
-      effect = "allow"
+      effect = "Allow"
       actions = [
         "s3:GetObject", 
         "s3:GetObjectVersion", 
@@ -84,7 +84,7 @@ data "aws_iam_policy_document" "lambda" {
     }
 
     statement {
-      effect = "allow"
+      effect = "Allow"
       actions = [
         "s3:ListBucketVersions"
       ]
