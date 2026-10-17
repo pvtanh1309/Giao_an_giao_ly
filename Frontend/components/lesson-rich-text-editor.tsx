@@ -17,6 +17,7 @@ type LessonRichTextEditorProps = {
     getAccessToken?: () => Promise<string>
     mediaApiBaseUrl?: string
     onChange?: (content: string) => void
+    onUploadStateChange?: (uploading: boolean) => void
 }
 
 export function LessonRichTextEditor({
@@ -29,6 +30,7 @@ export function LessonRichTextEditor({
     getAccessToken,
     mediaApiBaseUrl = process.env.NEXT_PUBLIC_CONTENT_API_URL ?? '',
     onChange,
+    onUploadStateChange,
 }: LessonRichTextEditorProps) {
     const editor = useEditor({
         extensions: lessonEditorExtensions,
@@ -59,6 +61,16 @@ export function LessonRichTextEditor({
         editor?.setEditable(editable)
     }, [editor, editable])
 
+    useEffect(() => {
+        if (!editor || editor.isDestroyed) return
+        const next = parseLessonDocument(content)
+        // A reused editor (for example after deleting a progression row) must
+        // show its new field's content. Avoid resetting the cursor on typing.
+        if (JSON.stringify(editor.getJSON()) !== JSON.stringify(next)) {
+            editor.commands.setContent(next, { emitUpdate: false })
+        }
+    }, [editor, content])
+
     if (!editor) {
         return <div className="rich-text-content" aria-hidden="true" />
     }
@@ -73,7 +85,7 @@ export function LessonRichTextEditor({
                 openImage(event.target)
             }
         }}>
-            {editable && <RichTextToolbar editor={editor} mode={toolbarMode} lessonId={lessonId} getAccessToken={getAccessToken} apiBaseUrl={mediaApiBaseUrl} />}
+            {editable && <RichTextToolbar editor={editor} mode={toolbarMode} lessonId={lessonId} getAccessToken={getAccessToken} apiBaseUrl={mediaApiBaseUrl} onUploadStateChange={onUploadStateChange} />}
             <EditorContent editor={editor} className="rich-text-content" />
             {zoomedImage && <LessonImageLightbox src={zoomedImage.src} alt={zoomedImage.alt} onClose={() => setZoomedImage(null)} triggerRef={imageTriggerRef} />}
         </div>

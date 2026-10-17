@@ -10,6 +10,7 @@ export type ReferenceDocument = {
     title: string
     category: ReferenceCategory
     status: 'ACTIVE' | 'DELETED'
+    version?: number
     draft?: ReferenceRevision
     published?: ReferenceRevision
 }

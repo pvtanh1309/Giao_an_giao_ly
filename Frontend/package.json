@@ -8,6 +8,7 @@
     "dev": "next dev",
     "build": "next build",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "test:content-ui": "node tests/browser/content-persistence.mjs",
     "start": "next start"
   },
   "dependencies": {

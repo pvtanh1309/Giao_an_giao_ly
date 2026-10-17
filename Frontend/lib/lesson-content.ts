@@ -38,11 +38,12 @@ export function createLessonFromDraft(draft: NewLessonDraft): Lesson {
 }
 
 export function getLessonSections(lesson: Lesson): LessonSection[] {
-    return lessonSectionTitles.map(({ key, title }) => ({
-        key,
-        title,
-        contentHtml: lesson.sections?.find((section) => section.key === key)?.contentHtml ?? '',
-    }))
+    const existing = lesson.sections ?? []
+    return [
+        ...lessonSectionTitles.map(({ key, title }) => existing.find((section) => section.key === key)
+            ?? { key, title, contentHtml: '' }),
+        ...existing.filter((section) => !lessonSectionTitles.some(({ key }) => key === section.key)),
+    ]
 }
 
 export function getLessonSearchText(lesson: Lesson): string {

@@ -13,7 +13,7 @@
 .program-reading-page .schedule-table { width: max-content; min-width: 100%; table-layout: auto; }
 .program-reading-page .schedule-table th,
 .program-reading-page .schedule-table td { min-width: 170px; max-width: 360px; }
-.program-schedule-cell-content { font-family: var(--font-sans), Arial, sans-serif; }
+.program-schedule-cell-content { color: #000000; font-family: var(--font-sans), Arial, sans-serif; }
 .program-reading-page .schedule-table [data-column-id="date"],
 .program-reading-page .schedule-table [data-column-id="weekNumber"] { min-width: 125px; white-space: nowrap; }
 .program-schedule-cards { display: none; }

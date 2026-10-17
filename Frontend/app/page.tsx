@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   BookOpen,
   CalendarDays,
@@ -38,6 +38,8 @@ import { useAuth, useUnauthorizedHandler } from '../components/auth-provider'
 import { getPublicConfig } from '../lib/config'
 import { createUsersApi } from '../lib/api/users'
 import { createAccountManagement } from '../lib/api/account-management'
+import { createContentApi } from '../lib/api/content'
+import { createContentManagement } from '../lib/api/content-management'
 import {
   createEmptyProgramScheduleRow,
   defaultProgramScheduleColumns,
@@ -61,6 +63,22 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   const accountService = useMemo(() => status === 'authenticated' ? createAccountManagement(createUsersApi({
     config: getPublicConfig(), getAccessToken, onUnauthorized,
   })) : null, [status, getAccessToken, onUnauthorized])
+  const contentService = useMemo(() => status === 'authenticated' && user ? createContentManagement(createContentApi({
+    config: getPublicConfig(), getAccessToken, onUnauthorized,
+  }), user.role === 'admin' || user.role === 'editor') : null, [status, user?.sub, user?.role, getAccessToken, onUnauthorized])
+  const [contentLoading, setContentLoading] = useState(true)
+  const [contentError, setContentError] = useState('')
+  const [contentReload, setContentReload] = useState(0)
+  const [contentBusy, setContentBusy] = useState(false)
+  const contentInFlight = useRef(false)
+  const mediaUploadsInFlight = useRef(0)
+  const [mediaUploads, setMediaUploads] = useState(0)
+  const onUploadStateChange = useCallback((uploading: boolean) => {
+    mediaUploadsInFlight.current = Math.max(0, mediaUploadsInFlight.current + (uploading ? 1 : -1))
+    setMediaUploads(mediaUploadsInFlight.current)
+  }, [])
+  const [detailReady, setDetailReady] = useState('')
+  const [detailError, setDetailError] = useState('')
   const [accountsLoading, setAccountsLoading] = useState(true)
   const [accountsError, setAccountsError] = useState('')
   const [activeNav, setActiveNav] = useState(initialView === 'lessons' ? 'Giáo án' : initialView === 'programs' ? 'Chương trình học' : initialView === 'catechists' ? 'Giáo lý viên' : initialView === 'accounts' ? 'Tài khoản hệ thống' : 'Tổng quan')
@@ -114,6 +132,80 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   const dashboardMetrics = getDashboardMetrics(lessonList)
 
   useEffect(() => {
+    let active = true
+    setLessonList([]); setProgramList([]); setReferenceList([])
+    setDetailReady(''); setContentError(''); setContentLoading(true)
+    if (!contentService) return
+    void (async () => {
+      try {
+        const [lessons, programs, references] = await Promise.all([
+          contentService.lessons.list(), contentService.programs.list(), contentService.references.list(),
+        ])
+        if (active) { setLessonList(lessons); setProgramList(programs); setReferenceList(references) }
+      } catch (error) {
+        if (active) setContentError(error instanceof Error ? error.message : 'Không tải được thư viện nội dung.')
+      } finally {
+        if (active) setContentLoading(false)
+      }
+    })()
+    return () => { active = false }
+  }, [contentService, contentReload])
+
+  const selectedDetailKey = initialView === 'lessons'
+    ? selectedReferenceId ? `references/${selectedReferenceId}` : selectedLessonId ? `lessons/${selectedLessonId}` : ''
+    : initialView === 'programs' && selectedProgramId ? `programs/${selectedProgramId}` : ''
+  const selectedReferenceDeleted = selectedReferenceForReading?.status === 'DELETED'
+  useEffect(() => {
+    if (!contentService || contentLoading || contentError || !selectedDetailKey || detailReady === selectedDetailKey) return
+    let active = true
+    setDetailError('')
+    if (selectedReferenceId?.startsWith('new-reference-') || selectedReferenceDeleted) {
+      setDetailReady(selectedDetailKey)
+      return
+    }
+    void (async () => {
+      try {
+        if (selectedDetailKey.startsWith('lessons/')) {
+          const item = await contentService.lessons.get(selectedLessonId!)
+          if (active) setLessonList((items) => [...items.filter((row) => row.id !== item.id), item])
+        } else if (selectedDetailKey.startsWith('programs/')) {
+          const item = await contentService.programs.get(selectedProgramId!)
+          if (active) setProgramList((items) => [...items.filter((row) => row.id !== item.id), item])
+        } else {
+          const item = await contentService.references.get(selectedReferenceId!)
+          if (active) setReferenceList((items) => [...items.filter((row) => row.id !== item.id), item])
+        }
+        if (active) setDetailReady(selectedDetailKey)
+      } catch (error) {
+        if (active) setDetailError(error instanceof Error ? error.message : 'Không tải được nội dung.')
+      }
+    })()
+    return () => { active = false }
+  }, [contentService, contentLoading, contentError, selectedDetailKey, selectedLessonId, selectedProgramId, selectedReferenceId, selectedReferenceDeleted, detailReady, contentReload])
+
+  const runContentAction = async (action: () => Promise<void>, message: string): Promise<boolean> => {
+    if (contentInFlight.current || !contentService) return false
+    if (mediaUploadsInFlight.current) {
+      setAdminNotice({ type: 'error', text: 'Hãy đợi ảnh tải lên hoàn tất trước khi lưu.' })
+      return false
+    }
+    contentInFlight.current = true
+    setContentBusy(true)
+    setAdminNotice(null)
+    try {
+      await action()
+      setAdminNotice({ type: 'success', text: message })
+      return true
+    } catch (error) {
+      setAdminNotice({ type: 'error', text: error instanceof Error ? error.message : 'Không thể lưu nội dung. Hãy thử lại.' })
+      return false
+    } finally {
+      contentInFlight.current = false
+      setContentBusy(false)
+    }
+  }
+
+  useEffect(() => {
     if (!accountService || initialView !== 'accounts' || user?.role !== 'admin') return
     let active = true
     setAccountsLoading(true)
@@ -155,6 +247,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   }, [initialView])
 
   const navigateTo = (path: string) => {
+    if (contentInFlight.current || mediaUploadsInFlight.current) return
     window.location.href = path
   }
 
@@ -272,7 +365,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
 
   const createReference = (category: ReferenceCategory) => {
     const reference: ReferenceDocument = {
-      id: `reference-${Date.now()}`,
+      id: `new-reference-${Date.now()}`,
       title: '',
       category,
       status: 'ACTIVE',
@@ -282,33 +375,70 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
     openReference(reference)
   }
 
-  const saveReferenceDraft = (reference: ReferenceDocument) => {
-    setReferenceList((items) => items.map((item) => item.id === reference.id ? reference : item))
-    setAdminNotice({ type: 'success', text: 'Đã lưu bản nháp tài liệu tham khảo.' })
-  }
-
-  const publishReference = (reference: ReferenceDocument) => {
-    const draft = reference.draft
-    if (!draft || !reference.title.trim()) {
-      setAdminNotice({ type: 'error', text: 'Hãy nhập tiêu đề và lưu nội dung trước khi xuất bản.' })
-      return
+  const storeReference = (reference: ReferenceDocument, saved: ReferenceDocument) => {
+    setReferenceList((items) => [...items.filter((item) => item.id !== reference.id && item.id !== saved.id), saved])
+    setDetailReady(`references/${saved.id}`)
+    if (saved.id !== reference.id) {
+      const url = new URL(window.location.href)
+      url.searchParams.set('referenceId', saved.id)
+      window.history.replaceState({}, '', url)
+      setSelectedReferenceId(saved.id)
     }
-    setReferenceList((items) => items.map((item) => item.id === reference.id
-      ? { id: item.id, title: reference.title, category: reference.category, status: 'ACTIVE', published: draft }
-      : item))
-    setAdminNotice({ type: 'success', text: 'Đã xuất bản tài liệu tham khảo và xóa bản nháp.' })
   }
 
-  const deleteReference = (reference: ReferenceDocument) => {
-    setReferenceList((items) => items.map((item) => item.id === reference.id ? { ...item, status: 'DELETED' } : item))
-    setAdminNotice({ type: 'success', text: 'Đã chuyển tài liệu tham khảo vào mục đã xóa trong 10 ngày.' })
+  const saveReferenceDraft = (reference: ReferenceDocument) => runContentAction(async () => {
+    storeReference(reference, await contentService!.references.save(reference))
+  }, 'Đã lưu bản nháp tài liệu tham khảo trên máy chủ.')
+
+  const publishReference = (reference: ReferenceDocument) => runContentAction(async () => {
+    const saved = await contentService!.references.save(reference)
+    storeReference(reference, saved)
+    storeReference(saved, await contentService!.references.publish(saved))
+  }, 'Đã xuất bản tài liệu tham khảo.')
+
+  const deleteReference = (reference: ReferenceDocument) => runContentAction(async () => {
+    if (reference.version) storeReference(reference, await contentService!.references.archive(reference))
+    else setReferenceList((items) => items.filter((item) => item.id !== reference.id))
     returnToReferenceDirectory(true)
-  }
+  }, 'Đã xóa tài liệu tham khảo.')
 
-  const restoreReference = (reference: ReferenceDocument) => {
-    setReferenceList((items) => items.map((item) => item.id === reference.id ? { ...item, status: 'ACTIVE' } : item))
-    setAdminNotice({ type: 'success', text: 'Đã khôi phục tài liệu tham khảo.' })
-  }
+  const restoreReference = (reference: ReferenceDocument) => runContentAction(async () => {
+    const restored = await contentService!.references.restore(reference)
+    storeReference(reference, restored)
+    setDetailReady('')
+  }, 'Đã khôi phục tài liệu tham khảo.')
+
+  const saveLesson = (lesson: Lesson) => runContentAction(async () => {
+    const saved = await contentService!.lessons.save(lesson)
+    setLessonList((items) => [...items.filter((item) => item.id !== lesson.id && item.id !== saved.id), saved])
+  }, 'Đã lưu bản nháp giáo án trên máy chủ.')
+
+  const publishLesson = (lesson: Lesson) => runContentAction(async () => {
+    const saved = await contentService!.lessons.publish(lesson)
+    setLessonList((items) => items.map((item) => item.id === saved.id ? saved : item))
+  }, 'Đã xuất bản giáo án.')
+
+  const deleteLesson = (lesson: Lesson) => runContentAction(async () => {
+    await contentService!.lessons.archive(lesson)
+    setLessonList((items) => items.filter((item) => item.id !== lesson.id))
+    returnToList('lessonId')
+  }, 'Đã lưu trữ giáo án trên máy chủ.')
+
+  const saveProgram = (program: Program) => runContentAction(async () => {
+    const saved = await contentService!.programs.save(program)
+    setProgramList((items) => [...items.filter((item) => item.id !== program.id && item.id !== saved.id), saved])
+  }, 'Đã lưu bản nháp chương trình trên máy chủ.')
+
+  const publishProgram = (program: Program) => runContentAction(async () => {
+    const saved = await contentService!.programs.publish(program)
+    setProgramList((items) => items.map((item) => item.id === saved.id ? saved : item))
+  }, 'Đã xuất bản chương trình học.')
+
+  const deleteProgram = (program: Program) => runContentAction(async () => {
+    await contentService!.programs.archive(program)
+    setProgramList((items) => items.filter((item) => item.id !== program.id))
+    returnToList('programId')
+  }, 'Đã lưu trữ chương trình học trên máy chủ.')
 
   const returnToList = (parameter: 'lessonId' | 'programId') => {
     const url = new URL(window.location.href)
@@ -319,6 +449,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   }
 
   const closeAdminEditor = () => {
+    if (contentInFlight.current) return
     setAdminEditor(null)
     setAdminEditingLabel(null)
   }
@@ -334,68 +465,32 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
     closeAdminEditor()
   }
 
-  const handleSaveAdminEditor = () => {
-    if (adminEditor === 'lesson') {
-      setLessonList((items) =>
-        adminEditingLabel
-          ? items.map((item) =>
-            item.title === adminEditingLabel
-              ? {
-                ...item,
-                title: editingContent.title,
-                excerpt: editingContent.description,
-                content: editingContent.content,
-                level: editingLevel,
-              }
-              : item,
-          )
-          : [
-            ...items,
-            createLessonFromDraft({
-              id: editingLessonId || `lesson-${Date.now()}`,
-              title: editingContent.title,
-              excerpt: editingContent.description,
-              tag: editingLessonTag || `BÀI ${String(items.length + 1).padStart(2, '0')}`,
-              time: editingLessonTime,
-              level: editingLevel,
-              ...editingLessonFields,
-            }),
-          ],
-      )
-    }
-    if (adminEditor === 'program') {
-      setProgramList((items) =>
-        adminEditingLabel
-          ? items.map((item) =>
-            item.title === adminEditingLabel
-              ? {
-                ...item,
-                title: editingContent.title,
-                desc: editingContent.description,
-                level: editingLevel,
-                color: lessonPlans.find((plan) => plan.level === editingLevel)?.color ?? lessonPlans[0].color,
-                sublevel: editingSublevel || undefined,
-                scheduleColumns: editingScheduleColumns,
-                schedule: editingSchedule.filter((row) => Object.values(row.values).some((cell) => cell.trim())),
-              }
-              : item,
-          )
-          : [
-            ...items,
-            {
-              id: `program-${Date.now()}`,
-              title: editingContent.title,
-              desc: editingContent.description,
-              progress: 0,
-              lessons: '0 bài học',
-              color: lessonPlans.find((plan) => plan.level === editingLevel)?.color ?? lessonPlans[0].color,
-              level: editingLevel,
-              sublevel: editingSublevel || undefined,
-              scheduleColumns: editingScheduleColumns,
-              schedule: editingSchedule.filter((row) => Object.values(row.values).some((cell) => cell.trim())),
-            },
-          ],
-      )
+  const handleSaveAdminEditor = async () => {
+    if (adminEditor === 'lesson' || adminEditor === 'program') {
+      const saved = await runContentAction(async () => {
+        if (adminEditor === 'lesson') {
+          const lesson = await contentService!.lessons.save({
+            ...createLessonFromDraft({ id: '', title: editingContent.title, excerpt: editingContent.description,
+              tag: editingLessonTag, time: editingLessonTime, level: editingLevel, ...editingLessonFields }),
+            sublevel: editingSublevel,
+          })
+          setLessonList((items) => [...items.filter((item) => item.id !== lesson.id), lesson])
+          if (initialView === 'lessons') {
+            setDetailReady(`lessons/${lesson.id}`)
+            openLesson(lesson)
+          }
+        } else {
+          const program = await contentService!.programs.save({ id: '', title: editingContent.title,
+            desc: editingContent.description, level: editingLevel, sublevel: editingSublevel,
+            color: editingIndustry?.color ?? lessonPlans[0].color, progress: 0, lessons: '0 buổi học',
+            scheduleColumns: editingScheduleColumns, schedule: editingSchedule,
+          })
+          setProgramList((items) => [...items.filter((item) => item.id !== program.id), program])
+          if (initialView === 'programs') { setDetailReady(`programs/${program.id}`); openProgram(program) }
+        }
+      }, 'Đã lưu bản nháp trên máy chủ. Bạn có thể chỉnh sửa tiếp hoặc xuất bản.')
+      if (saved) closeAdminEditor()
+      return
     }
     if (adminEditor === 'catechist') {
       setCatechistList((items) =>
@@ -408,7 +503,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
     }
     setAdminNotice({
       type: 'success',
-      text: `${adminEditingLabel ? 'Đã cập nhật' : 'Đã thêm'} ${adminEditor === 'lesson' ? 'bài giáo án' : adminEditor === 'program' ? 'chương trình học' : 'giáo lý viên'} thành công.`,
+      text: `${adminEditingLabel ? 'Đã cập nhật' : 'Đã thêm'} giáo lý viên thành công.`,
     })
     closeAdminEditor()
   }
@@ -432,7 +527,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         mobileMenu={mobileMenu}
         currentUser={currentUser}
         onNavigate={navigateTo}
-        onLogout={logout}
+        onLogout={() => { if (!contentInFlight.current && !mediaUploadsInFlight.current) logout() }}
         onToggleMenu={() => setMobileMenu(!mobileMenu)}
       />
  
@@ -442,6 +537,14 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         industryCount={dashboardMetrics.industryCount}
         canManage={currentUser === 'admin' || currentUser === 'editor'}
       />
+
+      {contentLoading && <p role="status" className="content-section">Đang tải thư viện từ máy chủ…</p>}
+      {contentError && <div role="alert" className="content-section"><p>{contentError}</p><button onClick={() => setContentReload((value) => value + 1)}>Thử tải lại</button></div>}
+      {detailError && <div role="alert" className="content-section"><p>{detailError}</p><button onClick={() => { setDetailReady(''); setContentReload((value) => value + 1) }}>Thử tải lại</button></div>}
+      {contentBusy && <p role="status" className="content-section">Đang lưu thay đổi trên máy chủ…</p>}
+      {mediaUploads > 0 && <p role="status" className="content-section">Đang tải ảnh lên. Hãy đợi trước khi lưu hoặc rời trang.</p>}
+
+      <fieldset disabled={contentBusy || mediaUploads > 0 || contentLoading || Boolean(contentError)} inert={contentBusy || mediaUploads > 0} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
 
       {!(initialView === 'lessons' && (selectedLessonId || referenceLibraryOpen)) && <LessonDirectory
         canManage={currentUser === 'admin' || currentUser === 'editor'}
@@ -454,7 +557,8 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
           setEditingContent({ title: "", description: "", content: "" });
           setEditingLevel(lessonPlans[0].level);
           setEditingLessonFields(createEmptyLessonStructuredContent())
-          setEditingLessonId(`draft-lesson-${Date.now()}`)
+          setEditingLessonId('')
+          setEditingSublevel(lessonPlans[0].sublevels[0] ?? '')
           setEditingLessonTag(`BÀI ${String(lessonList.length + 1).padStart(2, '0')}`)
           setEditingLessonTime('45 phút')
           setAdminEditor("lesson");
@@ -498,39 +602,32 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
           setAdminEditor("program");
         }}
         onOpen={openProgram}
-        onDelete={(program) => {
-          setProgramList((items) =>
-            items.filter((item) => item.title !== program.title),
-          );
-          setAdminNotice({ type: "success", text: `Đã xóa ${program.title}.` });
-        }}
+        onDelete={deleteProgram}
       />}
 
       {initialView === 'lessons' && selectedLessonId && (
-        selectedLessonForReading ? <LessonReadingPage
+        selectedLessonForReading && detailReady === selectedDetailKey ? <LessonReadingPage
           lesson={selectedLessonForReading}
           canManage={currentUser === 'admin' || currentUser === 'editor'}
           onBack={() => returnToList('lessonId')}
-          onSave={(updated) => {
-            setLessonList((items) => items.map((item) => item.id === updated.id ? updated : item))
-            setAdminNotice({ type: 'success', text: 'Đã cập nhật bài giáo án.' })
-          }}
-          onDelete={(lesson) => {
-            setLessonList((items) => items.filter((item) => item.id !== lesson.id))
-            returnToList('lessonId')
-            setAdminNotice({ type: 'success', text: 'Đã xóa giáo án.' })
-          }}
+          busy={contentBusy}
+          getAccessToken={getAccessToken}
+          onUploadStateChange={onUploadStateChange}
+          onSave={saveLesson}
+          onPublish={publishLesson}
+          onDelete={deleteLesson}
         /> : <section className="content-section reading-page-placeholder">
           <button className="secondary-button" onClick={() => returnToList('lessonId')}>Quay lại danh sách bài học</button>
-          <h1>Không tìm thấy giáo án này</h1>
+          <h1>{detailError || contentError ? 'Không tải được giáo án' : 'Đang tải giáo án…'}</h1>
         </section>
       )}
 
       {initialView === 'lessons' && selectedReferenceId && (
-        selectedReferenceForReading && ((currentUser === 'admin' || currentUser === 'editor') || (selectedReferenceForReading.status === 'ACTIVE' && selectedReferenceForReading.published))
+        selectedReferenceForReading && detailReady === selectedDetailKey && ((currentUser === 'admin' || currentUser === 'editor') || (selectedReferenceForReading.status === 'ACTIVE' && selectedReferenceForReading.published))
           ? <ReferenceReadingPage
             reference={selectedReferenceForReading}
             canManage={currentUser === 'admin' || currentUser === 'editor'}
+            busy={contentBusy}
             onBack={backToReferenceList}
             onSaveDraft={saveReferenceDraft}
             onPublish={publishReference}
@@ -539,30 +636,27 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
           />
           : <section className="reference-reading-page reading-page-placeholder">
             <button className="secondary-button" onClick={backToReferenceList}>Quay lại thư viện tài liệu</button>
-            <h1>Không tìm thấy tài liệu tham khảo</h1>
+            <h1>{detailError || contentError ? 'Không tải được tài liệu tham khảo' : 'Đang tải tài liệu tham khảo…'}</h1>
           </section>
       )}
       {initialView === 'programs' && selectedProgramId && (
-        selectedProgramForReading ? <ProgramReadingPage
+        selectedProgramForReading && detailReady === selectedDetailKey ? <ProgramReadingPage
           program={selectedProgramForReading}
           canManage={currentUser === 'admin' || currentUser === 'editor'}
           onBack={() => returnToList('programId')}
-          onSave={(updated) => {
-            setProgramList((items) => items.map((item) => item.id === updated.id ? updated : item))
-            setAdminNotice({ type: 'success', text: 'Đã cập nhật chương trình học.' })
-          }}
-          onDelete={(program) => {
-            setProgramList((items) => items.filter((item) => item.id !== program.id))
-            returnToList('programId')
-            setAdminNotice({ type: 'success', text: `Đã xóa ${program.title}.` })
-          }}
+          busy={contentBusy}
+          onSave={saveProgram}
+          onPublish={publishProgram}
+          onDelete={deleteProgram}
         /> : <section className="program-section reading-page-placeholder">
           <div className="program-inner">
             <button className="outline-button light-button" onClick={() => returnToList('programId')}>Quay lại chương trình học</button>
-            <h1>Không tìm thấy chương trình học này</h1>
+            <h1>{detailError || contentError ? 'Không tải được chương trình học' : 'Đang tải chương trình học…'}</h1>
           </div>
         </section>
       )}
+
+      </fieldset>
 
       {initialView === "catechists" && (
         <CatechistDirectory
@@ -675,7 +769,9 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         lessonTag={editingLessonTag}
         lessonTime={editingLessonTime}
         lessonFields={editingLessonFields}
-            lessonId={editingLessonId}
+        lessonId={editingLessonId || undefined}
+        getAccessToken={getAccessToken}
+        busy={contentBusy}
         onTitleChange={(title) => setEditingContent((current) => ({ ...current, title }))}
         onCatechistChange={setEditingCatechist}
         onContentChange={setEditingContent}

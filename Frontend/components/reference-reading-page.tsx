@@ -9,16 +9,17 @@ type ReferenceReadingPageProps = {
     reference: ReferenceDocument
     canManage: boolean
     onBack: () => void
-    onSaveDraft: (reference: ReferenceDocument) => void
-    onPublish: (reference: ReferenceDocument) => void
-    onDelete: (reference: ReferenceDocument) => void
-    onRestore: (reference: ReferenceDocument) => void
+    onSaveDraft: (reference: ReferenceDocument) => Promise<boolean>
+    onPublish: (reference: ReferenceDocument) => Promise<boolean>
+    onDelete: (reference: ReferenceDocument) => Promise<boolean>
+    onRestore: (reference: ReferenceDocument) => Promise<boolean>
+    busy?: boolean
 }
 
 const emptyDocument = '{"type":"doc","content":[{"type":"paragraph"}]}'
 
-export function ReferenceReadingPage({ reference, canManage, onBack, onSaveDraft, onPublish, onDelete, onRestore }: ReferenceReadingPageProps) {
-    const [editing, setEditing] = useState(canManage && !reference.published)
+export function ReferenceReadingPage({ reference, canManage, onBack, onSaveDraft, onPublish, onDelete, onRestore, busy = false }: ReferenceReadingPageProps) {
+    const [editing, setEditing] = useState(canManage && reference.status === 'ACTIVE' && !reference.published)
     const [title, setTitle] = useState(reference.title)
     const [category, setCategory] = useState<ReferenceCategory>(reference.category)
     const [content, setContent] = useState(reference.draft?.content ?? reference.published?.content ?? emptyDocument)
@@ -29,7 +30,7 @@ export function ReferenceReadingPage({ reference, canManage, onBack, onSaveDraft
         setCategory(reference.category)
         setContent(reference.draft?.content ?? reference.published?.content ?? emptyDocument)
         setValidationError('')
-        setEditing(canManage && !reference.published)
+        setEditing(canManage && reference.status === 'ACTIVE' && !reference.published)
     }, [reference, canManage])
 
     const updatedReference = (): ReferenceDocument => ({
@@ -44,7 +45,7 @@ export function ReferenceReadingPage({ reference, canManage, onBack, onSaveDraft
         : reference.published?.content ?? emptyDocument
 
     return (
-        <section className="reference-reading-page" aria-label="Chi tiết tài liệu tham khảo">
+        <section className="reference-reading-page" aria-label="Chi tiết tài liệu tham khảo" inert={busy} aria-busy={busy}>
             <div className="reading-toolbar">
                 <button className="secondary-button" onClick={onBack}><ArrowLeft size={16} /> Danh sách tài liệu</button>
                 {canManage && reference.status === 'ACTIVE' && !editing && <button className="outline-button" onClick={() => setEditing(true)}>Chỉnh sửa trực tiếp</button>}
@@ -55,11 +56,10 @@ export function ReferenceReadingPage({ reference, canManage, onBack, onSaveDraft
                         setValidationError('')
                         onSaveDraft(updatedReference())
                     }}><Save size={16} /> Lưu nháp</button>
-                    <button className="primary-button" onClick={() => {
+                    <button className="primary-button" onClick={async () => {
                         if (!title.trim()) { setValidationError('Vui lòng nhập tiêu đề trước khi xuất bản.'); return }
                         setValidationError('')
-                        onPublish(updatedReference())
-                        setEditing(false)
+                        if (await onPublish(updatedReference())) setEditing(false)
                     }}><Save size={16} /> Xuất bản</button>
                     {reference.status === 'ACTIVE' && reference.id && (reference.draft || reference.published) && <button className="admin-danger-button" onClick={() => onDelete(reference)}><Trash2 size={16} /> Xóa tài liệu</button>}
                 </div>}

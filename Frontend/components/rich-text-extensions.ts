@@ -128,8 +128,18 @@ const LessonImage = Node.create({
     },
 })
 
+// Keep ordered lists in the schema for existing documents, while allowing
+// numbered headings such as "1. " to remain exactly as the author typed them.
+const LessonStarterKit = StarterKit.extend({
+    addExtensions() {
+        return (this.parent?.() ?? []).map((extension) => extension.name === 'orderedList'
+            ? extension.extend({ addInputRules: () => [] })
+            : extension)
+    },
+})
+
 export const lessonEditorExtensions = [
-    StarterKit,
+    LessonStarterKit,
     TextAlign.configure({ types: ['heading', 'paragraph'] }),
     TextStyle,
     FontSize,

@@ -14,7 +14,7 @@ import {
     Underline as UnderlineIcon,
 } from 'lucide-react'
 import { useRef, useState } from 'react'
-import type { Editor } from '@tiptap/react'
+import { useEditorState, type Editor } from '@tiptap/react'
 import { lessonImageWidths, uploadLessonImage } from '../lib/lesson-media'
 
 type RichTextToolbarProps = {
@@ -22,13 +22,24 @@ type RichTextToolbarProps = {
     mode?: 'lesson' | 'program-schedule' | 'reference'
     lessonId?: string
     getAccessToken?: () => Promise<string>
+    onUploadStateChange?: (uploading: boolean) => void
     apiBaseUrl?: string
 }
 
-export function RichTextToolbar({ editor, mode = 'lesson', lessonId, getAccessToken, apiBaseUrl = '' }: RichTextToolbarProps) {
+export function RichTextToolbar({ editor, mode = 'lesson', lessonId, getAccessToken, apiBaseUrl = '', onUploadStateChange }: RichTextToolbarProps) {
     const imageInputRef = useRef<HTMLInputElement>(null)
     const [uploadingImage, setUploadingImage] = useState(false)
     const [imageError, setImageError] = useState('')
+    const formatting = useEditorState({
+        editor,
+        selector: ({ editor: current }) => ({
+            textStyle: current.getAttributes('textStyle'),
+            heading: current.isActive('heading'),
+            block: current.getAttributes(current.isActive('heading') ? 'heading' : 'paragraph'),
+            bold: current.isActive('bold'), italic: current.isActive('italic'), underline: current.isActive('underline'),
+            image: current.isActive('image') ? current.getAttributes('image') : null,
+        }),
+    })
     const currentNode = editor.isActive('heading') ? 'heading' : 'paragraph'
     const indent = Number(editor.getAttributes(currentNode).indent ?? 0)
     const scheduleMode = mode === 'program-schedule'
@@ -98,9 +109,12 @@ export function RichTextToolbar({ editor, mode = 'lesson', lessonId, getAccessTo
             })}
             {!scheduleMode && <select
                 aria-label="Font chữ"
-                defaultValue="Georgia, serif"
-                onChange={(event) => editor.chain().focus().setFontFamily(event.target.value).run()}
+                value={formatting.textStyle.fontFamily ?? ''}
+                onChange={(event) => event.target.value
+                    ? editor.chain().focus().setFontFamily(event.target.value).run()
+                    : editor.chain().focus().unsetFontFamily().run()}
             >
+                <option value="">Mặc định</option>
                 <option value="Georgia, serif">Georgia</option>
                 <option value="Arial, sans-serif">Arial</option>
                 <option value="var(--font-sans), sans-serif">Be Vietnam Pro</option>
@@ -109,7 +123,7 @@ export function RichTextToolbar({ editor, mode = 'lesson', lessonId, getAccessTo
             <select
                 aria-label="Cỡ chữ"
                 title="Cỡ chữ"
-                defaultValue=""
+                value={formatting.textStyle.fontSize ?? ''}
                 onChange={(event) => {
                     const chain = editor.chain().focus()
                     if (event.target.value) chain.setFontSize(event.target.value).run()
@@ -121,11 +135,11 @@ export function RichTextToolbar({ editor, mode = 'lesson', lessonId, getAccessTo
             </select>
             <label className="rich-text-color" title="Màu chữ">
                 <span>Màu</span>
-                <input type="color" aria-label="Màu chữ" defaultValue="#24354a" onChange={(event) => editor.chain().focus().setColor(event.target.value).run()} />
+                <input type="color" aria-label="Màu chữ" value={formatting.textStyle.color ?? '#000000'} onChange={(event) => editor.chain().focus().setColor(event.target.value).run()} />
             </label>
             {lessonMode && <>
                 <span className="rich-text-divider" aria-hidden="true" />
-                <button type="button" title="Chèn ảnh minh họa" aria-label="Chèn ảnh minh họa" disabled={uploadingImage} onMouseDown={preserveSelection} onClick={() => imageInputRef.current?.click()}>
+                <button type="button" title={lessonId ? 'Chèn ảnh minh họa' : 'Lưu nháp giáo án trước khi chèn ảnh'} aria-label="Chèn ảnh minh họa" disabled={uploadingImage || !lessonId || !getAccessToken} onMouseDown={preserveSelection} onClick={() => imageInputRef.current?.click()}>
                     <ImagePlus size={16} />
                 </button>
                 <input
@@ -134,12 +148,14 @@ export function RichTextToolbar({ editor, mode = 'lesson', lessonId, getAccessTo
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
                     aria-label="Chọn ảnh minh họa"
+                    disabled={uploadingImage || !lessonId || !getAccessToken}
                     onChange={async (event) => {
                         const file = event.target.files?.[0]
                         event.target.value = ''
                         if (!file) return
                         setImageError('')
                         setUploadingImage(true)
+                        onUploadStateChange?.(true)
                         try {
                             const uploaded = await uploadLessonImage({
                                 lessonId: lessonId ?? '',
@@ -147,6 +163,7 @@ export function RichTextToolbar({ editor, mode = 'lesson', lessonId, getAccessTo
                                 apiBaseUrl,
                                 getAccessToken,
                             })
+                            if (editor.isDestroyed) { URL.revokeObjectURL(uploaded.previewSrc); return }
                             editor.chain().focus().insertContent({
                                 type: 'image',
                                 attrs: { mediaId: uploaded.mediaId, src: uploaded.previewSrc, alt: file.name, width: 220, alignment: 'center' },
@@ -155,9 +172,11 @@ export function RichTextToolbar({ editor, mode = 'lesson', lessonId, getAccessTo
                             setImageError(error instanceof Error ? error.message : 'Không thể chèn ảnh. Hãy thử lại.')
                         } finally {
                             setUploadingImage(false)
+                            onUploadStateChange?.(false)
                         }
                     }}
                 />
+                {!lessonId && <span className="lesson-image-upload-status">Lưu nháp giáo án trước khi chèn ảnh.</span>}
                 {editor.isActive('image') && <>
                     <select aria-label="Kích thước ảnh" value={editor.getAttributes('image').width ?? 220} onChange={(event) => editor.chain().focus().updateAttributes('image', { width: Number(event.target.value) }).run()}>
                         {lessonImageWidths.map((width) => <option key={width} value={width}>{width}px</option>)}

@@ -78,7 +78,7 @@
   min-height: 220px;
   padding: 14px;
   outline: none;
-  color: var(--ink);
+  color: #000000;
   font: 15px/1.7 var(--font-sans), Arial, sans-serif;
   letter-spacing: 0;
 }

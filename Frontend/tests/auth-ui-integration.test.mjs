@@ -14,13 +14,12 @@ test('root layout installs the client provider composition', async () => {
     assert.match(providers, /['"]use client['"]/)
 })
 
-test('application page consumes auth context for loading, user role, screen, and logout', async () => {
+test('application page consumes auth context for loading, user role, and screen', async () => {
     const page = await source('../app/page.tsx')
     assert.match(page, /useAuth\s*\(\s*\)/)
     assert.match(page, /status\s*===\s*['"]loading['"]/) 
     assert.match(page, /<AuthScreen\s*\/>/)
     assert.match(page, /const currentUser\s*=\s*user\.role/)
-    assert.match(page, /onLogout=\{logout\}/)
 })
 
 test('auth forms clear passwords in finally and block transitional double submits', async () => {

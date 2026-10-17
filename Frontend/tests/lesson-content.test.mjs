@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { createEmptyLessonSections, createLessonFromDraft } from '../lib/lesson-content.ts'
+import { createEmptyLessonSections, createLessonFromDraft, getLessonSections } from '../lib/lesson-content.ts'
 import { getDashboardMetrics } from '../lib/dashboard-metrics.ts'
 import { createEmptyProgramScheduleRow, industryColorHex, lessonPlans } from '../lib/content-data.ts'
 import { lessonEditorExtensions } from '../components/rich-text-extensions.ts'
@@ -36,6 +36,15 @@ test('new lesson keeps the same structured fields used by the reading page', () 
 
 test('new lessons start with all five standard lesson sections', () => {
     assert.deepEqual(createEmptyLessonSections().map(({ key }) => key), ['I', 'II', 'III', 'IV', 'V'])
+})
+
+test('editing a server lesson retains custom section titles and additional section keys', () => {
+    const sections = getLessonSections({ sections: [
+        { key: 'I', title: 'Cầu nguyện đầu giờ', contentHtml: 'Nội dung đầu giờ' },
+        { key: 'prayer', title: 'Lời nguyện riêng', contentHtml: 'Nội dung bổ sung' },
+    ] })
+    assert.deepEqual(sections[0], { key: 'I', title: 'Cầu nguyện đầu giờ', contentHtml: 'Nội dung đầu giờ' })
+    assert.deepEqual(sections.find((section) => section.key === 'prayer'), { key: 'prayer', title: 'Lời nguyện riêng', contentHtml: 'Nội dung bổ sung' })
 })
 
 test('dashboard metrics count saved lessons and distinct non-empty industries', () => {

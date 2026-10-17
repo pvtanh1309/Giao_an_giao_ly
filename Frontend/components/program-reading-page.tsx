@@ -11,12 +11,14 @@ import { getProgramScheduleCellGroup, isProgramScheduleCellCovered } from '../li
 export type ProgramReadingPageProps = {
     program: Program
     canManage: boolean
-    onSave: (program: Program) => void
-    onDelete: (program: Program) => void
+    onSave: (program: Program) => Promise<boolean>
+    onPublish: (program: Program) => Promise<boolean>
+    onDelete: (program: Program) => Promise<boolean>
+    busy?: boolean
     onBack: () => void
 }
 
-export function ProgramReadingPage({ program, canManage, onSave, onDelete, onBack }: ProgramReadingPageProps) {
+export function ProgramReadingPage({ program, canManage, onSave, onPublish, onDelete, onBack, busy = false }: ProgramReadingPageProps) {
     const [editing, setEditing] = useState(false)
     const [draft, setDraft] = useState(program)
 
@@ -29,21 +31,23 @@ export function ProgramReadingPage({ program, canManage, onSave, onDelete, onBac
     const schedule = (editing ? draft.schedule : program.schedule) ?? []
 
     return (
-        <section className="program-reading-page" aria-label="Chi tiết chương trình học">
+        <section className="program-reading-page" aria-label="Chi tiết chương trình học" inert={busy} aria-busy={busy}>
             <div className="reading-toolbar">
                 <button type="button" className="secondary-button program-back-button" onClick={onBack}>
                     <ArrowLeft size={16} aria-hidden="true" />
                     {program.sublevel ? `Quay lại phân ngành ${program.sublevel}` : `Quay lại ngành ${program.level}`}
                 </button>
                 {canManage && !editing && <button className="outline-button" onClick={() => setEditing(true)}>Chỉnh sửa trực tiếp</button>}
+                {canManage && !editing && program.hasDraft && <button className="primary-button" onClick={() => onPublish(program)}>Xuất bản</button>}
                 {canManage && editing && <div className="reading-actions">
                     <button className="secondary-button" onClick={() => { setDraft(program); setEditing(false) }}><X size={16} /> Hủy</button>
-                    <button className="primary-button" onClick={() => { onSave(draft); setEditing(false) }}><Save size={16} /> Lưu thay đổi</button>
+                    <button className="primary-button" onClick={async () => { if (await onSave(draft)) setEditing(false) }}><Save size={16} /> Lưu nháp</button>
                     <button className="admin-danger-button" onClick={() => onDelete(program)}><Trash2 size={16} /> Xóa chương trình</button>
                 </div>}
             </div>
 
             <article className="program-reading-paper">
+                {canManage && program.hasDraft && <p role="status">Bản nháp đã lưu. Xuất bản để tài khoản Reader đọc được.</p>}
                 <header className="program-reading-header">
                     <span className="section-kicker">Lộ trình đào tạo</span>
                     {editing ? <>
@@ -58,7 +62,7 @@ export function ProgramReadingPage({ program, canManage, onSave, onDelete, onBac
                             {lessonPlans.find((plan) => plan.level === draft.level)?.sublevels.length ? <select aria-label="Phân ngành" value={draft.sublevel ?? ''} onChange={(event) => setDraft({ ...draft, sublevel: event.target.value || undefined })}>
                                 {lessonPlans.find((plan) => plan.level === draft.level)?.sublevels.map((sublevel) => <option key={sublevel} value={sublevel}>{sublevel}</option>)}
                             </select> : null}
-                            <input aria-label="Số bài học" value={draft.lessons} onChange={(event) => setDraft({ ...draft, lessons: event.target.value })} />
+                            <span>{schedule.length} buổi học trong lịch</span>
                         </div>
                     </> : <>
                         <h1>{program.title}</h1>

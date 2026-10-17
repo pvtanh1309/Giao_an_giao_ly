@@ -30,6 +30,7 @@ type AdminEditorDialogProps = {
     lessonFields: LessonStructuredContent
     lessonId?: string
     getAccessToken?: () => Promise<string>
+    busy?: boolean
     onTitleChange: (value: string) => void
     onCatechistChange: (value: Catechist) => void
     onContentChange: (value: EditingContent) => void
@@ -60,6 +61,7 @@ export function AdminEditorDialog({
     lessonFields,
     lessonId,
     getAccessToken,
+    busy = false,
     onTitleChange,
     onCatechistChange,
     onContentChange,
@@ -84,7 +86,7 @@ export function AdminEditorDialog({
 
     return (
         <div className="modal-backdrop admin-editor-backdrop" onClick={onClose}>
-            <div className={`content-modal admin-editor-modal ${editor === 'lesson' ? 'admin-editor-modal-lesson' : ''}`} onClick={(event) => event.stopPropagation()}>
+            <div className={`content-modal admin-editor-modal ${editor === 'lesson' ? 'admin-editor-modal-lesson' : ''}`} onClick={(event) => event.stopPropagation()} inert={busy} aria-busy={busy}>
                 <button className="modal-close" onClick={onClose} aria-label="Đóng biểu mẫu">
                     <X size={18} />
                 </button>
@@ -95,7 +97,7 @@ export function AdminEditorDialog({
                 <p>
                     {editor === 'catechist'
                         ? 'Cập nhật thông tin đội ngũ phục vụ. Dữ liệu hiện chỉ lưu trong phiên frontend.'
-                        : 'Nhập nội dung mẫu để cập nhật thư viện. Dữ liệu hiện chỉ lưu trong phiên frontend.'}
+                        : 'Lưu bản nháp vào thư viện. Xuất bản khi nội dung đã sẵn sàng cho người đọc.'}
                 </p>
                 <label>
                     {editor === 'catechist' ? 'Tên Thánh, Họ và tên' : 'Tên nội dung'}
@@ -121,7 +123,7 @@ export function AdminEditorDialog({
                         </select>
                     </label>
                 )}
-                {editor === 'program' && industry?.sublevels.length ? (
+                {editor !== 'catechist' && industry?.sublevels.length ? (
                     <label>
                         Phân ngành
                         <select value={sublevel} onChange={(event) => onSublevelChange(event.target.value)}>
@@ -164,7 +166,7 @@ export function AdminEditorDialog({
                     <button className="secondary-button" onClick={onClose}>Hủy</button>
                     {editingLabel && <button className="admin-danger-button" onClick={onDelete}>Xóa</button>}
                     <button className="primary-button" onClick={onSave}>
-                        Lưu thay đổi <ArrowRight size={17} />
+                        {editor === 'catechist' ? 'Lưu thay đổi' : 'Lưu nháp'} <ArrowRight size={17} />
                     </button>
                 </div>
             </div>

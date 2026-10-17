@@ -20,7 +20,14 @@ export type Industry = {
     icon: string
 }
 
-export type Lesson = {
+export type ContentState = {
+    version?: number
+    status?: 'ACTIVE' | 'DELETED'
+    hasDraft?: boolean
+    hasPublished?: boolean
+}
+
+export type Lesson = ContentState & {
     id: string
     title: string
     excerpt: string
@@ -28,6 +35,7 @@ export type Lesson = {
     tag: string
     time: string
     level?: string
+    sublevel?: string
     scripture?: string
     scriptureReference?: string
     keyPoints: string
@@ -37,7 +45,7 @@ export type Lesson = {
     sections?: LessonSection[]
 }
 
-export type LessonSectionKey = 'I' | 'II' | 'III' | 'IV' | 'V'
+export type LessonSectionKey = string
 
 export type LessonSection = {
     key: LessonSectionKey
@@ -58,7 +66,7 @@ export type ProgramScheduleRow = {
     mergedCellGroups?: string[][]
 }
 
-export type Program = {
+export type Program = ContentState & {
     id: string
     title: string
     desc: string
