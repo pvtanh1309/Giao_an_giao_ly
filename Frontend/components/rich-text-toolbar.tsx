@@ -16,6 +16,7 @@ import {
 import { useRef, useState } from 'react'
 import { useEditorState, type Editor } from '@tiptap/react'
 import { clampLessonImageWidth, minLessonImageWidth, maxLessonImageWidth, uploadLessonImage } from '../lib/lesson-media'
+import { RichTextTableControls } from './rich-text-table-controls'
 
 type RichTextToolbarProps = {
     editor: Editor
@@ -79,6 +80,7 @@ export function RichTextToolbar({ editor, mode = 'lesson', lessonId, getAccessTo
             </button>}
             {!scheduleMode && <>
                 <span className="rich-text-divider" aria-hidden="true" />
+                {lessonMode && <RichTextTableControls editor={editor} />}
                 <button type="button" title="Chèn đường kẻ" aria-label="Chèn đường kẻ" onMouseDown={preserveSelection} onClick={() => editor.chain().focus().setHorizontalRule().run()}>
                     <Minus size={16} />
                 </button>

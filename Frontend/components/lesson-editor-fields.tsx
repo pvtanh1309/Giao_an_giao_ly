@@ -1,6 +1,5 @@
 'use client'
 
-import { Plus, Trash2 } from 'lucide-react'
 import type { LessonStructuredContent } from '../lib/lesson-content'
 import { lessonSectionTitles } from '../lib/lesson-content'
 import { LessonRichTextEditor } from './lesson-rich-text-editor'
@@ -32,9 +31,6 @@ export function LessonEditorFields({
     onFieldsChange,
 }: LessonEditorFieldsProps) {
     const update = (changes: Partial<LessonStructuredContent>) => onFieldsChange({ ...fields, ...changes })
-    const updateProgression = (index: number, key: 'teacherActivity' | 'learnerActivity', value: string) => {
-        update({ progression: fields.progression.map((step, stepIndex) => stepIndex === index ? { ...step, [key]: value } : step) })
-    }
 
     return (
         <div className="lesson-create-structure">
@@ -60,12 +56,6 @@ export function LessonEditorFields({
             <LessonPreparationField content={fields.preparation} lessonId={lessonId} getAccessToken={getAccessToken} onChange={(preparation) => update({ preparation })} />
             <section className="lesson-progression">
                 <h2>Gợi ý tiến trình lên lớp</h2>
-                <button type="button" className="outline-button" onClick={() => update({ progression: [...fields.progression, { teacherActivity: '', learnerActivity: '' }] })}><Plus size={15} /> Thêm bước</button>
-                {fields.progression.map((step, index) => <div className="lesson-progression-row" key={index}>
-                    <div><h3>Hoạt động giáo lý viên</h3><LessonRichTextEditor ariaLabel={`Hoạt động giáo lý viên, bước ${index + 1}`} content={step.teacherActivity} lessonId={lessonId} getAccessToken={getAccessToken} onChange={(value) => updateProgression(index, 'teacherActivity', value)} /></div>
-                    <div><h3>Hoạt động học viên</h3><LessonRichTextEditor ariaLabel={`Hoạt động học viên, bước ${index + 1}`} content={step.learnerActivity} lessonId={lessonId} getAccessToken={getAccessToken} onChange={(value) => updateProgression(index, 'learnerActivity', value)} /></div>
-                    <button type="button" className="schedule-row-remove" aria-label={`Xóa bước ${index + 1}`} onClick={() => update({ progression: fields.progression.filter((_, itemIndex) => itemIndex !== index) })}><Trash2 size={15} /></button>
-                </div>)}
             </section>
             <section className="lesson-reading-sections">
                 {lessonSectionTitles.map(({ key, title }) => {

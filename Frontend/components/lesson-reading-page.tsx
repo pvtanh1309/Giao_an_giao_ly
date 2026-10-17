@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ArrowLeft, Plus, Save, Trash2, X } from 'lucide-react'
-import type { Lesson, LessonProgressionStep, LessonSection } from '../lib/content-data'
+import { ArrowLeft, Save, Trash2, X } from 'lucide-react'
+import type { Lesson, LessonSection } from '../lib/content-data'
 import { lessonPlans } from '../lib/content-data'
 import { getLessonSections } from '../lib/lesson-content'
 import { LessonRichTextEditor } from './lesson-rich-text-editor'
@@ -33,9 +33,6 @@ export function LessonReadingPage({ lesson, canManage, onSave, onPublish, onDele
     const update = (changes: Partial<Lesson>) => setDraft((current) => ({ ...current, ...changes }))
     const updateSection = (section: LessonSection, contentHtml: string) => update({
         sections: sections.map((current) => current.key === section.key ? { ...current, contentHtml } : current),
-    })
-    const updateProgression = (index: number, changes: Partial<LessonProgressionStep>) => update({
-        progression: draft.progression.map((step, stepIndex) => stepIndex === index ? { ...step, ...changes } : step),
     })
 
     const richField = (label: string, value: string, onChange: (content: string) => void) => (
@@ -91,13 +88,6 @@ export function LessonReadingPage({ lesson, canManage, onSave, onPublish, onDele
 
                 <section className="lesson-progression">
                     <h2>Gợi ý tiến trình lên lớp</h2>
-                    {editing && <button className="outline-button" onClick={() => update({ progression: [...draft.progression, { teacherActivity: '', learnerActivity: '' }] })}><Plus size={15} /> Thêm bước</button>}
-                    {((editing ? draft : lesson).progression ?? []).map((step, index) => <div className="lesson-progression-row" key={index}>
-                        <div><h3>Hoạt động giáo lý viên</h3><LessonRichTextEditor ariaLabel={`Hoạt động giáo lý viên, bước ${index + 1}`} content={step.teacherActivity} editable={editing} lessonId={lesson.id} getAccessToken={getAccessToken} onUploadStateChange={onUploadStateChange} onChange={(content) => updateProgression(index, { teacherActivity: content })} /></div>
-                        <div><h3>Hoạt động học viên</h3><LessonRichTextEditor ariaLabel={`Hoạt động học viên, bước ${index + 1}`} content={step.learnerActivity} editable={editing} lessonId={lesson.id} getAccessToken={getAccessToken} onUploadStateChange={onUploadStateChange} onChange={(content) => updateProgression(index, { learnerActivity: content })} /></div>
-                        {editing && <button className="schedule-row-remove" aria-label={`Xóa bước ${index + 1}`} onClick={() => update({ progression: draft.progression.filter((_, itemIndex) => itemIndex !== index) })}><Trash2 size={15} /></button>}
-                    </div>)}
-                    {!lesson.progression?.length && !editing && <p className="reading-empty">Chưa có gợi ý tiến trình.</p>}
                 </section>
 
                 <div className="lesson-reading-sections">

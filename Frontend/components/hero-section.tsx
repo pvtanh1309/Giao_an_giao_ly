@@ -10,7 +10,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
             <div className="hero-pattern" aria-hidden="true" />
             <div className="hero-content">
                 <div className="eyebrow">
-                    <span className="eyebrow-line" /> <Sparkles size={14} /> Kho tài liệu giáo lý Công giáo
+                    <span className="eyebrow-line" /> <Sparkles size={14} /> Kho lưu trữ giáo án và chương trình học 
                 </div>
                 <h1>
                     Cùng nhau lớn lên
@@ -18,7 +18,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
                     <em>trong đức tin</em>
                 </h1>
                 <p className="hero-copy">
-                    Nơi lưu trữ và chia sẻ giáo án, chương trình học giáo lý dành cho các bạn thiếu nhi và anh chị giáo lý viên.
+                    Nơi lưu trữ và chia sẻ giáo án, chương trình học giáo lý dành cho các anh chị giáo lý viên.
                 </p>
                 <div className="hero-actions">
                     <button className="primary-button" onClick={() => onNavigate('/lesson-plans')}>

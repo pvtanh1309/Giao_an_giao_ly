@@ -150,6 +150,58 @@
   min-width: 0;
 }
 
+.rich-text-content .tableWrapper {
+  max-width: 100%;
+  min-width: 0;
+  margin-block: 14px;
+  padding: 2px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+.rich-text-content .tiptap table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 100%;
+  margin: 0;
+}
+.rich-text-content .tiptap td,
+.rich-text-content .tiptap th {
+  position: relative;
+  box-sizing: border-box;
+  vertical-align: top;
+  padding: 10px;
+  border: 1px solid #b8b1a3;
+  overflow-wrap: anywhere;
+}
+.rich-text-content .tiptap th { background: #f1ede4; font-weight: 700; }
+.rich-text-content .tiptap :is(td, th) > :first-child { margin-top: 0; }
+.rich-text-content .tiptap :is(td, th) > :last-child { margin-bottom: 0; }
+.rich-text-content .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: rgba(70, 120, 170, .18);
+  pointer-events: none;
+}
+.rich-text-content .column-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  bottom: 0;
+  width: 8px;
+  z-index: 3;
+  background: #b68a3b;
+  pointer-events: none;
+}
+.rich-text-content .resize-cursor { cursor: col-resize; }
+.rich-text-table-insert { display: inline-flex; align-items: center; gap: 6px; }
+.rich-text-table-insert label { display: inline-flex; align-items: center; gap: 4px; font: 12px Arial, sans-serif; }
+.rich-text-table-insert input { width: 60px; height: 34px; padding: 0 4px; border: 1px solid var(--line); border-radius: 4px; background: white; }
+.rich-text-toolbar .rich-text-table-insert-button { width: auto; flex-basis: auto; padding: 0 8px; border-color: var(--line); white-space: nowrap; font: 12px Arial, sans-serif; }
+.rich-text-toolbar button:disabled { opacity: .45; cursor: default; }
+
 .rich-text-content .tiptap h1,
 .rich-text-content .tiptap h2,
 .rich-text-content .tiptap h3 {

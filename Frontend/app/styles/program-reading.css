@@ -53,6 +53,12 @@
 .schedule-editor-cell { display: flex; align-items: flex-start; gap: 6px; }
 .schedule-cell-content-button { flex: 1; min-width: 0; min-height: 40px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 4px; background: #fff; color: var(--ink); text-align: left; font: inherit; cursor: text; }
 .schedule-cell-content-button:hover { border-color: var(--blue); }
+.schedule-cell-background-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.schedule-cell-background-controls label { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
+.schedule-cell-background-controls input[type="checkbox"] { width: 18px; min-height: 18px; height: 18px; padding: 0; }
+.schedule-cell-background-controls input[type="color"] { width: 44px; height: 36px; min-height: 36px; padding: 3px; cursor: pointer; }
+.schedule-cell-background-controls input:disabled { opacity: .5; cursor: default; }
+.schedule-cell-background-preview { padding: 10px 12px; margin-bottom: 14px; border: 1px solid var(--line); border-radius: 4px; color: #000; font-size: 13px; }
 .schedule-cell-placeholder { color: #89929a; font: 12px Arial, sans-serif; }
 .schedule-editor-cell.is-merge-selected .schedule-cell-content-button { border-color: var(--blue); background: #eaf3f8; box-shadow: 0 0 0 2px rgba(45, 106, 145, .16); }
 .schedule-cell-split-button { flex: 0 0 auto; min-height: 32px; padding: 0 9px; border: 1px solid #c9a96b; border-radius: 4px; background: #fffaf0; color: #765b2d; font: 600 11px Arial, sans-serif; }

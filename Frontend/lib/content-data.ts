@@ -64,6 +64,7 @@ export type ProgramScheduleRow = {
     id: string
     values: Record<string, string>
     mergedCellGroups?: string[][]
+    cellBackgrounds?: Record<string, string>
 }
 
 export type Program = ContentState & {

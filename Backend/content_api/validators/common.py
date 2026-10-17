@@ -1,3 +1,4 @@
+import re
 from shared.errors import ApiError
 from shared.validation import fields, text, integer, version
 from shared.tiptap_validator import validate_document, validate_revision_size
@@ -67,7 +68,7 @@ def content_payload(body, kind, updating=False):
             invalid("scheduleColumns")
         rows, row_ids = [], set()
         for row in array(body["schedule"], "schedule", 500):
-            fields(row, {"id", "values", "mergedCellGroups"}, ("id", "values"))
+            fields(row, {"id", "values", "mergedCellGroups", "cellBackgrounds"}, ("id", "values"))
             row_id = text(row["id"], "schedule.id", max_length=100)
             if row_id in row_ids:
                 invalid("schedule.id", "Duplicate row ID.")
@@ -86,6 +87,12 @@ def content_payload(body, kind, updating=False):
                 used.update(group)
                 merged.append(group)
             rows.append({"id": row_id, "values": {key: document(value) for key, value in values.items()}, "mergedCellGroups": merged})
+            if "cellBackgrounds" in row:
+                backgrounds = row["cellBackgrounds"]
+                if (not isinstance(backgrounds, dict) or set(backgrounds) - set(ids)
+                        or any(not isinstance(color, str) or not re.fullmatch(r"#[0-9a-fA-F]{6}", color) for color in backgrounds.values())):
+                    invalid("schedule.cellBackgrounds", "Cell backgrounds must map column IDs to #RRGGBB colors.")
+                rows[-1]["cellBackgrounds"] = {key: color.lower() for key, color in backgrounds.items()}
         result.update(scheduleColumns=columns, schedule=rows)
     validate_revision_size(docs)
     return result

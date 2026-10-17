@@ -7,6 +7,7 @@ import { defaultProgramScheduleColumns, lessonPlans } from '../lib/content-data'
 import { ProgramScheduleCellContent } from './program-schedule-cell-content'
 import { ProgramScheduleEditor } from './program-schedule-editor'
 import { getProgramScheduleCellGroup, isProgramScheduleCellCovered } from '../lib/program-schedule-merges'
+import { getProgramCellBackground } from '../lib/program-schedule-backgrounds'
 
 export type ProgramReadingPageProps = {
     program: Program
@@ -80,7 +81,7 @@ export function ProgramReadingPage({ program, canManage, onSave, onPublish, onDe
                                 <tbody>{schedule.map((row) => <tr key={row.id}>{columns.map((column, index) => {
                                     if (isProgramScheduleCellCovered(row, column.id)) return null
                                     const group = getProgramScheduleCellGroup(row, column.id)
-                                    return <td data-column-id={column.id} className={index === 2 ? 'schedule-topic' : undefined} colSpan={group?.length} key={column.id}><ProgramScheduleCellContent value={row.values[column.id] ?? ''} /></td>
+                                    return <td data-column-id={column.id} className={index === 2 ? 'schedule-topic' : undefined} colSpan={group?.length} key={column.id} style={{ backgroundColor: getProgramCellBackground(row, column.id) }}><ProgramScheduleCellContent value={row.values[column.id] ?? ''} /></td>
                                 })}</tr>)}</tbody>
                             </table>
                         </div>
@@ -89,7 +90,7 @@ export function ProgramReadingPage({ program, canManage, onSave, onPublish, onDe
                                 if (isProgramScheduleCellCovered(row, column.id)) return null
                                 const group = getProgramScheduleCellGroup(row, column.id)
                                 const label = group?.map((id) => columns.find((item) => item.id === id)?.label).filter(Boolean).join(' · ') ?? column.label
-                                return <div className={`program-schedule-card-field program-schedule-card-field-${column.id}`} key={column.id}>
+                                return <div className={`program-schedule-card-field program-schedule-card-field-${column.id}`} key={column.id} style={{ backgroundColor: getProgramCellBackground(row, column.id) }}>
                                 <dt>{label}</dt>
                                 <dd><ProgramScheduleCellContent value={row.values[column.id] || '—'} /></dd>
                             </div>})}</dl>

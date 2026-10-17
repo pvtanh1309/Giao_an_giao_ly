@@ -61,7 +61,11 @@
 
 Các rich-text field (`keyPoints`, `sentiment`, `preparation`, hoạt động trong `progression` và `sections[].content`) là TipTap JSON object. Backend validate schema, độ sâu, node/mark allowlist và tổng UTF-8 serialized size; tổng rich-text của một revision không quá 200 KB. Field văn bản thuần như `title`, `summary`, `scriptureText`, `scriptureReference`, `level`, `sublevel` vẫn là string. `version` là phiên bản hiện đang đọc và bắt buộc khi cập nhật/publish để chống ghi đè đồng thời. Không chấp nhận URL ký hạn hoặc `src` do client gửi như dữ liệu bền vững.
 
+Trong mark `textStyle`, thuộc tính có giá trị `null` hoặc chuỗi rỗng được hiểu là định dạng mặc định. Backend loại bỏ các chuỗi rỗng trước khi lưu; cỡ chữ được đặt rõ ràng vẫn phải thuộc danh sách được phép. Điều này hỗ trợ dữ liệu dán có màu chữ nhưng không có `font-size`.
+
 Ảnh trong giáo án là image node TipTap chứa `mediaId`, `alt`, `width` và `alignment`; URL `src` chỉ được backend thêm tạm vào response sau kiểm tra quyền. Không lưu bytes, base64 hoặc URL ký vào DynamoDB.
+
+Bảng rich text dùng `table` → `tableRow` → `tableCell`/`tableHeader`. Ô chứa các block rich text, bao gồm đoạn văn, định dạng chữ và ảnh tham chiếu `mediaId` (ảnh chỉ trong giáo án). Thuộc tính ô được phép: `colspan`, `rowspan` (số nguyên dương), `colwidth` (`null` hoặc mảng số 0–10000 px có độ dài bằng `colspan`; Backend làm tròn thành số nguyên trước khi lưu DynamoDB), `align` (`null`, `left`, `center`, `right`). Bảng tối đa 200 hàng, 40 cột; các ô gộp phải nằm trong bảng, không chồng lấn và mỗi hàng phải phủ cùng số cột. Giới hạn 200 KB cho cả revision vẫn áp dụng. Frontend cho tạo tối đa 1000 ô mỗi lần và giữ bảng dưới dạng vùng cuộn ngang khi màn hình nhỏ.
 
 Khi trả chi tiết bài giáo án đã xuất bản, API chỉ thêm presigned GET URL (hạn 15 phút) vào `attrs.src` của image node được PUBLISHED revision tham chiếu. Route đọc bản nháp chỉ dành cho editor/admin và chỉ ký URL cho ảnh đang được bản nháp của đúng bài tham chiếu. Frontend không gửi lại URL này khi lưu.
 
@@ -100,6 +104,8 @@ Khi trả chi tiết bài giáo án đã xuất bản, API chỉ thêm presigned
 ```
 
 Mỗi chương trình tự định nghĩa `scheduleColumns`; không dùng bộ cột toàn cục. Mỗi `schedule[].values[columnId]` là TipTap JSON document (các ô được gộp lưu trong `mergedCellGroups`, không xóa giá trị cột gốc khác khi cập nhật cấu trúc bảng). Khi trao đổi qua API, gửi JSON object, không gửi chuỗi JSON/HTML.
+
+`schedule[].cellBackgrounds` là map tùy chọn từ ID cột đang tồn tại sang màu nền `#RRGGBB`, ví dụ `{ "content": "#fff2cc" }`. Không có key nghĩa là ô dùng nền mặc định. Màu lưu theo ID cột nên vẫn đi theo ô khi đổi tên hoặc đổi vị trí cột; xóa cột phải bỏ key màu tương ứng. Ô gộp hiển thị màu của ô đầu tiên bên trái; tách ô giữ lại màu riêng của từng ô. Màu được lưu cùng bản nháp và được đưa vào bản xuất bản.
 
 ### 3.3. Hồ sơ giáo lý viên
 

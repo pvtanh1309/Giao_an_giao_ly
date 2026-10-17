@@ -62,6 +62,10 @@ export function stripRuntimeImageUrls(document: JSONContent): JSONContent {
                 const attrs = { ...(child as Record<string, unknown>) }
                 delete attrs.src
                 result[key] = clean(attrs)
+            } else if (item.type === 'textStyle' && key === 'attrs' && child && typeof child === 'object') {
+                // Empty style attributes mean the default, including existing
+                // schedule cells produced before the paste parser was fixed.
+                result[key] = clean(Object.fromEntries(Object.entries(child).filter(([, value]) => value !== '')))
             } else {
                 result[key] = clean(child)
             }

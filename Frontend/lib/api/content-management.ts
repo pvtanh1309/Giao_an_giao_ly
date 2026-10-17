@@ -15,7 +15,7 @@ type Dto = ContentState & {
     progression?: { teacherActivity: JSONContent; learnerActivity: JSONContent }[]
     sections?: { key: string; title: string; content: JSONContent }[]
     scheduleColumns?: Program['scheduleColumns']
-    schedule?: { id: string; values: Record<string, JSONContent>; mergedCellGroups?: string[][] }[]
+    schedule?: { id: string; values: Record<string, JSONContent>; mergedCellGroups?: string[][]; cellBackgrounds?: Record<string, string> }[]
     category?: ReferenceDocument['category']; content?: JSONContent
 }
 
@@ -103,6 +103,7 @@ function programPayload(item: Program) {
     return { title: item.title.trim(), description: item.desc ?? '', level: item.level, sublevel: sublevel(item.level, item.sublevel),
         scheduleColumns: columns,
         schedule: (item.schedule ?? []).map((row) => ({ id: row.id, mergedCellGroups: row.mergedCellGroups ?? [],
+            ...(row.cellBackgrounds ? { cellBackgrounds: row.cellBackgrounds } : {}),
             values: Object.fromEntries(columns.map(({ id }) => [id, document(row.values[id] ?? '')])),
         })),
     }

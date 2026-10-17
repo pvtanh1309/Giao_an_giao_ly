@@ -5,6 +5,7 @@ import { FontSize } from '@tiptap/extension-text-style/font-size'
 import TextAlign from '@tiptap/extension-text-align'
 import { TextStyle } from '@tiptap/extension-text-style'
 import StarterKit from '@tiptap/starter-kit'
+import { TableKit } from '@tiptap/extension-table'
 import { clampLessonImageWidth } from '../lib/lesson-media.ts'
 import { lessonImageNodeView } from './lesson-image-node-view.ts'
 
@@ -136,17 +137,33 @@ const LessonStarterKit = StarterKit.extend({
     },
 })
 
+// Pasting a colored span without a font-size must keep the default size.
+// The upstream parser can return an empty string for that missing property.
+const LessonFontSize = FontSize.extend({
+    addGlobalAttributes() {
+        return (this.parent?.() ?? []).map((group) => {
+            const attribute = group.attributes.fontSize
+            if (!attribute) return group
+            return { ...group, attributes: { ...group.attributes, fontSize: {
+                ...attribute,
+                parseHTML: (element: HTMLElement) => attribute.parseHTML?.(element) || null,
+            } } }
+        })
+    },
+})
+
 export const lessonEditorExtensions = [
     LessonStarterKit,
     TextAlign.configure({ types: ['heading', 'paragraph'] }),
     TextStyle,
-    FontSize,
+    LessonFontSize,
     Color,
     FontFamily,
     Column,
     Columns,
     Indent,
     LessonImage,
+    TableKit.configure({ table: { resizable: true, renderWrapper: true, cellMinWidth: 100, handleWidth: 8 } }),
 ]
 
 export function parseLessonDocument(value: string): JSONContent {

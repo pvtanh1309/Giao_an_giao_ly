@@ -11,6 +11,7 @@ import { insertProgramScheduleColumn, moveProgramScheduleColumn } from '../lib/p
 import { getProgramScheduleCellGroup, isProgramScheduleCellCovered, mergeProgramScheduleCells, splitProgramScheduleCells } from '../lib/program-schedule-merges'
 import { ProgramScheduleCellContent } from './program-schedule-cell-content'
 import { ProgramScheduleFormatDialog } from './program-schedule-format-dialog'
+import { getProgramCellBackground, setProgramCellBackground } from '../lib/program-schedule-backgrounds'
 
 type ProgramScheduleEditorProps = {
     columns: ProgramScheduleColumn[]
@@ -111,7 +112,7 @@ export function ProgramScheduleEditor({ columns, rows, onColumnsChange, onChange
         onChange(rows.map(({ values, ...row }) => {
             const nextValues = { ...values }
             delete nextValues[columnToRemove.id]
-            return { ...row, values: nextValues }
+            return setProgramCellBackground({ ...row, values: nextValues }, columnToRemove.id, undefined)
         }))
         setColumnDialog(null)
         setColumnToRemove(null)
@@ -150,9 +151,9 @@ export function ProgramScheduleEditor({ columns, rows, onColumnsChange, onChange
                             if (isProgramScheduleCellCovered(row, column.id)) return null
                             const group = getProgramScheduleCellGroup(row, column.id)
                             const selected = mergeSelection?.rowId === row.id && mergeSelection.columnIds.includes(column.id)
-                            return <td key={column.id} data-label={column.label} colSpan={group?.length}>
+                            return <td key={column.id} data-label={column.label} colSpan={group?.length} style={{ backgroundColor: getProgramCellBackground(row, column.id) }}>
                                 <div className={`schedule-editor-cell${selected ? ' is-merge-selected' : ''}`}>
-                                    <button type="button" className="schedule-cell-content-button" aria-label={selectingCells ? `Chọn ô ${column.label}, dòng ${rowIndex + 1}` : `Chỉnh sửa ${column.label}, dòng ${rowIndex + 1}`} aria-pressed={selectingCells ? selected : undefined} onClick={() => selectingCells ? toggleCellSelection(row.id, column.id) : setFormatCell({ rowId: row.id, column, rowIndex })}>
+                                    <button type="button" className="schedule-cell-content-button" style={{ backgroundColor: getProgramCellBackground(row, column.id) }} aria-label={selectingCells ? `Chọn ô ${column.label}, dòng ${rowIndex + 1}` : `Chỉnh sửa ${column.label}, dòng ${rowIndex + 1}`} aria-pressed={selectingCells ? selected : undefined} onClick={() => selectingCells ? toggleCellSelection(row.id, column.id) : setFormatCell({ rowId: row.id, column, rowIndex })}>
                                         {row.values[column.id] ? <ProgramScheduleCellContent value={row.values[column.id]} /> : <span className="schedule-cell-placeholder">Bấm để nhập nội dung</span>}
                                     </button>
                                     {group ? <button type="button" className="schedule-cell-split-button" aria-label={`Tách ô đã gộp bắt đầu ở ${column.label}, dòng ${rowIndex + 1}`} title="Tách ô" onClick={() => onChange(rows.map((current) => current.id === row.id ? splitProgramScheduleCells(current, group) : current))}>Tách ô</button> : !selectingCells && <button type="button" className="schedule-cell-format-button" aria-label={`Định dạng ${column.label}, dòng ${rowIndex + 1}`} title="Định dạng văn bản" onClick={() => setFormatCell({ rowId: row.id, column, rowIndex })}><Type size={15} /></button>}
@@ -165,11 +166,12 @@ export function ProgramScheduleEditor({ columns, rows, onColumnsChange, onChange
             </div>
             {formatCell && <ProgramScheduleFormatDialog
                 value={rows.find((row) => row.id === formatCell.rowId)?.values[formatCell.column.id] ?? ''}
+                backgroundColor={getProgramCellBackground(rows.find((row) => row.id === formatCell.rowId), formatCell.column.id)}
                 ariaLabel={`${formatCell.column.label}, dòng ${formatCell.rowIndex + 1}`}
                 onCancel={() => setFormatCell(null)}
-                onSave={(value) => {
+                onSave={(value, backgroundColor) => {
                     onChange(rows.map((row) => row.id === formatCell.rowId
-                        ? { ...row, values: { ...row.values, [formatCell.column.id]: value } }
+                        ? setProgramCellBackground({ ...row, values: { ...row.values, [formatCell.column.id]: value } }, formatCell.column.id, backgroundColor)
                         : row))
                     setFormatCell(null)
                 }}

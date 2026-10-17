@@ -37,7 +37,7 @@ export function LessonDirectory({
         <section id="lesson-plans" className="content-section">
             <div className="section-heading">
                 <div>
-                    <span className="section-kicker">Thư viện tài liệu</span>
+                    <span className="section-kicker">Thư viện giáo án</span>
                     <h2>Giáo án theo ngành</h2>
                     <p>Chọn ngành học để bắt đầu hành trình đồng hành cùng các em.</p>
                 </div>

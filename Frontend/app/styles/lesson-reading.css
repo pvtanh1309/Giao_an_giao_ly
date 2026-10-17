@@ -83,6 +83,7 @@
 .lesson-reading-page .rich-text-content > div,
 .lesson-reading-page .rich-text-content p { line-height: inherit; }
 .lesson-progression { padding: 26px 0; }
+.lesson-progression > h2 { font-size: clamp(24px, 3vw, 30px); line-height: 1.35; font-weight: 700; }
 .lesson-progression > button { margin: 0 0 12px; }
 .lesson-progression-row { position: relative; display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #ddd5c8; }
 .lesson-progression-row > div { min-width: 0; padding: 16px 18px; }

@@ -65,12 +65,12 @@ export function AuthScreen() {
                         width={56}
                         height={56}
                     />
-                    <span><strong>Giáo lý</strong><small>Giáo phận Việt Nam</small></span>
+                    <span><strong>Giáo phận Xuân Lộc</strong><small>Giáo xứ Thái An</small></span>
                 </div>
                 <div className="auth-copy">
-                    <span className="section-kicker">Kho tài liệu giáo lý Công giáo</span>
+                    <span className="section-kicker">Tài liệu giáo lý Công giáo</span>
                     <h1>Cùng nhau lớn lên<br /><em>trong đức tin</em></h1>
-                    <p>Nơi giáo lý viên tìm thấy những bài học, chương trình và cảm hứng để đồng hành cùng các em.</p>
+                    <p>Nơi giáo lý viên tìm thấy những bài học, chương trình và cảm hứng để đồng hành cùng các em Thiếu Nhi.</p>
                 </div>
 
                 {needsNewPassword ? (
@@ -113,7 +113,7 @@ export function AuthScreen() {
                 ) : (
                     <form className="auth-form" onSubmit={handleLogin}>
                         <div className="auth-heading">
-                            <span className="section-kicker">Chào mừng trở lại</span>
+                            <span className="section-kicker">Anh/Chị hãy đăng nhập để xem tài liệu nhé</span>
                             <h2>Đăng nhập tài khoản</h2>
                         </div>
                         <label>
