@@ -88,6 +88,23 @@ function createFakeSdk() {
     return { state, sdk: { CognitoUserPool, CognitoUser, AuthenticationDetails } }
 }
 
+test('late token refresh failure from A does not clear SDK storage for B', async () => {
+    const { state, sdk } = createFakeSdk()
+    const auth = createCognitoAuth(config, { storage: createStorage(), sdk })
+    await auth.signIn('a@example.test', 'secret')
+    const a=state.lastUser; let complete
+    a.getSession=(callback)=>{complete=callback}
+    const pending=auth.getAccessToken()
+    auth.signOut()
+    state.authSession=session({sub:'b',token:'B-token'})
+    await auth.signIn('b@example.test','secret')
+    const before=state.signOuts
+    complete(new Error('Expired A'),null)
+    await assert.rejects(pending)
+    assert.equal(state.signOuts,before)
+    assert.equal(await auth.getAccessToken(),'B-token')
+})
+
 test('resolves exact role precedence and rejects unknown group values', () => {
     assert.equal(resolveAppRole(['reader']), 'reader')
     assert.equal(resolveAppRole(['reader', 'editor']), 'editor')

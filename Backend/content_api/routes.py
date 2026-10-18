@@ -1,4 +1,8 @@
 ROUTES = {
+    "GET /me/lessons/{lessonId}/notes": ("content_api.services.lesson_notes.list_notes", ("reader", "editor", "admin")),
+    "POST /me/lessons/{lessonId}/notes": ("content_api.services.lesson_notes.create", ("reader", "editor", "admin")),
+    "PUT /me/lessons/{lessonId}/notes/{noteId}": ("content_api.services.lesson_notes.update", ("reader", "editor", "admin")),
+    "DELETE /me/lessons/{lessonId}/notes/{noteId}": ("content_api.services.lesson_notes.remove", ("reader", "editor", "admin")),
     "GET /manage/lessons": ("content_api.services.lessons.list_management", ("editor", "admin")),
     "GET /manage/programs": ("content_api.services.programs.list_management", ("editor", "admin")),
     "GET /manage/programs/{programId}": ("content_api.services.programs.get_management", ("editor", "admin")),

@@ -35,10 +35,10 @@ export function LessonReadingPage({ lesson, canManage, onSave, onPublish, onDele
         sections: sections.map((current) => current.key === section.key ? { ...current, contentHtml } : current),
     })
 
-    const richField = (label: string, value: string, onChange: (content: string) => void) => (
+    const richField = (label: string, fieldId: string, value: string, onChange: (content: string) => void) => (
         <section className="lesson-reading-field">
             <h3>{label}</h3>
-            <LessonRichTextEditor key={`${label}-${editing ? 'edit' : 'view'}`} ariaLabel={label} content={value} editable={editing} lessonId={lesson.id} getAccessToken={getAccessToken} onUploadStateChange={onUploadStateChange} onChange={onChange} />
+            <LessonRichTextEditor key={`${label}-${editing ? 'edit' : 'view'}`} noteFieldId={fieldId} ariaLabel={label} content={value} editable={editing} lessonId={lesson.id} getAccessToken={getAccessToken} onUploadStateChange={onUploadStateChange} onChange={onChange} />
         </section>
     )
 
@@ -65,7 +65,7 @@ export function LessonReadingPage({ lesson, canManage, onSave, onPublish, onDele
                         {editing ? <>
                             <textarea aria-label="Lời Chúa" value={draft.scripture ?? ''} onChange={(event) => update({ scripture: event.target.value })} rows={2} />
                             <input aria-label="Trích dẫn Lời Chúa" value={draft.scriptureReference ?? ''} onChange={(event) => update({ scriptureReference: event.target.value })} placeholder="Trích dẫn" />
-                        </> : <><blockquote>{lesson.scripture || 'Chưa có lời Chúa cho bài này.'}</blockquote>{lesson.scriptureReference && <cite>— {lesson.scriptureReference}</cite>}</>}
+                        </> : <><blockquote>{lesson.scripture ? <LessonRichTextEditor content={lesson.scripture} editable={false} noteFieldId="scripture" ariaLabel="Lời Chúa" /> : 'Chưa có lời Chúa cho bài này.'}</blockquote>{lesson.scriptureReference && <cite>— {lesson.scriptureReference}</cite>}</>}
                     </div>
                     {editing ? <div className="lesson-reading-metadata">
                         <input aria-label="Số bài" value={draft.tag} onChange={(event) => update({ tag: event.target.value })} />
@@ -81,9 +81,9 @@ export function LessonReadingPage({ lesson, canManage, onSave, onPublish, onDele
                 </header>
 
                 <div className="lesson-reading-intro">
-                    {richField('Ý chính', (editing ? draft : lesson).keyPoints, (value) => update({ keyPoints: value }))}
-                    {richField('Tâm tình', (editing ? draft : lesson).sentiment, (value) => update({ sentiment: value }))}
-                    <LessonPreparationField key={`${lesson.id}-${editing ? 'edit' : 'view'}`} content={(editing ? draft : lesson).preparation} editable={editing} lessonId={lesson.id} getAccessToken={getAccessToken} onUploadStateChange={onUploadStateChange} onChange={(preparation) => update({ preparation })} />
+                    {richField('Ý chính', 'keyPoints', (editing ? draft : lesson).keyPoints, (value) => update({ keyPoints: value }))}
+                    {richField('Tâm tình', 'sentiment', (editing ? draft : lesson).sentiment, (value) => update({ sentiment: value }))}
+                    <LessonPreparationField key={`${lesson.id}-${editing ? 'edit' : 'view'}`} noteFieldId="preparation" content={(editing ? draft : lesson).preparation} editable={editing} lessonId={lesson.id} getAccessToken={getAccessToken} onUploadStateChange={onUploadStateChange} onChange={(preparation) => update({ preparation })} />
                 </div>
 
                 <section className="lesson-progression">
@@ -97,6 +97,7 @@ export function LessonReadingPage({ lesson, canManage, onSave, onPublish, onDele
                             key={`${section.key}-${editing ? 'edit' : 'view'}`}
                             ariaLabel={`Mục ${section.key}. ${section.title}`}
                             content={section.contentHtml}
+                            noteFieldId={`section:${section.key}`}
                             editable={editing}
                             lessonId={lesson.id}
                             getAccessToken={getAccessToken}

@@ -32,5 +32,5 @@ test('reference view state is encoded in query parameters for static-compatible 
     assert.match(page, /referenceId/)
     assert.match(page, /referenceCategory/)
     assert.match(page, /pushState/)
-    assert.match(page, /popstate/)
+    assert.match(page, /guardHistoryNavigation\(syncSelectionFromUrl\)/)
 })

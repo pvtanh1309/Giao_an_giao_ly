@@ -27,7 +27,7 @@ def test_route_role_matrix(route, target, allowed, group, monkeypatch):
     response = handle(event, None, {**CONTENT, **USERS}, lambda *args: None)
     expected = 403
     if group in allowed:
-        expected = 201 if route in {"POST /manage/lessons", "POST /manage/programs", "POST /manage/references", "POST /manage/catechists", "POST /admin/accounts"} else 200
+        expected = 201 if route in {"POST /manage/lessons", "POST /manage/programs", "POST /manage/references", "POST /manage/catechists", "POST /admin/accounts", "POST /me/lessons/{lessonId}/notes"} else 200
     assert response["statusCode"] == expected
     assert bool(called) == (group in allowed)
     assert json.loads(response["body"])["meta"]["requestId"] == "request"
@@ -36,5 +36,12 @@ def test_route_role_matrix(route, target, allowed, group, monkeypatch):
 def test_all_contract_routes_present():
     contract = (Path(__file__).parents[1] / "docs" / "api-contract-v1.md").read_text(encoding="utf-8")
     expected = set(re.findall(r"\|\s*`((?:GET|POST|PUT|DELETE) /[^`]+)`", contract))
-    assert len(expected) == 42
+    assert len(expected) >= 44
     assert expected == set(CONTENT) | set(USERS)
+
+
+@pytest.mark.parametrize('module,routes', [('content-api', CONTENT), ('user-api', USERS)])
+def test_terraform_routes_match_python_registry(module, routes):
+    source = (Path(__file__).parents[2] / 'infrastructure' / 'modules' / module / 'main.tf').read_text(encoding='utf-8')
+    declared = set(re.findall(r'"((?:GET|POST|PUT|DELETE) /[^"\n]+)"', source))
+    assert declared == set(routes)

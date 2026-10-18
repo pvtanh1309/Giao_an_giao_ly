@@ -78,7 +78,9 @@ def test_real_cognito_and_account_creation(monkeypatch):
     pool = cognito.create_user_pool(PoolName='integration')['UserPool']['Id']
     cognito.create_group(UserPoolId=pool, GroupName='reader')
     monkeypatch.setenv('USER_POOL_ID', pool)
-    result = create_account({'body': {'email': 'reader@example.com', 'password': 'Password!123', 'role': 'READER'},
+    store.put({'PK': 'CATECHIST#cat-reader', 'SK': 'PROFILE', 'catechistId': 'cat-reader',
+               'status': 'ACTIVE', 'name': 'Reader', 'version': 1})
+    result = create_account({'body': {'email': 'reader@example.com', 'password': 'Password!123', 'role': 'READER', 'catechistId': 'cat-reader'},
                              'path_parameters': {}, 'query': {}, 'request_id': 'test'},
                             {'sub': 'operator', 'groups': ('admin',)})
     account = store.get('ACCOUNT#' + result['cognitoSub'])

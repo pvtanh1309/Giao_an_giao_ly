@@ -85,14 +85,24 @@ export function invalidateAuthSession(client: AuthClient): AuthAction {
     return { type: 'UNAUTHORIZED' }
 }
 
+export function invalidateCurrentAuthSession(client: AuthClient, dispatch: (action: AuthAction) => void, isCurrent: () => boolean): void {
+    if (!isCurrent()) return
+    try { dispatch(invalidateAuthSession(client)) }
+    catch { dispatch({ type: 'UNAUTHORIZED' }) }
+}
+
 export async function getAccessTokenAuthSession(
     client: AuthClient,
     dispatch: (action: AuthAction) => void,
+    isCurrent: () => boolean = () => true,
 ): Promise<string> {
+    if (!isCurrent()) throw new Error('Phiên đăng nhập đã thay đổi.')
     try {
-        return await client.getAccessToken()
+        const token = await client.getAccessToken()
+        if (!isCurrent()) throw new Error('Phiên đăng nhập đã thay đổi.')
+        return token
     } catch {
-        dispatch(invalidateAuthSession(client))
+        invalidateCurrentAuthSession(client, dispatch, isCurrent)
         throw new Error('Phiên đăng nhập đã hết hạn.')
     }
 }

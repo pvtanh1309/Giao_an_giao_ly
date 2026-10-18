@@ -26,6 +26,12 @@ def handle_stream(event, context):
             store = Store()
             if store.get(item['PK']) is not None:
                 continue
+            rows = [row for row in store.query(item['PK'])
+                    if row.get('SK', '').startswith(('LESSONNOTE#', 'LESSONNOTECOUNT#'))]
+            for offset in range(0, len(rows), 24):
+                store.transact([{'check': {'PK': item['PK'], 'SK': 'PROFILE'}, 'exists': False}]
+                    + [{'delete': {'PK': row['PK'], 'SK': row['SK']}, 'version': row.get('version')}
+                       for row in rows[offset:offset + 24]])
             Cognito().delete(item.get('cognitoUsername', sub))
             if item.get('catechistId'):
                 store.delete('CATECHIST#' + item['catechistId'], 'ACCOUNT#' + sub)

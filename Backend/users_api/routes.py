@@ -1,6 +1,8 @@
 """Fixed route registry; shared HTTP dispatch enforces every group allowlist."""
 
 ROUTES = {
+    "GET /me": ("users_api.services.me.get_me", ("reader", "editor", "admin")),
+    "PUT /me/profile": ("users_api.services.me.update_profile", ("reader", "editor", "admin")),
     "GET /manage/catechists": ("users_api.services.catechists.list_management", ("editor", "admin")),
     "GET /catechists": ("users_api.services.catechists.list_profiles", ("reader", "editor", "admin")),
     "POST /manage/catechists": ("users_api.services.catechists.create_profile", ("editor", "admin")),

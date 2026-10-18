@@ -1,8 +1,9 @@
 'use client'
 
 import Image from 'next/image'
-import { LogIn, Menu, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import type { AppRole } from '../lib/auth/types'
+import { AccountMenu } from './account-menu'
 
 type SiteHeaderProps = {
     activeNav: string
@@ -65,9 +66,7 @@ export function SiteHeader({
                     )}
                 </nav>
                 <div className="header-actions">
-                    <button className="login-button" onClick={onLogout}>
-                        <LogIn size={16} /> Đăng xuất
-                    </button>
+                    <AccountMenu onLogout={onLogout} />
                     <button
                         className="menu-button"
                         onClick={onToggleMenu}

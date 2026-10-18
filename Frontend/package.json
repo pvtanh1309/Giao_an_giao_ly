@@ -9,6 +9,7 @@
     "build": "next build",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "test:content-ui": "node tests/browser/content-persistence.mjs",
+    "test:personal-ui": "node tests/browser/personal-profiles.mjs",
     "start": "next start"
   },
   "dependencies": {
@@ -20,6 +21,7 @@
     "@tiptap/extension-text-align": "3.31.4",
     "@tiptap/extension-text-style": "3.31.4",
     "@tiptap/extension-underline": "3.31.4",
+    "@tiptap/pm": "3.31.4",
     "@tiptap/react": "3.31.4",
     "@tiptap/starter-kit": "3.31.4",
     "@vercel/analytics": "1.6.1",

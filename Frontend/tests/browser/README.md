@@ -15,9 +15,16 @@ Every other external request is blocked. It needs no AWS credentials and does no
 test deployed API Gateway, Cognito, DynamoDB, or S3.
 
 Checks cover create/save/reload/publish for lessons, programs and references;
-preserving edits after a failed write; preserving progression content when a row
-is deleted; blocking save/logout during image upload; reader access after publication;
+preserving edits after a failed write; keeping progression as a heading;
+blocking save/logout during image upload; reader access after publication;
 and logout once pending work finishes.
+
+Run `npm run test:personal-ui` for the private profile/note checks. This uses
+`personal_backend.py` with real HTTP route/auth/service code and offline fixtures
+for two separate Reader accounts. Checks cover contact email versus login email,
+emoji offsets, note create/edit/delete and reload, cross-field selection rejection,
+unsaved browser Back cancellation, mobile viewport, and isolation between accounts.
+All external requests are intercepted; neither runner accesses live AWS.
 Editor checks also cover font-size controls following the current selection,
 literal `1. `, `- `, `* ` and `+ ` prefixes, default black text, and formatting after save/reload.
 Formatting across a soft line break (`Shift+Enter`) must also save and reload

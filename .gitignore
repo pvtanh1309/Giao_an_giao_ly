@@ -36,6 +36,7 @@ Backend/docs/*
 !Backend/docs/api-contract-v1.md
 !Backend/docs/backend-database-design.md
 !Backend/docs/backend-implementation-plan.md
+!Backend/docs/personal-accounts.md
 !Backend/docs/deployment-runbook.md
 .venv/
 .tools/
@@ -51,3 +52,4 @@ TODO-INDEX.md
 Backend/docs/deployment-runbook.md
 **/infrastructure/RUNBOOK-CICD.md
 **/Backend/docs/api-contract-v1.md
+**/Backend/docs/personal-accounts.md

@@ -42,6 +42,10 @@ class Store:
     def query(self, pk):
         return self._query(KeyConditionExpression="PK = :pk", ExpressionAttributeValues=self.encode({":pk": pk}), ConsistentRead=True)
 
+    def query_prefix(self, pk, sk_prefix):
+        return self._query(KeyConditionExpression="PK = :pk AND begins_with(SK, :prefix)",
+                           ExpressionAttributeValues=self.encode({":pk": pk, ":prefix": sk_prefix}), ConsistentRead=True)
+
     def transact_get(self, keys):
         if not keys or len(keys) > 100:
             raise ValueError("Transaction reads need between 1 and 100 keys")

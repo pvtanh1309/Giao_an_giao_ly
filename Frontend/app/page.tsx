@@ -21,6 +21,8 @@ import {
   X,
 } from 'lucide-react'
 import { SiteHeader } from '../components/site-header'
+import { usePersonalProfile } from '../components/personal-profile-provider'
+import { canLeaveCurrentPage, guardHistoryNavigation } from '../lib/unsaved-work'
 import { CatechistDirectory } from '../components/catechist-directory'
 import { HeroSection } from '../components/hero-section'
 import { LessonDirectory } from '../components/lesson-directory'
@@ -28,7 +30,7 @@ import { ProgramDirectory } from '../components/program-directory'
 import { StatsStrip } from '../components/stats-strip'
 import { AdminEditorDialog } from '../components/admin-editor-dialog'
 import { LessonDialogs } from '../components/lesson-dialogs'
-import { LessonReadingPage } from '../components/lesson-reading-page'
+import { LessonWithNotes } from '../components/lesson-with-notes'
 import { ProgramReadingPage } from '../components/program-reading-page'
 import { ReferenceDirectory } from '../components/reference-directory'
 import { ReferenceReadingPage } from '../components/reference-reading-page'
@@ -59,6 +61,7 @@ import type { ReferenceCategory, ReferenceDocument } from '../lib/reference-cont
 
 export default function Page({ initialView = 'overview' }: { initialView?: 'overview' | 'lessons' | 'programs' | 'catechists' | 'accounts' }) {
   const { status, user, logout, getAccessToken } = useAuth()
+  const personal = usePersonalProfile()
   const onUnauthorized = useUnauthorizedHandler()
   const accountService = useMemo(() => status === 'authenticated' ? createAccountManagement(createUsersApi({
     config: getPublicConfig(), getAccessToken, onUnauthorized,
@@ -107,6 +110,10 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   const [programList, setProgramList] = useState<Program[]>([])
   const [adminNotice, setAdminNotice] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [catechistList, setCatechistList] = useState<Catechist[]>([])
+  useEffect(() => {
+    const profile = personal.me?.profile
+    if (profile) setCatechistList((items) => items.map((item) => item.id === profile.catechistId ? { ...item, email: profile.email, phone: profile.phone, homeroomClass: profile.group, accompanyingClass: profile.accompanyingClass ?? '', version: profile.version } : item))
+  }, [personal.me])
   const [catechistsLoading, setCatechistsLoading] = useState(true)
   const [catechistsError, setCatechistsError] = useState('')
   const [catechistsReload, setCatechistsReload] = useState(0)
@@ -259,12 +266,12 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
       setSelectedProgramSublevel(params.get('programSublevel'))
     }
     syncSelectionFromUrl()
-    window.addEventListener('popstate', syncSelectionFromUrl)
-    return () => window.removeEventListener('popstate', syncSelectionFromUrl)
+    return guardHistoryNavigation(syncSelectionFromUrl)
   }, [initialView])
 
   const navigateTo = (path: string) => {
     if (contentInFlight.current || mediaUploadsInFlight.current) return
+    if (!canLeaveCurrentPage()) return
     window.location.href = path
   }
 
@@ -563,7 +570,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         mobileMenu={mobileMenu}
         currentUser={currentUser}
         onNavigate={navigateTo}
-        onLogout={() => { if (!contentInFlight.current && !mediaUploadsInFlight.current) logout() }}
+        onLogout={() => { if (!contentInFlight.current && !mediaUploadsInFlight.current && canLeaveCurrentPage()) logout() }}
         onToggleMenu={() => setMobileMenu(!mobileMenu)}
       />
  
@@ -642,7 +649,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
       />}
 
       {initialView === 'lessons' && selectedLessonId && (
-        selectedLessonForReading && detailReady === selectedDetailKey ? <LessonReadingPage
+        selectedLessonForReading && detailReady === selectedDetailKey ? <LessonWithNotes key={`${user?.sub}:${selectedLessonId}`}
           lesson={selectedLessonForReading}
           canManage={currentUser === 'admin' || currentUser === 'editor'}
           onBack={() => returnToList('lessonId')}

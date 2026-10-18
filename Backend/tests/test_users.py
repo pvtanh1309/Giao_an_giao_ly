@@ -41,6 +41,8 @@ class MemoryStore:
         self.transact([{'delete': {'PK': pk, 'SK': sk}, 'version': expected_version}])
 
     def transact(self, writes):
+        if self.fail_finalize and any(w.get('put', {}).get('entityType') == 'ACCOUNT' and not w['put'].get('pendingAction') for w in writes):
+            raise RuntimeError('Persistence unavailable')
         if self.before_transaction:
             callback, self.before_transaction = self.before_transaction, None
             callback()
@@ -49,7 +51,7 @@ class MemoryStore:
         for write in writes:
             item = write.get('put') or write.get('delete') or write.get('check')
             old = self.items.get((item['PK'], item['SK']))
-            if (write.get('create') and old is not None) or (
+            if ((write.get('create') or write.get('exists') is False) and old is not None) or (
                     write.get('version') is not None and (old or {}).get('version') != write['version']):
                 raise ApiError(409, 'VERSION_CONFLICT', 'Changed.')
         changed = deepcopy(self.items)
@@ -86,6 +88,9 @@ class FakeCognito:
 @pytest.fixture
 def env(monkeypatch):
     store, cognito = MemoryStore(), FakeCognito()
+    store.items[('CATECHIST#cat-reader', 'PROFILE')] = {'PK': 'CATECHIST#cat-reader', 'SK': 'PROFILE',
+        'catechistId': 'cat-reader', 'entityType': 'CATECHIST', 'name': 'Reader profile', 'normalizedName': 'reader profile',
+        'email': 'reader-contact@example.com', 'phone': '', 'group': '', 'status': 'ACTIVE', 'version': 1}
     for module in (accounts, catechists, stream):
         monkeypatch.setattr(module, 'Store', lambda: store)
     for module in (accounts, stream):
@@ -100,7 +105,7 @@ def profile():
 
 def reader_account():
     return accounts.create_account(request({'email': 'reader@example.com', 'password': 'Password!123',
-                                             'role': 'READER'}), ADMIN)
+                                             'role': 'READER', 'catechistId': 'cat-reader'}), ADMIN)
 
 
 def editor_account(profile_id):
@@ -111,7 +116,7 @@ def editor_account(profile_id):
 @pytest.mark.parametrize('body', [
     {'email': 'a@b.com', 'password': 'Password!123', 'role': 'ADMIN'},
     {'email': 'a@b.com', 'password': 'Password!123', 'role': 'EDITOR'},
-    {'email': 'a@b.com', 'password': 'Password!123', 'role': 'READER', 'catechistId': 'cat-1'},
+    {'email': 'a@b.com', 'password': 'Password!123', 'role': 'READER'},
     {'email': 'bad', 'password': 'Password!123', 'role': 'READER'},
     {'email': 'a@b.com', 'password': 'Password!123', 'role': 'READER', 'createdBy': 'attacker'},
 ])
@@ -131,7 +136,7 @@ def test_creation_suppresses_email_sets_permanent_password_and_never_persists_se
     store, cognito = env
     result = reader_account()
     assert result['role'] == 'READER'
-    assert len(store.items) == 1
+    assert len(store.items) == 3
     assert 'Password!123' not in repr(store.items)
     assert 'cognitoUsername' not in result
     assert cognito.calls[0][1]['MessageAction'] == 'SUPPRESS'
@@ -149,14 +154,17 @@ def test_create_compensates_every_post_creation_failure(env, stage):
     with pytest.raises(RuntimeError):
         reader_account()
     assert cognito.calls[-1] == ('admin_delete_user', {'Username': 'username-1'})
-    assert not store.items
+    assert not any(i.get('entityType') == 'ACCOUNT' for i in store.items.values())
 
 
 def test_profile_archive_unlinks_all_accounts_without_cognito_changes(env):
     store, cognito = env
     created = profile()
     first = editor_account(created['catechistId'])
-    second = editor_account(created['catechistId'])
+    # Historical duplicate links still need atomic unlink-on-archive support.
+    second = {**first, 'cognitoSub': 'legacy-sub'}
+    store.items[('ACCOUNT#legacy-sub', 'PROFILE')] = {**store.get('ACCOUNT#' + first['cognitoSub']), 'PK': 'ACCOUNT#legacy-sub', 'cognitoSub': 'legacy-sub'}
+    store.items[('CATECHIST#' + created['catechistId'], 'ACCOUNT#legacy-sub')] = {'PK': 'CATECHIST#' + created['catechistId'], 'SK': 'ACCOUNT#legacy-sub', 'cognitoSub': 'legacy-sub'}
     previous_calls = len(cognito.calls)
     deleted = catechists.archive_profile(request(catechistId=created['catechistId']), EDITOR)
     assert deleted['purgeAt'] > catechists.epoch()
@@ -295,6 +303,53 @@ def test_stream_returns_sequence_number_for_failed_cleanup(env):
         'batchItemFailures': [{'itemIdentifier': '456'}]}
 
 
+def test_stream_purges_private_notes_and_quotas_idempotently(env):
+    store, _ = env
+    item = {'PK': 'ACCOUNT#sub', 'SK': 'PROFILE', 'entityType': 'ACCOUNT', 'cognitoSub': 'sub',
+            'accountStatus': 'DELETED', 'role': 'READER', 'purgeAt': 1}
+    for sk in ['LESSONNOTE#lesson_a#one', 'LESSONNOTECOUNT#lesson_a']:
+        store.items[(item['PK'], sk)] = {'PK': item['PK'], 'SK': sk, 'version': 1}
+    result = stream.handle_stream({'Records': [ttl_record(item)]}, None)
+    assert result == {'batchItemFailures': []}
+    assert store.query(item['PK']) == []
+    assert stream.handle_stream({'Records': [ttl_record(item)]}, None) == result
+
+
+def test_purge_aborts_if_account_reappears_during_cleanup(env):
+    store, cognito = env
+    item = {'PK': 'ACCOUNT#sub', 'SK': 'PROFILE', 'entityType': 'ACCOUNT', 'cognitoSub': 'sub',
+            'accountStatus': 'DELETED', 'role': 'READER', 'purgeAt': 1}
+    note = {'PK': item['PK'], 'SK': 'LESSONNOTE#lesson_a#one', 'version': 1}
+    store.items[(note['PK'], note['SK'])] = note
+    store.before_transaction = lambda: store.items.update({(item['PK'], 'PROFILE'): {**item, 'accountStatus': 'ACTIVE'}})
+    assert stream.handle_stream({'Records': [ttl_record(item)]}, None) == {'batchItemFailures': [{'itemIdentifier': '123'}]}
+    assert store.get(note['PK'], note['SK']) == note
+    assert cognito.calls == []
+
+
+def test_purge_retries_after_partial_cleanup(env):
+    store, cognito = env
+    item = {'PK': 'ACCOUNT#sub', 'SK': 'PROFILE', 'entityType': 'ACCOUNT', 'cognitoSub': 'sub',
+            'accountStatus': 'DELETED', 'role': 'READER', 'purgeAt': 1}
+    for index in range(50):
+        sk = 'LESSONNOTE#lesson_a#' + str(index)
+        store.items[(item['PK'], sk)] = {'PK': item['PK'], 'SK': sk, 'version': 1}
+    transact, calls = store.transact, []
+    def interrupted(writes):
+        calls.append(len(writes))
+        assert len(writes) <= 25
+        if len(calls) == 2:
+            raise RuntimeError('Interruption')
+        transact(writes)
+    store.transact = interrupted
+    assert stream.handle_stream({'Records': [ttl_record(item)]}, None)['batchItemFailures']
+    assert len(store.query(item['PK'])) == 26
+    assert cognito.calls == []
+    store.transact = transact
+    assert stream.handle_stream({'Records': [ttl_record(item)]}, None) == {'batchItemFailures': []}
+    assert store.query(item['PK']) == []
+
+
 def test_cognito_duplicate_mapping_and_delete_idempotency():
     from botocore.exceptions import ClientError
     from users_api.repositories.cognito import Cognito
@@ -365,7 +420,7 @@ def test_http_boundary_enforces_group_and_serializes_safe_creation(env, monkeypa
     event = {'routeKey': 'POST /admin/accounts', 'requestContext': {'requestId': 'http-test',
              'authorizer': {'jwt': {'claims': {'sub': 'admin-1', 'cognito:groups': ['admin'],
                                                'token_use': 'access'}}}},
-             'body': json.dumps({'email': 'reader@example.com', 'password': 'Password!123', 'role': 'READER'})}
+             'body': json.dumps({'email': 'reader@example.com', 'password': 'Password!123', 'role': 'READER', 'catechistId': 'cat-reader'})}
     response = lambda_handler(event, None)
     assert response['statusCode'] == 201
     body = json.loads(response['body'])

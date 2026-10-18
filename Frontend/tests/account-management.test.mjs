@@ -5,7 +5,7 @@ import * as management from '../lib/api/account-management.ts'
 
 const profile = { catechistId: 'cat-real', name: 'Maria', email: 'editor@example.com', group: 'Ấu 1', status: 'ACTIVE', version: 2 }
 const reader = { cognitoSub: 'real-cognito-sub', email: 'reader@example.com', role: 'READER', accountStatus: 'ACTIVE', createdAt: '2026-10-15T00:00:00Z' }
-const form = { email: 'reader@example.com', password: 'Password!123', confirmPassword: 'Password!123', role: 'reader', linkedCatechistId: '' }
+const form = { email: 'reader@example.com', password: 'Password!123', confirmPassword: 'Password!123', role: 'reader', linkedCatechistId: 'cat-real' }
 function service(fetchImpl) {
     return management.createAccountManagement(createUsersApi({
         config: { usersApiUrl: 'https://users.example.test' },
@@ -19,10 +19,10 @@ test('reader creation sends a real authorized POST and uses Cognito sub from the
         assert.equal(url, 'https://users.example.test/admin/accounts')
         assert.equal(init.method, 'POST')
         assert.equal(init.headers.get('Authorization'), 'Bearer verified-access-token')
-        assert.deepEqual(JSON.parse(init.body), { email: form.email, password: form.password, role: 'READER' })
+        assert.deepEqual(JSON.parse(init.body), { email: form.email, password: form.password, role: 'READER', catechistId: 'cat-real' })
         return response(reader)
     })
-    const saved = await api.createAccount(form, [])
+    const saved = await api.createAccount(form, [{ id: 'cat-real' }])
     assert.equal(saved.id, 'real-cognito-sub')
     assert.equal(saved.status, 'Hoạt động')
     assert.ok(!JSON.stringify(saved).includes(form.password))
@@ -43,7 +43,7 @@ test('editor creation sends the persisted catechist ID, never an email or tempor
 
 test('failed creation rejects without inventing a successful account', async () => {
     const api = service(async () => new Response(JSON.stringify({ error: { code: 'EMAIL_ALREADY_EXISTS', message: 'Email already exists.' } }), { status: 409 }))
-    await assert.rejects(api.createAccount(form, []), { code: 'EMAIL_ALREADY_EXISTS' })
+    await assert.rejects(api.createAccount(form, [{ id: 'cat-real' }]), { code: 'EMAIL_ALREADY_EXISTS' })
 })
 
 test('account listing follows pagination and maps linked profile IDs', async () => {

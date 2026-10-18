@@ -1,6 +1,10 @@
 locals {
   name = "${var.project_name}-${var.environment}-content-api"
   routes = toset([
+    "GET /me/lessons/{lessonId}/notes",
+    "POST /me/lessons/{lessonId}/notes",
+    "PUT /me/lessons/{lessonId}/notes/{noteId}",
+    "DELETE /me/lessons/{lessonId}/notes/{noteId}",
     "GET /manage/lessons",
     "GET /manage/programs",
     "GET /manage/programs/{programId}",

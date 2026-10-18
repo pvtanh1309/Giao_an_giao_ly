@@ -1,0 +1,5 @@
+[
+  {"value":"A😀\r\nB","text":"A😀\nB","start":1,"end":2,"quote":"😀"},
+  {"value":{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Lời Chúa"},{"type":"hardBreak"},{"type":"text","text":"Việt Nam"}]},{"type":"paragraph","content":[{"type":"image","attrs":{"mediaId":"media_a"}}]}]},"text":"Lời Chúa\nViệt Nam\n￼","start":9,"end":17,"quote":"Việt Nam"},
+  {"value":{"type":"doc","content":[{"type":"columns","content":[{"type":"column","content":[{"type":"table","content":[{"type":"tableRow","content":[{"type":"tableCell","content":[{"type":"paragraph","content":[{"type":"text","text":"A😀"},{"type":"hardBreak"},{"type":"text","text":"B"}]}]},{"type":"tableCell","content":[{"type":"paragraph","content":[{"type":"text","text":"Việt"}]}]}]}]}]},{"type":"column","content":[{"type":"paragraph","content":[{"type":"text","text":"Nam"}]}]}]}]},"text":"A😀\nB\nViệt\nNam","start":5,"end":9,"quote":"Việt"}
+]

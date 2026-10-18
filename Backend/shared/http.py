@@ -53,6 +53,8 @@ def handle(event, context, routes, stream_handler):
     try:
         data = dispatch(event, routes, request_id)
         status = 201 if event.get("routeKey") in {"POST /manage/lessons", "POST /manage/programs", "POST /manage/references", "POST /manage/catechists", "POST /admin/accounts"} else 200
+        if event.get("routeKey") == "POST /me/lessons/{lessonId}/notes":
+            status = 201
         return success(data, request_id, status)
     except ApiError as exc:
         return failure(exc.code, exc.message, request_id, exc.status, exc.details)

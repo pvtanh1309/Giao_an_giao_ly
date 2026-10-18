@@ -17,7 +17,7 @@ import {
     completeNewPasswordAuthSession,
     getAccessTokenAuthSession,
     initialAuthState,
-    invalidateAuthSession,
+    invalidateCurrentAuthSession,
     loginAuthSession,
     restoreAuthSession,
 } from '../lib/auth/state.ts'
@@ -40,6 +40,8 @@ const UnauthorizedContext = createContext<(() => void) | null>(null)
 export function AuthProvider({ children, client }: { children: ReactNode; client?: AuthClient }) {
     const [state, dispatch] = useReducer(authReducer, initialAuthState)
     const clientRef = useRef<AuthClient | null>(client ?? null)
+    const sessionVersion = useRef(0)
+    const currentVersion = sessionVersion.current
 
     const getClient = useCallback(() => {
         if (client) clientRef.current = client
@@ -49,10 +51,11 @@ export function AuthProvider({ children, client }: { children: ReactNode; client
 
     useEffect(() => {
         let active = true
+        const version = ++sessionVersion.current
 
         try {
             void restoreAuthSession(getClient()).then((action) => {
-                if (active) dispatch(action)
+                if (active && version === sessionVersion.current) dispatch(action)
             })
         } catch {
             dispatch({ type: 'RESTORE_ANONYMOUS', error: 'Hệ thống đăng nhập chưa được cấu hình.' })
@@ -62,24 +65,29 @@ export function AuthProvider({ children, client }: { children: ReactNode; client
     }, [getClient])
 
     const login = useCallback(async (email: string, password: string) => {
+        const version = ++sessionVersion.current
         dispatch({ type: 'AUTHENTICATING' })
         try {
-            dispatch(await loginAuthSession(getClient(), email, password))
+            const action = await loginAuthSession(getClient(), email, password)
+            if (version === sessionVersion.current) dispatch(action)
         } catch {
-            dispatch({ type: 'AUTH_FAILURE', error: 'Hệ thống đăng nhập chưa được cấu hình.' })
+            if (version === sessionVersion.current) dispatch({ type: 'AUTH_FAILURE', error: 'Hệ thống đăng nhập chưa được cấu hình.' })
         }
     }, [getClient])
 
     const completeNewPassword = useCallback(async (newPassword: string) => {
+        const version = ++sessionVersion.current
         dispatch({ type: 'AUTHENTICATING' })
         try {
-            dispatch(await completeNewPasswordAuthSession(getClient(), newPassword))
+            const action = await completeNewPasswordAuthSession(getClient(), newPassword)
+            if (version === sessionVersion.current) dispatch(action)
         } catch {
-            dispatch({ type: 'CHALLENGE_FAILURE', error: 'Hệ thống đăng nhập chưa được cấu hình.' })
+            if (version === sessionVersion.current) dispatch({ type: 'CHALLENGE_FAILURE', error: 'Hệ thống đăng nhập chưa được cấu hình.' })
         }
     }, [getClient])
 
     const logout = useCallback(() => {
+        sessionVersion.current++
         try {
             getClient().signOut()
         } finally {
@@ -88,16 +96,17 @@ export function AuthProvider({ children, client }: { children: ReactNode; client
     }, [getClient])
 
     const handleUnauthorized = useCallback(() => {
+        if (sessionVersion.current !== currentVersion) return
         try {
-            dispatch(invalidateAuthSession(getClient()))
+            invalidateCurrentAuthSession(getClient(), dispatch, () => sessionVersion.current === currentVersion)
         } catch {
             dispatch({ type: 'UNAUTHORIZED' })
         }
-    }, [getClient])
+    }, [getClient, currentVersion])
 
     const getAccessToken = useCallback(
-        () => getAccessTokenAuthSession(getClient(), dispatch),
-        [getClient],
+        () => getAccessTokenAuthSession(getClient(), dispatch, () => sessionVersion.current === currentVersion),
+        [getClient, currentVersion],
     )
     const value = useMemo<AuthContextValue>(() => ({
         status: state.status,

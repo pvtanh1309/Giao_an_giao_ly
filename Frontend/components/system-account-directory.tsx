@@ -28,7 +28,7 @@ const emptyForm: AccountForm = {
 const roleLabel: Record<AppRole, string> = {
   admin: 'Admin',
   editor: 'Editor',
-  reader: 'Tài khoản dùng chung',
+  reader: 'Tài khoản giáo lý viên',
 }
 
 export function SystemAccountDirectory({ accounts, catechists, loading = false, loadError = '', onCreate, onResetPassword, onUpdateStatus, onUpdateLink }: SystemAccountDirectoryProps) {
@@ -91,7 +91,7 @@ export function SystemAccountDirectory({ accounts, catechists, loading = false, 
     event.preventDefault()
     if (!form.email.trim() || !form.password) return setFormError('Vui lòng nhập email và mật khẩu.')
     if (form.password !== form.confirmPassword) return setFormError('Xác nhận mật khẩu chưa khớp.')
-    if (form.role === 'editor' && !form.linkedCatechistId) return setFormError('Editor cần được liên kết với một hồ sơ giáo lý viên.')
+    if (!form.linkedCatechistId) return setFormError('Mỗi tài khoản phải liên kết với hồ sơ giáo lý viên của mình.')
     void runAction(() => onCreate(form))
   }
 
@@ -119,7 +119,7 @@ export function SystemAccountDirectory({ accounts, catechists, loading = false, 
         <div>
           <span className="section-kicker">Quản trị hệ thống</span>
           <h1>Tài khoản hệ thống</h1>
-          <p>Cấp quyền truy cập, đặt lại mật khẩu và quản lý tài khoản dùng chung của giáo xứ.</p>
+          <p>Cấp và quản lý tài khoản riêng cho từng giáo lý viên.</p>
         </div>
         <button className="primary-button" disabled={loading || submitting || Boolean(loadError)} onClick={openCreate}><Plus size={17} /> Cấp tài khoản</button>
       </div>
@@ -127,12 +127,12 @@ export function SystemAccountDirectory({ accounts, catechists, loading = false, 
       <div className="account-summary" aria-label="Tóm tắt tài khoản">
         <article><ShieldCheck size={19} /><span><strong>{accounts.filter((account) => account.role === 'admin').length}</strong><small>Admin</small></span></article>
         <article><UserRoundCheck size={19} /><span><strong>{accounts.filter((account) => account.role === 'editor').length}</strong><small>Editor</small></span></article>
-        <article><UsersRound size={19} /><span><strong>{accounts.filter((account) => account.role === 'reader').length}</strong><small>Dùng chung</small></span></article>
+        <article><UsersRound size={19} /><span><strong>{accounts.filter((account) => account.role === 'reader').length}</strong><small>Reader</small></span></article>
       </div>
 
       <div className="account-tools">
         <label className="directory-search"><Search size={17} aria-hidden="true" /><input type="search" aria-label="Tìm tài khoản" placeholder="Tìm theo email hoặc vai trò" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
-        <select aria-label="Lọc theo vai trò" value={roleFilter} onChange={(event) => setRoleFilter(event.target.value as 'all' | AppRole)}><option value="all">Tất cả vai trò</option><option value="admin">Admin</option><option value="editor">Editor</option><option value="reader">Tài khoản dùng chung</option></select>
+        <select aria-label="Lọc theo vai trò" value={roleFilter} onChange={(event) => setRoleFilter(event.target.value as 'all' | AppRole)}><option value="all">Tất cả vai trò</option><option value="admin">Admin</option><option value="editor">Editor</option><option value="reader">Reader</option></select>
         <select aria-label="Lọc theo trạng thái" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as 'all' | AccountStatus)}><option value="all">Tất cả trạng thái</option><option>Hoạt động</option><option>Vô hiệu hóa</option><option>Đã lưu trữ</option></select>
       </div>
 
@@ -148,11 +148,11 @@ export function SystemAccountDirectory({ accounts, catechists, loading = false, 
             return <tr key={account.id}>
               <td><span className="account-email"><KeyRound size={16} />{account.email}</span></td>
               <td><span className={`role-badge ${account.role}`}>{roleLabel[account.role]}</span></td>
-              <td>{account.role === 'editor' ? (profile ? <span className="account-profile">{profile.name}<small>{profile.homeroomClass || profile.accompanyingClass || 'Chưa phân lớp'}</small></span> : 'Chưa liên kết') : '—'}</td>
+              <td>{account.role !== 'admin' ? (profile ? <span className="account-profile">{profile.name}<small>{profile.homeroomClass || profile.accompanyingClass || 'Chưa phân lớp'}</small></span> : 'Chưa liên kết') : '—'}</td>
               <td><span className={`account-status ${account.status === 'Hoạt động' ? 'active' : account.status === 'Vô hiệu hóa' ? 'disabled' : 'archived'}`}>{account.status}</span></td>
               <td>{account.createdAt}</td>
               <td><div className="account-actions">
-                {account.role === 'editor' && <button type="button" onClick={() => { setFormError(''); setSelectedAccount(account); setForm({ ...emptyForm, linkedCatechistId: account.linkedCatechistId ?? '' }); setDialog('link') }} title="Đổi hồ sơ liên kết"><Pencil size={15} /></button>}
+                {account.role !== 'admin' && <button type="button" onClick={() => { setFormError(''); setSelectedAccount(account); setForm({ ...emptyForm, linkedCatechistId: account.linkedCatechistId ?? '' }); setDialog('link') }} title="Đổi hồ sơ liên kết"><Pencil size={15} /></button>}
                 {account.status !== 'Đã lưu trữ' && <button type="button" disabled={isOnlyAdmin} onClick={() => { setFormError(''); setSelectedAccount(account); setForm(emptyForm); setDialog('reset') }} title="Đặt lại mật khẩu"><RotateCcw size={15} /></button>}
                 {account.status !== 'Đã lưu trữ' && <button type="button" disabled={isOnlyAdmin} onClick={() => void runAction(() => onUpdateStatus(account, account.status === 'Hoạt động' ? 'Vô hiệu hóa' : 'Hoạt động'), false)} title={account.status === 'Hoạt động' ? 'Vô hiệu hóa' : 'Kích hoạt'}><LockKeyhole size={15} /></button>}
                 {account.status === 'Đã lưu trữ' ? <button type="button" disabled={isOnlyAdmin} onClick={() => void runAction(() => onUpdateStatus(account, 'Hoạt động'), false)} title="Khôi phục"><RotateCcw size={15} /></button> : <button type="button" disabled={isOnlyAdmin || account.role === 'reader'} onClick={() => void runAction(() => onUpdateStatus(account, 'Đã lưu trữ'), false)} title="Lưu trữ 10 ngày"><Archive size={15} /></button>}
@@ -165,15 +165,15 @@ export function SystemAccountDirectory({ accounts, catechists, loading = false, 
 
       {dialog && <div className="account-dialog-backdrop" role="presentation"><section className="account-dialog" role="dialog" aria-modal="true" aria-labelledby="account-dialog-title">
         <button className="dialog-close" onClick={closeDialog} aria-label="Đóng"><X size={18} /></button>
-        {dialog === 'create' && <form onSubmit={submitCreate}><span className="section-kicker">Quản trị hệ thống</span><h2 id="account-dialog-title">Cấp tài khoản</h2><p>Chỉ cấp Editor hoặc tài khoản Reader dùng chung. Tài khoản Admin được quản lý riêng.</p>
+        {dialog === 'create' && <form onSubmit={submitCreate}><span className="section-kicker">Quản trị hệ thống</span><h2 id="account-dialog-title">Cấp tài khoản</h2><p>Mỗi giáo lý viên có một tài khoản riêng liên kết với hồ sơ của mình. Tài khoản Admin được quản lý riêng.</p>
           <label>Email<input required type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} placeholder="email@giaoxuthaian.vn" /></label>
-          <label>Vai trò<select value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value as AccountForm['role'], linkedCatechistId: '' })}><option value="editor">Editor</option><option value="reader">Tài khoản dùng chung</option></select></label>
-          {form.role === 'editor' ? <label>Hồ sơ giáo lý viên<select required value={form.linkedCatechistId} onChange={(event) => setForm({ ...form, linkedCatechistId: event.target.value })}><option value="">Chọn hồ sơ liên kết</option>{catechists.map((item) => <option value={item.id} key={item.id}>{item.name} · {item.homeroomClass || item.accompanyingClass || 'Chưa phân lớp'}</option>)}</select></label> : <p className="account-warning">Tài khoản này dùng chung để các anh chị chỉ xem nội dung; không liên kết hồ sơ giáo lý viên.</p>}
+          <label>Vai trò<select value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value as AccountForm['role'], linkedCatechistId: '' })}><option value="editor">Editor</option><option value="reader">Reader</option></select></label>
+          <label>Hồ sơ giáo lý viên<select required value={form.linkedCatechistId} onChange={(event) => setForm({ ...form, linkedCatechistId: event.target.value })}><option value="">Chọn hồ sơ liên kết</option>{catechists.map((item) => <option value={item.id} key={item.id}>{item.name} · {item.homeroomClass || item.accompanyingClass || 'Chưa phân lớp'}</option>)}</select></label>
           <label>Mật khẩu<PasswordInput visibilityLabel="mật khẩu mới" disabled={submitting} required minLength={8} autoComplete="new-password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} /></label><label>Xác nhận mật khẩu<PasswordInput visibilityLabel="xác nhận mật khẩu" disabled={submitting} required minLength={8} autoComplete="new-password" value={form.confirmPassword} onChange={(event) => setForm({ ...form, confirmPassword: event.target.value })} /></label>
           {formError && <p className="account-form-error">{formError}</p>}<div className="dialog-actions"><button type="button" className="secondary-button" onClick={closeDialog}>Hủy</button><button className="primary-button" type="submit">Cấp tài khoản</button></div>
         </form>}
         {dialog === 'reset' && selectedAccount && <form onSubmit={submitReset}><span className="section-kicker">Bảo mật tài khoản</span><h2 id="account-dialog-title">Đặt lại mật khẩu</h2><p>Đặt mật khẩu mới cho <strong>{selectedAccount.email}</strong>. Mật khẩu sẽ không được hiển thị lại sau khi lưu.</p><label>Mật khẩu mới<PasswordInput visibilityLabel="mật khẩu mới" disabled={submitting} required minLength={8} autoComplete="new-password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} /></label><label>Xác nhận mật khẩu<PasswordInput visibilityLabel="xác nhận mật khẩu" disabled={submitting} required minLength={8} autoComplete="new-password" value={form.confirmPassword} onChange={(event) => setForm({ ...form, confirmPassword: event.target.value })} /></label>{formError && <p className="account-form-error">{formError}</p>}<div className="dialog-actions"><button type="button" className="secondary-button" onClick={closeDialog}>Hủy</button><button className="primary-button" type="submit">Lưu mật khẩu</button></div></form>}
-        {dialog === 'link' && selectedAccount && <form onSubmit={submitLink}><span className="section-kicker">Tài khoản Editor</span><h2 id="account-dialog-title">Đổi hồ sơ liên kết</h2><p>Chọn hồ sơ giáo lý viên tương ứng với <strong>{selectedAccount.email}</strong>.</p><label>Hồ sơ giáo lý viên<select required value={form.linkedCatechistId} onChange={(event) => setForm({ ...form, linkedCatechistId: event.target.value })}><option value="">Chọn hồ sơ liên kết</option>{catechists.map((item) => <option value={item.id} key={item.id}>{item.name} · {item.homeroomClass || item.accompanyingClass || 'Chưa phân lớp'}</option>)}</select></label>{formError && <p className="account-form-error">{formError}</p>}<div className="dialog-actions"><button type="button" className="secondary-button" onClick={closeDialog}>Hủy</button><button className="primary-button" type="submit">Cập nhật liên kết</button></div></form>}
+        {dialog === 'link' && selectedAccount && <form onSubmit={submitLink}><span className="section-kicker">Tài khoản cá nhân</span><h2 id="account-dialog-title">Đổi hồ sơ liên kết</h2><p>Chọn hồ sơ giáo lý viên tương ứng với <strong>{selectedAccount.email}</strong>.</p><label>Hồ sơ giáo lý viên<select required value={form.linkedCatechistId} onChange={(event) => setForm({ ...form, linkedCatechistId: event.target.value })}><option value="">Chọn hồ sơ liên kết</option>{catechists.map((item) => <option value={item.id} key={item.id}>{item.name} · {item.homeroomClass || item.accompanyingClass || 'Chưa phân lớp'}</option>)}</select></label>{formError && <p className="account-form-error">{formError}</p>}<div className="dialog-actions"><button type="button" className="secondary-button" onClick={closeDialog}>Hủy</button><button className="primary-button" type="submit">Cập nhật liên kết</button></div></form>}
       </section></div>}
       </fieldset>
     </section>

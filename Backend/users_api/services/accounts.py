@@ -2,7 +2,7 @@
 import logging
 from shared.errors import ApiError
 from shared.models import now, epoch, new_id, normalize, paginate, public
-from users_api.repositories.dynamodb import Store, RETENTION, require_role, get_profile, touch, link_writes
+from users_api.repositories.dynamodb import Store, RETENTION, require_role, get_profile, touch, link_writes, status_profile_writes
 from users_api.repositories.cognito import Cognito
 from users_api.validators.accounts import validate_payload, password
 from users_api.validators.catechists import fields, text, invalid
@@ -108,9 +108,9 @@ def link_catechist(request, principal):
     fields(request['body'], {'catechistId'})
     new_id = text(request['body'], 'catechistId', 100)
     store = Store()
-    old = account(store, request)
+    old = account(store, request, deleted=True)
     protect(old)
-    if old['role'] != 'EDITOR':
+    if old['role'] not in ('EDITOR', 'READER'):
         invalid('catechistId')
     if old.get('pendingAction'):
         raise ApiError(409, 'VERSION_CONFLICT', 'Account operation in progress.')
@@ -156,11 +156,11 @@ def transition(request, principal, action, target):
         # Removing TTL while restoring prevents a concurrent TTL delete during Cognito enable.
         if action == 'restore':
             reserved.pop('purgeAt', None)
-        store.put(reserved, expected_version=old['version'])
+        store.transact([{'put': reserved, 'version': old['version']}] + status_profile_writes(store, old, principal, target))
     else:
         reserved = touch(old, principal)
         reserved.update(pendingUntil=epoch() + 120, pendingToken=new_id('op'))
-        store.put(reserved, expected_version=old['version'])
+        store.transact([{'put': reserved, 'version': old['version']}] + status_profile_writes(store, old, principal, target))
     operation = 'admin_enable_user' if target == 'ACTIVE' else 'admin_disable_user'
     # If Cognito or final persistence fails, retain the operation marker. Retrying the
     # same endpoint safely repeats the idempotent Cognito action; opposing actions conflict.
@@ -183,7 +183,7 @@ def transition(request, principal, action, target):
     else:
         item.pop('deletedAt', None)
         item.pop('purgeAt', None)
-    store.put(item, expected_version=latest['version'])
+    store.transact([{'put': item, 'version': latest['version']}] + status_profile_writes(store, latest, principal, target))
     return view(item)
 
 

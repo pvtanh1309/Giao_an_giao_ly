@@ -1,5 +1,18 @@
 # API Contract v1
 
+## Hồ sơ cá nhân và ghi chú riêng
+
+| Route | Vai trò | Nội dung |
+| --- | --- | --- |
+| `GET /me/lessons/{lessonId}/notes` | reader, editor, admin | Ghi chú của sub hiện tại trên bài đã xuất bản |
+| `POST /me/lessons/{lessonId}/notes` | reader, editor, admin | `{noteId, anchor, body}`, trả 201; UUID giữ nguyên khi retry |
+| `PUT /me/lessons/{lessonId}/notes/{noteId}` | reader, editor, admin | `{body, version}` |
+| `DELETE /me/lessons/{lessonId}/notes/{noteId}` | reader, editor, admin | `{version}`; xóa lặp lại an toàn |
+
+Reader và Editor mới bắt buộc liên kết `catechistId`; một hồ sơ chỉ có một ACCOUNT chưa DELETED (DISABLED vẫn giữ liên kết). Reader cũ chưa liên kết vẫn đọc được; Admin gán hồ sơ thủ công, không suy đoán theo email/tên. Email trong `PUT /me/profile` là email liên hệ, không đổi email đăng nhập Cognito.
+
+Ghi chú không có GSI và khóa chủ sở hữu lấy từ JWT `sub`; không chấp nhận owner từ request, kể cả Admin không đọc được ghi chú người khác qua API. Body văn bản thuần tối đa 8000 ký tự; 100 ghi chú/tài khoản/bài, bảo vệ bằng transaction cùng quota. Anchor `{fieldId,start,end,exactQuote,prefix,suffix,sourceHash}` dùng Unicode code point, SHA-256 UTF-8 và ngữ cảnh 120 ký tự; quote tối đa 2000 ký tự. Field là `scripture`, `keyPoints`, `sentiment`, `preparation`, `section:<key>`. Tạo mới kiểm tra bản PUBLISHED; cập nhật dùng version chống ghi đè từ tab khác. Không sửa revision giáo án. Khi TTL purge ACCOUNT, stream dọn ghi chú/quota theo từng transaction, kiểm tra ACCOUNT không tồn tại và hỗ trợ retry.
+
 > Hợp đồng API của backend Python. Code và kiểm thử offline đã triển khai; triển khai/tích hợp AWS thực tế cần thực hiện theo runbook.
 
 ## 1. Nguyên tắc chung
@@ -126,6 +139,11 @@ Mỗi chương trình tự định nghĩa `scheduleColumns`; không dùng bộ c
 Frontend dùng `group` cho **lớp chủ nhiệm**, `accompanyingClass` cho **lớp đồng hành**. Cả hai là chuỗi tùy chọn, tối đa 100 ký tự. Hồ sơ cũ không có `accompanyingClass` hiển thị lớp đồng hành trống; request cập nhật không gửi trường này vẫn giữ giá trị cũ. Tạo hồ sơ không gửi `version`; cập nhật phải gửi `version` của hồ sơ đã đọc gần nhất.
 
 ## 4. Route đọc — mọi vai trò đã đăng nhập
+
+| Method & path | Chức năng |
+|---|---|
+| `GET /me` | Users API: danh tính đăng nhập, displayName và hồ sơ giáo lý viên liên kết (hoặc null) |
+| `PUT /me/profile` | Users API: sửa email liên hệ, phone, group, accompanyingClass và version của chính hồ sơ liên kết; không sửa email đăng nhập, role, name hay status |
 
 | Method & path | Query / body | Kết quả |
 |---|---|---|

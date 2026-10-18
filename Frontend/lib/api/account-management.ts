@@ -105,7 +105,7 @@ export function createAccountManagement(api: ApiClient) {
                 method: 'POST',
                 body: {
                     email: form.email.trim(), password: form.password, role: form.role.toUpperCase(),
-                    ...(form.role === 'editor' ? { catechistId: profileId(profiles, form.linkedCatechistId) } : {}),
+                    catechistId: profileId(profiles, form.linkedCatechistId),
                 },
             })
             return accountView(item, profiles)

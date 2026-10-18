@@ -14,8 +14,5 @@ def validate_payload(payload):
     result = {'email': email(payload), 'password': password(payload), 'role': payload.get('role')}
     if result['role'] not in ('EDITOR', 'READER'):
         invalid('role')
-    if result['role'] == 'EDITOR':
-        result['catechistId'] = text(payload, 'catechistId', 100)
-    elif 'catechistId' in payload:
-        invalid('catechistId')
+    result['catechistId'] = text(payload, 'catechistId', 100)
     return result

@@ -6,6 +6,10 @@ import { useRef, useState } from 'react'
 import { lessonEditorExtensions, parseLessonDocument } from './rich-text-extensions'
 import { RichTextToolbar } from './rich-text-toolbar'
 import { LessonImageLightbox } from './lesson-image-lightbox'
+import { useLessonNotes } from './lesson-notes-context'
+import { lessonTextMap, selectedNoteRange, selectionIsWithinField } from '../lib/lesson-note-selection'
+import { resolveLessonNoteAnchor } from '../lib/lesson-note-anchors'
+import { LessonNotesDecorations, lessonNotesKey } from '../lib/lesson-note-decorations'
 
 type LessonRichTextEditorProps = {
     content: string
@@ -14,6 +18,7 @@ type LessonRichTextEditorProps = {
     toolbarMode?: 'lesson' | 'program-schedule' | 'reference'
     compact?: boolean
     lessonId?: string
+    noteFieldId?: string
     getAccessToken?: () => Promise<string>
     mediaApiBaseUrl?: string
     onChange?: (content: string) => void
@@ -27,13 +32,15 @@ export function LessonRichTextEditor({
     toolbarMode = 'lesson',
     compact = false,
     lessonId,
+    noteFieldId,
     getAccessToken,
     mediaApiBaseUrl = process.env.NEXT_PUBLIC_CONTENT_API_URL ?? '',
     onChange,
     onUploadStateChange,
 }: LessonRichTextEditorProps) {
+    const notes = useLessonNotes()
     const editor = useEditor({
-        extensions: lessonEditorExtensions,
+        extensions: [...lessonEditorExtensions, LessonNotesDecorations],
         content: parseLessonDocument(content),
         editable,
         immediatelyRender: false,
@@ -50,6 +57,34 @@ export function LessonRichTextEditor({
     })
     const [zoomedImage, setZoomedImage] = useState<{ src: string; alt: string } | null>(null)
     const imageTriggerRef = useRef<HTMLImageElement | null>(null)
+
+    useEffect(() => {
+        if (!editor || editable || !notes || !noteFieldId) return
+        const select = () => {
+            const selection = window.getSelection()
+            if (selection && !selection.isCollapsed && !selectionIsWithinField(editor.view.dom, selection)) { notes.rejectSelection(); return }
+            const { from, to } = editor.state.selection
+            if (from === to) return
+            const map = lessonTextMap(editor.state.doc)
+            const range = selectedNoteRange(map, from, to)
+            if (range) notes.select(noteFieldId, map.text, range.start, range.end)
+        }
+        editor.on('selectionUpdate', select)
+        return () => { editor.off('selectionUpdate', select) }
+    }, [editor, editable, notes?.select, notes?.rejectSelection, noteFieldId])
+
+    useEffect(() => {
+        if (!editor || editable || !notes || !noteFieldId) return
+        let current = true
+        const map = lessonTextMap(editor.state.doc)
+        void Promise.all(notes.notes.filter((note) => note.anchor.fieldId === noteFieldId).map(async (note) => ({ noteId: note.noteId, range: await resolveLessonNoteAnchor(map.text, note.anchor) }))).then((rows) => {
+            if (!current || editor.isDestroyed) return
+            const ranges = rows.flatMap(({ noteId, range }) => range && map.units[range.start] && map.units[range.end - 1] ? [{ noteId, from: map.units[range.start].from, to: map.units[range.end - 1].to }] : [])
+            editor.view.dispatch(editor.state.tr.setMeta(lessonNotesKey, ranges))
+            notes.report(noteFieldId, ranges.map((range) => range.noteId))
+        })
+        return () => { current = false }
+    }, [editor, editable, notes?.notes, notes?.report, noteFieldId, content])
 
     const openImage = (image: HTMLImageElement) => {
         if (editable || !image.currentSrc && !image.src) return
@@ -78,6 +113,10 @@ export function LessonRichTextEditor({
     return (
         <div className={`rich-text-editor ${editable ? 'is-editable' : 'is-readonly'}${compact ? ' rich-text-editor-compact' : ''}`} onClick={(event) => {
             const target = event.target
+            if (target instanceof Element) {
+                const noteId = target.closest('[data-private-note]')?.getAttribute('data-private-note')
+                if (noteId && window.getSelection()?.isCollapsed) notes?.open(noteId)
+            }
             if (target instanceof HTMLImageElement && target.dataset.lessonImageTrigger === 'true') openImage(target)
         }} onKeyDown={(event) => {
             if ((event.key === 'Enter' || event.key === ' ') && event.target instanceof HTMLImageElement && event.target.dataset.lessonImageTrigger === 'true') {
@@ -86,7 +125,7 @@ export function LessonRichTextEditor({
             }
         }}>
             {editable && <RichTextToolbar editor={editor} mode={toolbarMode} lessonId={lessonId} getAccessToken={getAccessToken} apiBaseUrl={mediaApiBaseUrl} onUploadStateChange={onUploadStateChange} />}
-            <EditorContent editor={editor} className="rich-text-content" />
+            <EditorContent editor={editor} className="rich-text-content" data-note-field={!editable && notes ? noteFieldId : undefined} />
             {zoomedImage && <LessonImageLightbox src={zoomedImage.src} alt={zoomedImage.alt} onClose={() => setZoomedImage(null)} triggerRef={imageTriggerRef} />}
         </div>
     )

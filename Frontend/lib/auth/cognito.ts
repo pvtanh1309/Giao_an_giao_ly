@@ -111,6 +111,7 @@ export function createCognitoAuth(
     })
     let activeUser: CognitoUserPort | null = null
     let challengedUser: CognitoUserPort | null = null
+    let sessionVersion = 0
 
     const clearUser = (user: CognitoUserPort | null) => {
         user?.signOut()
@@ -120,6 +121,7 @@ export function createCognitoAuth(
 
     return {
         signIn(email, password) {
+            sessionVersion++
             const user = new sdk.CognitoUser({ Username: email, Pool: pool, Storage: storage })
             const details = new sdk.AuthenticationDetails({ Username: email, Password: password })
             user.setAuthenticationFlowType('USER_PASSWORD_AUTH')
@@ -152,6 +154,7 @@ export function createCognitoAuth(
         },
 
         completeNewPassword(newPassword) {
+            sessionVersion++
             const user = challengedUser
             if (!user) return Promise.reject(new Error('Không có yêu cầu đặt mật khẩu mới.'))
 
@@ -176,32 +179,38 @@ export function createCognitoAuth(
         },
 
         async restoreSession() {
+            const version = sessionVersion
             const user = pool.getCurrentUser()
             if (!user) return null
 
             try {
                 const session = await readSession(user)
+                if (version !== sessionVersion) return null
                 activeUser = user
                 return session
             } catch {
-                clearUser(user)
+                if (version === sessionVersion) clearUser(user)
                 return null
             }
         },
 
         async getAccessToken() {
+            const version = sessionVersion
             const user = pool.getCurrentUser() ?? activeUser
             if (!user) throw new Error('Phiên đăng nhập đã hết hạn.')
 
             try {
-                return (await readSession(user)).accessToken
+                const session = await readSession(user)
+                if (version !== sessionVersion) throw new Error('Phiên đăng nhập đã thay đổi.')
+                return session.accessToken
             } catch (error) {
-                clearUser(user)
+                if (version === sessionVersion) clearUser(user)
                 throw error
             }
         },
 
         signOut() {
+            sessionVersion++
             const users = new Set([pool.getCurrentUser(), activeUser, challengedUser])
             for (const user of users) user?.signOut()
             activeUser = null

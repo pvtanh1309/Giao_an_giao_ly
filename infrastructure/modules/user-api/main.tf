@@ -1,6 +1,8 @@
 locals {
   name = "${var.project_name}-${var.environment}-users-api"
   routes = toset([
+    "GET /me",
+    "PUT /me/profile",
     "GET /manage/catechists",
     "GET /catechists",
     "POST /manage/catechists",
