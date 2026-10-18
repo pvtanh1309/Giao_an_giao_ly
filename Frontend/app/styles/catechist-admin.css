@@ -63,6 +63,30 @@
   color: #9b454c;
 }
 
+.dark .catechist-row {
+  background: var(--paper);
+}
+
+.dark .catechist-row .catechist-avatar {
+  background: var(--surface-blue);
+  color: var(--blue);
+}
+
+.dark .catechist-status {
+  background: #203d2d;
+  color: #a6dfb0;
+}
+
+.dark .catechist-status.paused {
+  background: #40351f;
+  color: #f0d28b;
+}
+
+.dark .catechist-status.ended {
+  background: #492d2c;
+  color: #ffb5ac;
+}
+
 @media (max-width: 700px) {
   .catechist-row {
     grid-template-columns: auto 1fr;

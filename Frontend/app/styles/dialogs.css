@@ -594,3 +594,65 @@
   margin-top: 30px;
 }
 
+.dark .modal-card,
+.dark .content-modal,
+.dark .lesson-detail,
+.dark .lesson-list-card,
+.dark .inline-content-title,
+.dark .inline-content-description,
+.dark .inline-content-fields input,
+.dark .inline-content-fields select,
+.dark .inline-content-select select,
+.dark .lesson-scripture textarea,
+.dark .lesson-scripture input {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.dark .content-preview,
+.dark .lesson-detail-head,
+.dark .flow-steps span,
+.dark .lesson-scripture {
+  background: var(--surface-blue);
+  color: var(--ink);
+}
+
+.dark .content-modal-icon,
+.dark .modal-icon {
+  background: var(--surface-blue);
+  color: var(--blue);
+}
+
+.dark .content-modal-icon.program,
+.dark .modal-icon.admin {
+  background: var(--surface-rose);
+  color: #efafb5;
+}
+
+.dark .flow-steps b {
+  background: var(--gold);
+  color: #17212b;
+}
+
+.dark .admin-feature {
+  background: var(--surface-blue);
+  color: var(--gold);
+}
+
+.dark .admin-feature span {
+  color: var(--ink);
+}
+
+.dark .lesson-list-card:hover {
+  background: var(--surface-blue);
+}
+
+.dark .blog-hero {
+  background: linear-gradient(135deg, var(--surface-rose), var(--paper));
+}
+
+.dark .blog-body blockquote {
+  background: var(--surface-blue);
+  color: #efafb5;
+}
+

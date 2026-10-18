@@ -6,6 +6,12 @@ const siteStyles = readFileSync(new URL('../app/styles/site-base.css', import.me
 const heroStyles = readFileSync(new URL('../app/styles/hero.css', import.meta.url), 'utf8')
 const contentStyles = readFileSync(new URL('../app/styles/content.css', import.meta.url), 'utf8')
 const themeStyles = readFileSync(new URL('../app/styles/theme.css', import.meta.url), 'utf8')
+const dialogsStyles = readFileSync(new URL('../app/styles/dialogs.css', import.meta.url), 'utf8')
+const accountsStyles = readFileSync(new URL('../app/styles/accounts.css', import.meta.url), 'utf8')
+const personalProfileStyles = readFileSync(new URL('../app/styles/personal-profile.css', import.meta.url), 'utf8')
+const authStyles = readFileSync(new URL('../app/styles/auth.css', import.meta.url), 'utf8')
+const passwordStyles = readFileSync(new URL('../app/styles/password-input.css', import.meta.url), 'utf8')
+const richTextStyles = readFileSync(new URL('../app/styles/rich-text.css', import.meta.url), 'utf8')
 const programScheduleEditor = readFileSync(new URL('../components/program-schedule-editor.tsx', import.meta.url), 'utf8')
 const siteHeader = readFileSync(new URL('../components/site-header.tsx', import.meta.url), 'utf8')
 const loginScreen = readFileSync(new URL('../components/auth-screen.tsx', import.meta.url), 'utf8')
@@ -87,4 +93,20 @@ test('header, search, and search-result surfaces follow dark theme tokens', () =
     assert.match(contentStyles, /\.directory-search\s*\{[^}]*background:\s*var\(--paper\)/s, 'keep the directory search on the paper token')
     assert.match(themeStyles, /\.dark\s+\.lesson-search-result:hover\s*\{[^}]*background:\s*var\(--paper\)/s, 'avoid a light hover surface in dark mode')
     assert.match(themeStyles, /\.dark\s+\.nav-link(?:\.active|:hover)/, 'give active navigation a readable dark-mode color')
+})
+
+test('dark mode themes dialogs, account menus, forms, and semantic account statuses', () => {
+    assert.match(dialogsStyles, /\.dark\s+\.modal-card(?:,|\s*\{)/, 'theme the modal surface')
+    assert.match(accountsStyles, /\.dark\s+\.account-tools\s*\{/, 'theme the account filter surface')
+    assert.match(accountsStyles, /\.dark\s+\.account-status\.active\s*\{/, 'retain readable success status colors')
+    assert.match(personalProfileStyles, /\.dark\s+\.account-menu-trigger(?:,|\s*\{)/, 'theme the account menu trigger')
+    assert.match(authStyles, /\.dark\s+\.auth-form\s+input\s*\{/, 'theme login inputs')
+    assert.match(passwordStyles, /\.dark\s+\.password-visibility-toggle:focus-visible\s*\{/, 'keep password control focus visible')
+})
+
+test('rich-text chrome follows the theme while the editable canvas and authored colors stay on paper', () => {
+    assert.match(richTextStyles, /\.dark\s+\.rich-text-toolbar\s*\{[^}]*background:\s*var\(--paper\)/s, 'theme the editor toolbar')
+    assert.match(richTextStyles, /\.rich-text-editor\.is-editable\s+\.rich-text-content\s*\{[^}]*background:\s*var\(--lesson-paper\)/s, 'keep the editor canvas on warm paper')
+    assert.match(richTextStyles, /\.rich-text-content\s+\.tiptap\s*\{[^}]*color:\s*#000000/s, 'keep the paper canvas default text black')
+    assert.doesNotMatch(richTextStyles, /\.dark\s+\[style(?:[^\]]*)\]/, 'do not recolor authored inline styles')
 })

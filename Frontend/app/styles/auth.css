@@ -150,6 +150,25 @@
   opacity: .65;
 }
 
+.dark .auth-form input {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.dark .auth-form input:focus {
+  box-shadow: 0 0 0 3px rgba(145, 198, 229, .22);
+}
+
+.dark .auth-error {
+  background: #492d31;
+  color: #ffb5bc !important;
+}
+
+.dark .auth-message {
+  background: var(--surface-blue);
+  color: #a9dce4 !important;
+}
+
 .auth-loading-panel {
   display: grid;
   min-height: 100vh;

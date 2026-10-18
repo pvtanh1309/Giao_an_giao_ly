@@ -115,3 +115,75 @@
   .account-tools select { flex: 1; min-width: 150px; }
   .account-dialog { padding: 26px 20px; }
 }
+
+.dark .accounts-heading h1,
+.dark .accounts-access-denied h1,
+.dark .account-dialog h2,
+.dark .account-dialog label,
+.dark .account-email,
+.dark .secondary-button {
+  color: var(--blue);
+}
+
+.dark .account-tools {
+  background: var(--cream);
+}
+
+.dark .accounts-table th,
+.dark .accounts-table td,
+.dark .account-actions button {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.dark .accounts-table td {
+  border-color: var(--line);
+}
+
+.dark .role-badge.admin {
+  background: #263b49;
+  color: #b7def1;
+}
+
+.dark .role-badge.editor {
+  background: #442e36;
+  color: #f2b1b8;
+}
+
+.dark .role-badge.reader {
+  background: #433923;
+  color: #f0d28b;
+}
+
+.dark .account-status.active {
+  background: #203d2d;
+  color: #a6dfb0;
+}
+
+.dark .account-status.disabled {
+  background: #492d2c;
+  color: #ffb5ac;
+}
+
+.dark .account-status.archived {
+  background: #333d48;
+  color: #c7d1dc;
+}
+
+.dark .account-actions button:hover:not(:disabled) {
+  background: var(--surface-blue);
+  color: var(--blue);
+}
+
+.dark .account-actions button:disabled {
+  color: #9ba7b4;
+}
+
+.dark .account-warning {
+  background: #40351f;
+  color: #f0d28b !important;
+}
+
+.dark .account-form-error {
+  color: #ffb5ac !important;
+}

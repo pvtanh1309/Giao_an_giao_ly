@@ -300,6 +300,50 @@
   border-radius: 8px;
 }
 
+.dark .admin-backdrop {
+  background: var(--cream);
+}
+
+.dark .admin-close,
+.dark .admin-stats > div,
+.dark .admin-panel,
+.dark .admin-manage-panel,
+.dark .admin-manage-row {
+  border-color: var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.dark .admin-stat-icon.blue,
+.dark .quick-icon.blue {
+  background: var(--surface-blue);
+  color: var(--blue);
+}
+
+.dark .admin-stat-icon.gold,
+.dark .quick-icon.gold {
+  background: var(--surface-rose);
+  color: var(--gold);
+}
+
+.dark .admin-stat-icon.wine {
+  background: var(--surface-rose);
+  color: #efafb5;
+}
+
+.dark .admin-table-row {
+  border-color: var(--line);
+}
+
+.dark .admin-stats em,
+.dark .status {
+  color: #a6dfb0;
+}
+
+.dark .status.draft {
+  color: var(--gold);
+}
+
 @media (max-width: 800px) {
   .admin-dashboard {
     display: block;

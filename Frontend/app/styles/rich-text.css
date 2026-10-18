@@ -367,3 +367,61 @@
 .lesson-image-lightbox-close { position: absolute; top: 12px; right: 12px; z-index: 1; display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid rgba(255, 255, 255, .55); border-radius: 50%; background: rgba(0, 0, 0, .55); color: #fff; cursor: pointer; }
 .lesson-image-lightbox-close:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 
+.rich-text-editor.is-editable .rich-text-content {
+  background: var(--lesson-paper);
+}
+
+.dark .rich-text-toolbar {
+  background: var(--paper);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .22);
+}
+
+.dark .rich-text-toolbar button:hover,
+.dark .rich-text-toolbar button[aria-pressed="true"] {
+  border-color: var(--line);
+  background: var(--surface-blue);
+  color: var(--blue);
+}
+
+.dark .rich-text-divider {
+  background: var(--line);
+}
+
+.dark .rich-text-toolbar select,
+.dark .rich-text-toolbar .rich-text-color input[type="color"],
+.dark .rich-text-table-insert input,
+.dark .rich-text-toolbar .lesson-image-width input {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.dark .rich-text-toolbar button:disabled {
+  opacity: .62;
+}
+
+.dark .admin-danger-button {
+  border-color: #70444a;
+  background: #492d31;
+  color: #ffb5bc;
+}
+
+.dark .admin-danger-button:hover {
+  background: #56333a;
+}
+
+.dark .admin-toast {
+  border-color: #42654b;
+  background: #203b2b;
+  color: #a6dfb0;
+}
+
+.dark .admin-toast.error {
+  border-color: #70444a;
+  background: #492d31;
+  color: #ffb5bc;
+}
+
+.dark .lesson-image-upload-error {
+  color: #ffb5bc;
+}
+

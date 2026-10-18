@@ -336,3 +336,61 @@
   background: #fbe6e6;
 }
 
+.dark .catechist-card {
+  border-color: rgba(115, 189, 197, .28);
+  background: rgba(27, 38, 49, .97);
+}
+
+.dark .catechist-name-button {
+  color: #79d0c4;
+}
+
+.dark .catechist-name-button:hover,
+.dark .catechist-name-button:focus-visible {
+  color: #a0e7dc;
+}
+
+.dark .catechist-name-button:focus-visible {
+  outline-color: var(--gold);
+}
+
+.dark .catechist-contact-details a {
+  color: var(--blue);
+}
+
+.dark .catechist-info > span {
+  color: var(--muted);
+}
+
+.dark .catechist-info em.active {
+  color: #a6dfb0;
+}
+
+.dark .catechist-info em.paused {
+  color: #f0d28b;
+}
+
+.dark .catechist-info em.ended {
+  color: #ffb5ac;
+}
+
+.dark .track-card,
+.dark .schedule-table {
+  background: var(--paper);
+}
+
+.dark .schedule-table th {
+  background: var(--blue-deep);
+  color: #fff;
+}
+
+.dark .schedule-row-remove {
+  border-color: #70444a;
+  background: #492d31;
+  color: #ffb5bc;
+}
+
+.dark .schedule-row-remove:hover {
+  background: #56333a;
+}
+
