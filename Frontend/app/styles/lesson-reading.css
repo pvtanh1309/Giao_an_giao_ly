@@ -101,6 +101,12 @@
 .lesson-legacy-content h2 { font-size: 20px; }
 .reading-empty { color: var(--muted); font-style: italic; }
 
+.dark .lesson-draft-notice {
+  border-color: #66502d;
+  background: #3e321d;
+  color: #f0d28b;
+}
+
 @media (max-width: 700px) {
   .lesson-reading-page { padding: 14px 12px 44px; }
   .reading-toolbar { align-items: flex-start; flex-direction: column; }

@@ -91,6 +91,41 @@
 .program-schedule-card-week .program-schedule-cell-content { color: var(--muted); font-size: 13px; }
 .program-schedule-card dd .program-schedule-cell-content { margin: 0; }
 
+.dark .program-back-button:hover {
+  background: var(--surface-blue);
+}
+
+.dark .program-reading-page .schedule-table {
+  background: var(--lesson-paper);
+}
+
+.dark .schedule-column-dialog h2 {
+  color: var(--blue);
+}
+
+.dark .schedule-column-dialog input,
+.dark .schedule-column-dialog select {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.dark .schedule-column-dialog input:focus {
+  box-shadow: 0 0 0 3px rgba(145, 198, 229, .22);
+}
+
+.dark .schedule-column-dialog .schedule-column-error {
+  color: #ffb5bc;
+}
+
+.dark .schedule-column-tools .schedule-row-remove:disabled {
+  background: #303a45;
+  color: #9ba7b4;
+}
+
+.dark .schedule-merge-error {
+  color: #ffb5bc;
+}
+
 @media (max-width: 700px) {
   .program-reading-page { padding: 14px 12px 44px; }
   .program-reading-paper { padding: 22px 17px; }

@@ -12,6 +12,9 @@ const personalProfileStyles = readFileSync(new URL('../app/styles/personal-profi
 const authStyles = readFileSync(new URL('../app/styles/auth.css', import.meta.url), 'utf8')
 const passwordStyles = readFileSync(new URL('../app/styles/password-input.css', import.meta.url), 'utf8')
 const richTextStyles = readFileSync(new URL('../app/styles/rich-text.css', import.meta.url), 'utf8')
+const lessonReadingStyles = readFileSync(new URL('../app/styles/lesson-reading.css', import.meta.url), 'utf8')
+const programReadingStyles = readFileSync(new URL('../app/styles/program-reading.css', import.meta.url), 'utf8')
+const referenceReadingStyles = readFileSync(new URL('../app/styles/reference-reading.css', import.meta.url), 'utf8')
 const programScheduleEditor = readFileSync(new URL('../components/program-schedule-editor.tsx', import.meta.url), 'utf8')
 const siteHeader = readFileSync(new URL('../components/site-header.tsx', import.meta.url), 'utf8')
 const loginScreen = readFileSync(new URL('../components/auth-screen.tsx', import.meta.url), 'utf8')
@@ -109,4 +112,20 @@ test('rich-text chrome follows the theme while the editable canvas and authored 
     assert.match(richTextStyles, /\.rich-text-editor\.is-editable\s+\.rich-text-content\s*\{[^}]*background:\s*var\(--lesson-paper\)/s, 'keep the editor canvas on warm paper')
     assert.match(richTextStyles, /\.rich-text-content\s+\.tiptap\s*\{[^}]*color:\s*#000000/s, 'keep the paper canvas default text black')
     assert.doesNotMatch(richTextStyles, /\.dark\s+\[style(?:[^\]]*)\]/, 'do not recolor authored inline styles')
+})
+
+test('dark mode themes reading chrome, reference lists, and schedule editing controls', () => {
+    assert.match(lessonReadingStyles, /\.dark\s+\.lesson-draft-notice\s*\{/, 'theme the lesson draft notice')
+    assert.match(programReadingStyles, /\.dark\s+\.schedule-column-dialog\s+input(?:,|\s*\{)/, 'theme program schedule dialog controls')
+    assert.match(referenceReadingStyles, /\.dark\s+\.reference-list-item\s*\{/, 'theme reference directory rows')
+    assert.match(programReadingStyles, /\.dark\s+\.program-reading-page\s+\.schedule-table\s*\{[^}]*background:\s*var\(--lesson-paper\)/s, 'keep schedule cells on the warm paper canvas')
+})
+
+test('reading papers, schedule content, and print canvases are not recolored for dark mode', () => {
+    assert.match(lessonReadingStyles, /\.lesson-reading-paper,\s*\.program-reading-paper\s*\{[^}]*background:\s*#fffdf8/s)
+    assert.match(referenceReadingStyles, /\.reference-reading-paper\s*\{[^}]*background:\s*#fffdf8/s)
+    assert.match(programReadingStyles, /\.program-schedule-cell-content\s*\{[^}]*color:\s*#000000/s)
+
+    const readingStyles = `${lessonReadingStyles}\n${programReadingStyles}\n${referenceReadingStyles}`
+    assert.doesNotMatch(readingStyles, /\.dark\s+[^{}]*\.(?:lesson-reading-paper|program-reading-paper|reference-reading-paper|program-schedule-cell-content)/, 'leave paper and authored schedule content unchanged')
 })
