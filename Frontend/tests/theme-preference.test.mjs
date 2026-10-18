@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { runInNewContext } from 'node:vm'
 import {
     THEME_STORAGE_KEY,
+    getThemeBootstrapScript,
     readThemePreference,
     resolveTheme,
     writeThemePreference,
@@ -61,4 +63,57 @@ test('storage failures fall back to system and do not prevent in-memory theme ch
     assert.equal(readThemePreference(throwingStorage), 'system')
     assert.doesNotThrow(() => writeThemePreference(throwingStorage, 'dark'))
     assert.doesNotThrow(() => writeThemePreference(throwingStorage, 'system'))
+})
+
+function runThemeBootstrap({ storedPreference = null, systemPrefersDark = false, storageThrows = false }) {
+    const classes = new Set()
+    const document = {
+        documentElement: {
+            classList: {
+                toggle(name, enabled) {
+                    if (enabled) classes.add(name)
+                    else classes.delete(name)
+                },
+            },
+            style: {},
+        },
+    }
+    const window = {
+        matchMedia() {
+            return { matches: systemPrefersDark }
+        },
+    }
+
+    Object.defineProperty(window, 'localStorage', {
+        get() {
+            if (storageThrows) throw new Error('storage blocked')
+            return { getItem: () => storedPreference }
+        },
+    })
+
+    runInNewContext(getThemeBootstrapScript(), { window, document })
+    return { isDark: classes.has('dark'), colorScheme: document.documentElement.style.colorScheme }
+}
+
+test('bootstrap applies saved light and dark themes before hydration', () => {
+    assert.deepEqual(runThemeBootstrap({ storedPreference: 'light', systemPrefersDark: true }), {
+        isDark: false,
+        colorScheme: 'light',
+    })
+    assert.deepEqual(runThemeBootstrap({ storedPreference: 'dark', systemPrefersDark: false }), {
+        isDark: true,
+        colorScheme: 'dark',
+    })
+})
+
+test('bootstrap follows the system when there is no explicit saved choice', () => {
+    assert.deepEqual(runThemeBootstrap({ systemPrefersDark: false }), { isDark: false, colorScheme: 'light' })
+    assert.deepEqual(runThemeBootstrap({ systemPrefersDark: true }), { isDark: true, colorScheme: 'dark' })
+})
+
+test('bootstrap falls back to the system when local storage throws', () => {
+    assert.deepEqual(runThemeBootstrap({ systemPrefersDark: true, storageThrows: true }), {
+        isDark: true,
+        colorScheme: 'dark',
+    })
 })

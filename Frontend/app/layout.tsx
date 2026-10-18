@@ -1,6 +1,7 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Be_Vietnam_Pro, Fraunces, Playfair_Display } from 'next/font/google'
+import { getThemeBootstrapScript } from '../lib/theme-preference'
 import { Providers } from './providers'
 import './globals.css'
 
@@ -59,7 +60,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="vi" className={`${sans.variable} ${serif.variable} ${display.variable}`}>
+    <html lang="vi" className={`${sans.variable} ${serif.variable} ${display.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: getThemeBootstrapScript() }} />
+      </head>
       <body className="antialiased">
         <Providers>{children}</Providers>
         {process.env.NODE_ENV === 'production' && <Analytics />}
