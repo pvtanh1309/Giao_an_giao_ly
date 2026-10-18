@@ -72,3 +72,19 @@ test('the theme toggle has a localized label and announces whether dark mode is 
 test('the theme toggle uses the shared visible keyboard focus style', () => {
     assert.match(themeStyles, /:focus-visible\s*\{[^}]*outline:\s*2px solid/s, 'show a visible keyboard focus outline')
 })
+
+test('dark mode defines a dark native color scheme and overrides shared palette tokens', () => {
+    const darkPalette = themeStyles.match(/\.dark\s*\{([^}]*)\}/s)?.[1] ?? ''
+    assert.match(darkPalette, /color-scheme:\s*dark/)
+
+    for (const token of ['ink', 'muted', 'cream', 'paper', 'line', 'blue', 'blue-deep', 'gold', 'wine', 'surface-blue', 'surface-rose']) {
+        assert.match(darkPalette, new RegExp(`--${token}:\\s*#[0-9a-f]{6}`, 'i'), `override --${token} for dark mode`)
+    }
+})
+
+test('header, search, and search-result surfaces follow dark theme tokens', () => {
+    assert.match(siteStyles, /\.topbar\s*\{[^}]*background:\s*var\(--paper\)/s, 'use the page paper token for the sticky header')
+    assert.match(contentStyles, /\.directory-search\s*\{[^}]*background:\s*var\(--paper\)/s, 'keep the directory search on the paper token')
+    assert.match(themeStyles, /\.dark\s+\.lesson-search-result:hover\s*\{[^}]*background:\s*var\(--paper\)/s, 'avoid a light hover surface in dark mode')
+    assert.match(themeStyles, /\.dark\s+\.nav-link(?:\.active|:hover)/, 'give active navigation a readable dark-mode color')
+})

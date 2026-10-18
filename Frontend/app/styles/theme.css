@@ -5,7 +5,22 @@
 }
 
 .dark {
-  color-scheme: light;
+  color-scheme: dark;
+  --ink: #e8edf3;
+  --muted: #a8b4c2;
+  --cream: #111820;
+  --paper: #1b2631;
+  --line: #354555;
+  --blue: #91c6e5;
+  --blue-deep: #18435c;
+  --gold: #e0bb68;
+  --wine: #d18d93;
+  --accent-teal: #73bdc5;
+  --accent-teal-rgb: 115, 189, 197;
+  --accent-coral: #d98188;
+  --accent-coral-rgb: 217, 129, 136;
+  --surface-blue: #1e3941;
+  --surface-rose: #3b292f;
 }
 
 @layer base {
@@ -17,6 +32,40 @@
 :focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 3px;
+}
+
+.dark ::selection {
+  background: #e0bb68;
+  color: #17212b;
+}
+
+.dark .nav-link:hover,
+.dark .nav-link.active {
+  color: var(--blue);
+}
+
+.dark .hero-section::before {
+  background:
+    radial-gradient(circle at 82% 18%, rgba(224, 187, 104, .17), transparent 30%),
+    radial-gradient(circle at 12% 88%, rgba(var(--accent-teal-rgb), .15), transparent 38%),
+    radial-gradient(circle at 94% 78%, rgba(var(--accent-coral-rgb), .12), transparent 28%),
+    linear-gradient(135deg, rgba(27, 38, 49, .96), rgba(23, 33, 43, .9));
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .22);
+}
+
+.dark .lesson-search-result:hover {
+  background: var(--paper);
+}
+
+.dark .program-section {
+  background: linear-gradient(125deg, #142f42, #193c50 56%, #2e2a40);
+}
+
+.dark .academic-year-form input,
+.dark .academic-year-form button,
+.dark .academic-year-edit {
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .admin-editor-backdrop {

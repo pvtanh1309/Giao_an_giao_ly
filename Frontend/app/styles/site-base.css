@@ -3,6 +3,7 @@
   --muted: #718095;
   --cream: #f7f4ee;
   --paper: #fffdf9;
+  --lesson-paper: #fffdf9;
   --line: #e5e2da;
   --blue: #2d6a91;
   --blue-deep: #1d4568;
@@ -95,7 +96,7 @@ button {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(255, 253, 249, .93);
+  background: var(--paper);
   border-bottom: 1px solid var(--line);
   backdrop-filter: blur(14px);
 }
