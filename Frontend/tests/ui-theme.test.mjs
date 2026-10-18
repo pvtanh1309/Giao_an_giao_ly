@@ -102,6 +102,7 @@ test('dark mode themes dialogs, account menus, forms, and semantic account statu
     assert.match(dialogsStyles, /\.dark\s+\.modal-card(?:,|\s*\{)/, 'theme the modal surface')
     assert.match(accountsStyles, /\.dark\s+\.account-tools\s*\{/, 'theme the account filter surface')
     assert.match(accountsStyles, /\.dark\s+\.account-status\.active\s*\{/, 'retain readable success status colors')
+    assert.match(themeStyles, /\.dark\s+\.admin-icon-button\s*\{[^}]*background:\s*var\(--paper\)[^}]*color:\s*var\(--ink\)/s, 'keep admin action button text readable on a dark surface')
     assert.match(personalProfileStyles, /\.dark\s+\.account-menu-trigger(?:,|\s*\{)/, 'theme the account menu trigger')
     assert.match(authStyles, /\.dark\s+\.auth-form\s+input\s*\{/, 'theme login inputs')
     assert.match(passwordStyles, /\.dark\s+\.password-visibility-toggle:focus-visible\s*\{/, 'keep password control focus visible')

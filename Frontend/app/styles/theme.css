@@ -163,6 +163,26 @@
   background: #fff5f5;
 }
 
+.dark .admin-icon-button {
+  border-color: var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.dark .admin-icon-button:hover {
+  background: var(--surface-blue);
+}
+
+.dark .admin-icon-button.danger {
+  border-color: #70444a;
+  background: #492d31;
+  color: #ffb5bc;
+}
+
+.dark .admin-icon-button.danger:hover {
+  background: #56333a;
+}
+
 .admin-editor-modal {
   max-width: 620px;
 }
