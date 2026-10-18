@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { Menu, X } from 'lucide-react'
 import type { AppRole } from '../lib/auth/types'
 import { AccountMenu } from './account-menu'
+import { ThemeToggle } from './theme-toggle'
 
 type SiteHeaderProps = {
     activeNav: string
@@ -66,6 +67,7 @@ export function SiteHeader({
                     )}
                 </nav>
                 <div className="header-actions">
+                    <ThemeToggle />
                     <AccountMenu onLogout={onLogout} />
                     <button
                         className="menu-button"

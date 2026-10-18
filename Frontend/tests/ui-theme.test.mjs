@@ -5,6 +5,7 @@ import test from 'node:test'
 const siteStyles = readFileSync(new URL('../app/styles/site-base.css', import.meta.url), 'utf8')
 const heroStyles = readFileSync(new URL('../app/styles/hero.css', import.meta.url), 'utf8')
 const contentStyles = readFileSync(new URL('../app/styles/content.css', import.meta.url), 'utf8')
+const themeStyles = readFileSync(new URL('../app/styles/theme.css', import.meta.url), 'utf8')
 const programScheduleEditor = readFileSync(new URL('../components/program-schedule-editor.tsx', import.meta.url), 'utf8')
 const siteHeader = readFileSync(new URL('../components/site-header.tsx', import.meta.url), 'utf8')
 const loginScreen = readFileSync(new URL('../components/auth-screen.tsx', import.meta.url), 'utf8')
@@ -52,4 +53,22 @@ test('program schedule column actions use in-app dialogs instead of browser prom
     assert.ok(!/window\.(prompt|confirm|alert)\s*\(/.test(programScheduleEditor), 'avoid browser-native dialogs')
     assert.ok(/role="dialog"[^>]*aria-modal="true"/.test(programScheduleEditor), 'show an accessible in-app dialog')
     assert.ok(/Thêm cột mới/.test(programScheduleEditor), 'label the new-column dialog clearly')
+})
+
+test('the theme toggle sits beside the account menu in the header actions', () => {
+    assert.ok(/className="header-actions">[\s\S]*?<ThemeToggle\s*\/>[\s\S]*?<AccountMenu/.test(siteHeader), 'place the theme control beside the account menu')
+})
+
+test('the theme toggle has a localized label and announces whether dark mode is pressed', () => {
+    const togglePath = new URL('../components/theme-toggle.tsx', import.meta.url)
+    assert.ok(existsSync(togglePath), 'provide the theme toggle component')
+    const themeToggle = readFileSync(togglePath, 'utf8')
+
+    assert.ok(themeToggle.includes("const label = theme === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"), 'describe the next theme in Vietnamese')
+    assert.match(themeToggle, /aria-label=\{label\}/, 'use the localized label for screen readers')
+    assert.match(themeToggle, /aria-pressed=\{theme === 'dark'\}/, 'expose the active dark theme state')
+})
+
+test('the theme toggle uses the shared visible keyboard focus style', () => {
+    assert.match(themeStyles, /:focus-visible\s*\{[^}]*outline:\s*2px solid/s, 'show a visible keyboard focus outline')
 })
