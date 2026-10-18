@@ -12,6 +12,18 @@ import type { Lesson } from '../lib/content-data'
 import { beforeAppNavigation, canLeaveCurrentPage } from '../lib/unsaved-work'
 import { LessonNotesContext } from './lesson-notes-context'
 import { useDialogFocus } from './use-dialog-focus'
+import { MessageSquarePlus, NotebookPen } from 'lucide-react'
+
+function selectedTextPosition() {
+    const selection = window.getSelection()
+    if (!selection || selection.isCollapsed || !selection.rangeCount) return null
+    const rect = Array.from(selection.getRangeAt(0).getClientRects()).find((r) => r.width > 0 && r.bottom > 0 && r.top < window.innerHeight)
+    if (!rect) return null
+    const headerBottom = document.querySelector('.topbar')?.getBoundingClientRect().bottom ?? 0
+    const minTop = Math.max(8, headerBottom + 8)
+    const above = !window.matchMedia('(pointer: coarse)').matches && rect.top - 48 >= minTop
+    return { left: Math.max(8, Math.min(window.innerWidth - 168, rect.left + rect.width / 2 - 76)), top: Math.max(minTop, Math.min(window.innerHeight - 52, above ? rect.top - 48 : rect.bottom + 8)) }
+}
 
 export function LessonWithNotes(props: LessonReadingPageProps) {
     const { user } = useAuth()
@@ -33,6 +45,8 @@ function PersonalLessonSession(props: LessonReadingPageProps) {
     const [error, setError] = useState('')
     const [anchor, setAnchor] = useState<LessonNoteAnchor | null>(null)
     const [selectionError, setSelectionError] = useState('')
+    const [selectionPosition, setSelectionPosition] = useState<{ left: number; top: number } | null>(null)
+    const [listOpen, setListOpen] = useState(false)
     const [draft, setDraft] = useState<{ noteId: string; anchor: LessonNoteAnchor; body: string; version?: number } | null>(null)
     const [resolved, setResolved] = useState<Record<string, string[]>>({})
     const [reloadId, setReloadId] = useState(0)
@@ -52,38 +66,49 @@ function PersonalLessonSession(props: LessonReadingPageProps) {
     const select = useCallback((fieldId: string, text: string, start: number, end: number) => {
         const id = ++sequence.current
         setAnchor(null); setSelectionError('')
+        setSelectionPosition(selectedTextPosition())
         void createLessonNoteAnchor(fieldId, text, start, end).then((next) => { if (alive.current && sequence.current === id) setAnchor(next) }).catch((error) => { if (alive.current && sequence.current === id) setSelectionError(error.message) })
     }, [])
     const rejectSelection = useCallback(() => {
-        sequence.current++; setAnchor(null); setSelectionError('Chỉ chọn chữ trong cùng một mục để thêm ghi chú.')
+        sequence.current++; setAnchor(null); setSelectionPosition(null); setSelectionError('Chỉ chọn chữ trong cùng một mục để thêm ghi chú.')
     }, [])
     useEffect(() => {
         const validate = () => {
             const selected = window.getSelection()
-            if (!selected || selected.isCollapsed) return
+            if (!selected || selected.isCollapsed) {
+                if (!document.activeElement?.closest('[data-note-selection-menu]')) { sequence.current++; setAnchor(null); setSelectionPosition(null) }
+                return
+            }
             const field = (node: Node | null) => (node instanceof Element ? node : node?.parentElement)?.closest('[data-note-field]')
             const first = field(selected.anchorNode), last = field(selected.focusNode)
             if ((first || last) && first !== last) rejectSelection()
+            else if (first && last) setSelectionPosition(selectedTextPosition())
+            else { sequence.current++; setAnchor(null); setSelectionPosition(null) }
         }
+        const dismiss = (event: PointerEvent) => {
+            if (!(event.target instanceof Element) || !event.target.closest('[data-note-field], [data-note-selection-menu]')) { sequence.current++; setAnchor(null); setSelectionPosition(null) }
+        }
+        const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') { sequence.current++; setAnchor(null); setSelectionPosition(null) } }
         document.addEventListener('selectionchange', validate)
-        return () => document.removeEventListener('selectionchange', validate)
+        document.addEventListener('pointerdown', dismiss)
+        document.addEventListener('keydown', escape)
+        window.addEventListener('scroll', validate, true)
+        window.addEventListener('resize', validate)
+        return () => { document.removeEventListener('selectionchange', validate); document.removeEventListener('pointerdown', dismiss); document.removeEventListener('keydown', escape); window.removeEventListener('scroll', validate, true); window.removeEventListener('resize', validate) }
     }, [rejectSelection])
     const open = useCallback((id: string) => {
         const note = notes.find((n) => n.noteId === id)
-        if (note) setDraft({ noteId: note.noteId, anchor: note.anchor, body: note.body, version: note.version })
+        if (note) { setListOpen(false); setDraft({ noteId: note.noteId, anchor: note.anchor, body: note.body, version: note.version }) }
     }, [notes])
     if (!user) return null
     return <LessonNotesContext.Provider value={{ notes, anchor, select, rejectSelection, open, report }}>
-        <aside className="personal-notes-panel" aria-label="Ghi chú riêng">
-            <h2>Ghi chú của tôi</h2><p>Chỉ bạn nhìn thấy. Bôi đen đoạn chữ trong một mục để thêm ghi chú.</p>
-            {loading && <p role="status">Đang tải ghi chú…</p>}
+        {selectionError && <span className="note-selection-feedback" role="status">{selectionError}</span>}
+        {selectionPosition && anchor && !draft && !listOpen && createPortal(<div className="personal-note-selection-menu" data-note-selection-menu role="toolbar" aria-label="Ghi chú đoạn được chọn" style={selectionPosition}>
+            <button type="button" disabled={loading || !!error} onPointerDown={(event) => event.preventDefault()} onClick={() => { setDraft({ noteId: crypto.randomUUID(), anchor, body: '' }); setSelectionPosition(null) }}><MessageSquarePlus size={16} /> Viết ghi chú</button>
             {error && <p role="alert">{error}</p>}
-            {selectionError && <p role="status">{selectionError}</p>}
-            <button className="primary-button" disabled={!anchor || loading || !!error} onClick={() => anchor && setDraft({ noteId: crypto.randomUUID(), anchor, body: '' })}>Thêm ghi chú cho đoạn đã chọn</button>
-            <button className="secondary-button" disabled={loading} onClick={() => { if (canLeaveCurrentPage()) { setAnchor(null); setReloadId((n) => n + 1) } }}>Tải lại</button>
-            <details><summary>Danh sách ghi chú ({notes.length})</summary><ul>{notes.map((note) => <li key={note.noteId}><button onClick={() => open(note.noteId)}><q>{note.anchor.exactQuote}</q><span>{note.body}</span>{!Object.values(resolved).flat().includes(note.noteId) && <small>Đoạn gốc đã thay đổi hoặc chưa xác định được vị trí.</small>}</button></li>)}</ul></details>
-        </aside>
-        {lesson && <LessonReadingPage {...props} lesson={lesson} canManage={false} onBack={() => { if (canLeaveCurrentPage()) props.onBack() }} />}
+        </div>, document.body)}
+        {lesson && <LessonReadingPage {...props} lesson={lesson} canManage={false} extraActions={(notes.length > 0 || !!error) && <button type="button" className="secondary-button personal-notes-list-trigger" onClick={() => setListOpen(true)}><NotebookPen size={16} /> Ghi chú của tôi{notes.length > 0 ? ` (${notes.length})` : ''}</button>} onBack={() => { if (canLeaveCurrentPage()) props.onBack() }} />}
+        {listOpen && createPortal(<NotesListDialog notes={notes} resolvedIds={Object.values(resolved).flat()} error={error} loading={loading} onOpen={open} onClose={() => setListOpen(false)} onReload={() => { setAnchor(null); setSelectionPosition(null); setReloadId((n) => n + 1) }} />, document.body)}
         {draft && createPortal(<NoteDialog key={draft.noteId} draft={draft} onClose={() => setDraft(null)} onSave={async (body) => {
             const saved = draft.version ? await service.update(props.lesson.id, draft.noteId, body, draft.version) : await service.create(props.lesson.id, { noteId: draft.noteId, anchor: draft.anchor, body })
             if (!alive.current) return
@@ -93,6 +118,17 @@ function PersonalLessonSession(props: LessonReadingPageProps) {
             if (alive.current) { setNotes((rows) => rows.filter((n) => n.noteId !== draft.noteId)); setDraft(null) }
         } : undefined} />, document.body)}
     </LessonNotesContext.Provider>
+}
+
+function NotesListDialog({ notes, resolvedIds, error, loading, onOpen, onClose, onReload }: { notes: LessonNote[]; resolvedIds: string[]; error: string; loading: boolean; onOpen: (id: string) => void; onClose: () => void; onReload: () => void }) {
+    const root = useRef<HTMLElement>(null)
+    useDialogFocus(root)
+    return <div className="personal-profile-backdrop" onClick={(event) => { if (event.target === event.currentTarget) onClose() }} onKeyDown={(event) => { if (event.key === 'Escape') { event.stopPropagation(); onClose() } }}><section ref={root} className="personal-profile-dialog personal-notes-list" role="dialog" aria-modal="true" aria-labelledby="notes-list-title">
+        <h2 id="notes-list-title">Ghi chú của tôi ({notes.length})</h2>
+        {loading && <p role="status">Đang tải ghi chú…</p>}{error && <p role="alert">{error}</p>}
+        <ul>{notes.map((note) => <li key={note.noteId}><button type="button" onClick={() => onOpen(note.noteId)}><q>{note.anchor.exactQuote}</q><span>{note.body}</span>{!resolvedIds.includes(note.noteId) && <small>Đoạn gốc đã thay đổi hoặc chưa xác định được vị trí.</small>}</button></li>)}</ul>
+        <div className="personal-profile-actions"><button type="button" className="secondary-button" disabled={loading} onClick={onReload}>Tải lại</button><button type="button" className="primary-button" onClick={onClose}>Đóng</button></div>
+    </section></div>
 }
 
 function NoteDialog({ draft, onClose, onSave, onDelete }: { draft: { body: string; anchor: LessonNoteAnchor; version?: number }; onClose: () => void; onSave: (body: string) => Promise<void>; onDelete?: () => Promise<void> }) {

@@ -24,6 +24,10 @@ Run `npm run test:personal-ui` for the private profile/note checks. This uses
 for two separate Reader accounts. Checks cover contact email versus login email,
 emoji offsets, note create/edit/delete and reload, cross-field selection rejection,
 unsaved browser Back cancellation, mobile viewport, and isolation between accounts.
+The reading page has no permanent notes panel or input box. Selecting visible
+text shows **Viết ghi chú** beside the selection; clicking it opens the input
+dialog. Clearing selection hides the option, including when selecting the same
+text again. Saved notes open from their highlight or the compact notes-list action.
 All external requests are intercepted; neither runner accesses live AWS.
 Editor checks also cover font-size controls following the current selection,
 literal `1. `, `- `, `* ` and `+ ` prefixes, default black text, and formatting after save/reload.

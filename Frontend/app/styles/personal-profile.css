@@ -16,18 +16,19 @@
 .personal-profile-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
 @media (max-width: 700px) { .account-menu-trigger { max-width: 145px; font-size: 12px; } .personal-profile-dialog { padding: 18px; } }
 .personal-notes-mode { margin: 12px 0; }
-.personal-notes-panel { position: sticky; top: 8px; z-index: 20; padding: 12px 16px; border: 1px solid #d4b561; border-radius: 10px; background: #fffdf3; box-shadow: 0 2px 10px #0001; margin-bottom: 16px; }
-.personal-notes-panel h2 { margin: 0; font-size: 1rem; }
-.personal-notes-panel p { margin: 4px 0 8px; font-size: .85rem; }
-.personal-notes-panel > button { margin: 4px 8px 4px 0; }
-.personal-notes-panel details { margin-top: 6px; }
-.personal-notes-panel ul { max-height: 28vh; overflow: auto; padding-left: 20px; }
-.personal-notes-panel li button { display: grid; text-align: left; width: 100%; padding: 8px; border-bottom: 1px solid #e4dac0; overflow-wrap: anywhere; }
-.personal-notes-panel li q { font-style: italic; color: #755b17; }
-.personal-notes-panel li span { white-space: pre-wrap; }
-.personal-notes-panel small { color: #875510; }
+.personal-note-selection-menu { position: fixed; z-index: 100; width: 152px; max-width: calc(100vw - 16px); border: 1px solid var(--line); border-radius: 8px; background: var(--paper); box-shadow: 0 4px 18px #18273533; }
+.personal-note-selection-menu > button { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; min-height: 40px; padding: 8px 10px; border-radius: 8px; background: var(--paper); color: var(--ink); font-size: 14px; white-space: nowrap; }
+.personal-note-selection-menu > button:hover { background: #f3eee1; }
+.personal-note-selection-menu > button:focus-visible { outline: 2px solid #315a75; outline-offset: 2px; }
+.personal-note-selection-menu p { padding: 8px; font-size: 12px; }
+.note-selection-feedback { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.personal-notes-list ul { list-style: none; padding: 0; margin: 0; }
+.personal-notes-list li button { display: grid; gap: 6px; text-align: left; width: 100%; padding: 12px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.personal-notes-list li q { font-style: italic; color: #755b17; }
+.personal-notes-list li span { white-space: pre-wrap; }
+.personal-notes-list small { color: #875510; }
 .private-note-highlight { background: #ffeb8a; box-shadow: inset 0 -2px #c99518; cursor: pointer; }
 .personal-profile-dialog textarea { width: 100%; border: 1px solid #c6c0b4; border-radius: 6px; padding: 10px; resize: vertical; }
 .personal-profile-dialog blockquote { max-height: 18vh; overflow: auto; white-space: pre-wrap; }
 .lesson-reading-scripture .rich-text-content .tiptap { text-align: center; font-style: inherit; color: inherit; }
-@media (max-width: 600px) { .personal-notes-panel { top: 4px; padding: 8px; } .personal-notes-panel p { font-size: .78rem; } .personal-notes-panel > button { font-size: .8rem; min-height: 40px; } }
+@media (pointer: coarse) { .personal-note-selection-menu > button { min-height: 44px; } }

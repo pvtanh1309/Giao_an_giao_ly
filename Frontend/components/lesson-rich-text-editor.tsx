@@ -62,15 +62,24 @@ export function LessonRichTextEditor({
         if (!editor || editable || !notes || !noteFieldId) return
         const select = () => {
             const selection = window.getSelection()
-            if (selection && !selection.isCollapsed && !selectionIsWithinField(editor.view.dom, selection)) { notes.rejectSelection(); return }
-            const { from, to } = editor.state.selection
+            if (!selection || selection.isCollapsed) return
+            if (!editor.view.dom.contains(selection.anchorNode) && !editor.view.dom.contains(selection.focusNode)) return
+            if (!selectionIsWithinField(editor.view.dom, selection)) { notes.rejectSelection(); return }
+            const anchor = editor.view.posAtDOM(selection.anchorNode!, selection.anchorOffset)
+            const focus = editor.view.posAtDOM(selection.focusNode!, selection.focusOffset)
+            const from = Math.min(anchor, focus), to = Math.max(anchor, focus)
             if (from === to) return
             const map = lessonTextMap(editor.state.doc)
             const range = selectedNoteRange(map, from, to)
             if (range) notes.select(noteFieldId, map.text, range.start, range.end)
         }
+        const domSelect = () => {
+            const selection = window.getSelection()
+            if (selection?.anchorNode && editor.view.dom.contains(selection.anchorNode)) select()
+        }
         editor.on('selectionUpdate', select)
-        return () => { editor.off('selectionUpdate', select) }
+        document.addEventListener('selectionchange', domSelect)
+        return () => { editor.off('selectionUpdate', select); document.removeEventListener('selectionchange', domSelect) }
     }, [editor, editable, notes?.select, notes?.rejectSelection, noteFieldId])
 
     useEffect(() => {

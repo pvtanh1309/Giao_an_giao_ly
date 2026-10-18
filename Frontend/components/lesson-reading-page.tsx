@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { ArrowLeft, Save, Trash2, X } from 'lucide-react'
 import type { Lesson, LessonSection } from '../lib/content-data'
 import { lessonPlans } from '../lib/content-data'
@@ -18,9 +18,10 @@ export type LessonReadingPageProps = {
     onBack: () => void
     getAccessToken?: () => Promise<string>
     onUploadStateChange?: (uploading: boolean) => void
+    extraActions?: ReactNode
 }
 
-export function LessonReadingPage({ lesson, canManage, onSave, onPublish, onDelete, onBack, getAccessToken, onUploadStateChange, busy = false }: LessonReadingPageProps) {
+export function LessonReadingPage({ lesson, canManage, onSave, onPublish, onDelete, onBack, getAccessToken, onUploadStateChange, extraActions, busy = false }: LessonReadingPageProps) {
     const [editing, setEditing] = useState(false)
     const [draft, setDraft] = useState(lesson)
 
@@ -46,6 +47,7 @@ export function LessonReadingPage({ lesson, canManage, onSave, onPublish, onDele
         <section className="lesson-reading-page" aria-label="Chi tiết giáo án" inert={busy} aria-busy={busy}>
             <div className="reading-toolbar">
                 <button className="secondary-button" onClick={onBack}><ArrowLeft size={16} /> Danh sách giáo án</button>
+                {extraActions}
                 {canManage && !editing && <button className="outline-button" onClick={() => setEditing(true)}>Chỉnh sửa trực tiếp</button>}
                 {canManage && editing && <div className="reading-actions">
                     <button className="secondary-button" onClick={() => { setDraft(lesson); setEditing(false) }}><X size={16} /> Hủy</button>
