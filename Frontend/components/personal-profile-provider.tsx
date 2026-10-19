@@ -10,7 +10,7 @@ const Context = createContext<Value | null>(null)
 export function PersonalProfileProvider({ children }: { children: ReactNode }) {
     const { status, user, getAccessToken } = useAuth()
     const unauthorized = useUnauthorizedHandler()
-    const sub = status === 'authenticated' ? user?.sub ?? '' : ''
+    const sub = status === 'authenticated' && !user?.localMock ? user?.sub ?? '' : ''
     const scope = useRef(sub); scope.current = sub
     const generation = useRef(0)
     const [saved, setSaved] = useState<{ owner: string; data: Me } | null>(null)

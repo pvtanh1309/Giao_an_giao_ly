@@ -62,7 +62,7 @@
 }
 .lesson-reading-scripture textarea { margin-bottom: 8px; }
 .lesson-reading-number { color: var(--muted); font: 600 12px/1.4 var(--font-sans), Arial, sans-serif; letter-spacing: .11em; }
-.lesson-reading-header h1 { margin: 8px 0; color: #78484b; font-size: clamp(30px, 5vw, 44px); }
+.lesson-reading-header h1 { margin: 8px 0; color: var(--heading-red); font-size: clamp(30px, 5vw, 44px); }
 .lesson-reading-header > p { max-width: 700px; margin: 0 auto 12px; color: #5e6470; }
 .lesson-reading-level { display: inline-flex; margin-top: 14px; color: var(--muted); font: 14px var(--font-sans), Arial, sans-serif; }
 .lesson-reading-level input { width: 180px; }
@@ -72,7 +72,7 @@
 .lesson-reading-field h3,
 .lesson-reading-section h2,
 .lesson-progression h2,
-.lesson-legacy-content h2 { margin: 0 0 8px; color: #8d4d51; }
+.lesson-legacy-content h2 { margin: 0 0 8px; color: var(--heading-red); }
 .lesson-reading-field h3 { font-size: 19px; }
 .lesson-optional-field-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
 .lesson-optional-field-heading h3 { margin: 0; }
@@ -88,7 +88,7 @@
 .lesson-progression-row { position: relative; display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #ddd5c8; }
 .lesson-progression-row > div { min-width: 0; padding: 16px 18px; }
 .lesson-progression-row > div + div { border-left: 1px solid #ddd5c8; }
-.lesson-progression-row h3 { margin: 0 0 9px; color: #8d4d51; font-size: 15px; }
+.lesson-progression-row h3 { margin: 0 0 9px; color: var(--heading-red); font-size: 15px; }
 .lesson-progression-row textarea { width: 100%; min-height: 110px; resize: vertical; border: 1px solid var(--line); padding: 10px; }
 .lesson-progression-row .schedule-row-remove { position: absolute; top: 7px; right: 7px; }
 .lesson-reading-section { padding: 23px 0; border-top: 1px solid #ddd5c8; }

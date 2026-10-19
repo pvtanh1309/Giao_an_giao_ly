@@ -11,6 +11,8 @@ export type AuthenticatedUser = {
     sub: string
     email: string
     role: AppRole
+    /** Local-only demo account; never represents a Cognito identity. */
+    localMock?: true
 }
 
 export type AuthSession = {

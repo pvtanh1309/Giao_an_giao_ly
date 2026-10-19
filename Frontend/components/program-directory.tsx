@@ -1,6 +1,7 @@
 'use client'
 
 import { ArrowRight, FileText, Plus, Trash2 } from 'lucide-react'
+import type { CSSProperties } from 'react'
 import { industryColorHex, type Industry, type Program } from '../lib/content-data'
 import { getProgramsForDirectIndustry, getProgramsForIndustry, getProgramsForSublevel } from '../lib/program-navigation'
 
@@ -40,6 +41,7 @@ export function ProgramDirectory({
                 ? []
                 : getProgramsForDirectIndustry(programs, selectedIndustry.level)
         : []
+    const stageAccent = selectedIndustry ? industryColorHex[selectedIndustry.color] : undefined
 
     const renderProgram = (program: Program) => (
         <article
@@ -71,45 +73,62 @@ export function ProgramDirectory({
 
     return (
         <section id="programs" className="program-section">
-            <div className="program-inner">
-                <div className="section-heading light">
-                    <div>
-                        <span className="section-kicker">Lộ trình đào tạo</span>
-                        <h2>Chương trình học</h2>
-                        <p>Hành trình đức tin được xây dựng phù hợp với từng giai đoạn trưởng thành.</p>
+            <header className="program-hero">
+                <div className="program-hero-inner">
+                    <div className="section-heading light program-heading">
+                        <div>
+                            <span className="section-kicker">Lộ trình đào tạo</span>
+                            <h2>Chương trình học</h2>
+                            <p>Hành trình đức tin được xây dựng phù hợp với từng giai đoạn trưởng thành.</p>
+                        </div>
+                        {canManage ? (
+                            <button type="button" className="outline-button light-button" onClick={() => onAdd(selectedLevel ?? undefined, selectedSublevel ?? undefined)}>
+                                <Plus size={16} /> Thêm chương trình
+                            </button>
+                        ) : (
+                            <button type="button" className="outline-button light-button" onClick={() => onBack('industries')}>
+                                Xem toàn bộ <ArrowRight size={16} />
+                            </button>
+                        )}
                     </div>
-                    {canManage ? (
-                        <button className="outline-button light-button" onClick={() => onAdd(selectedLevel ?? undefined, selectedSublevel ?? undefined)}>
-                            <Plus size={16} /> Thêm chương trình
-                        </button>
-                    ) : (
-                        <button className="outline-button light-button" onClick={() => onBack('industries')}>
-                            Xem toàn bộ <ArrowRight size={16} />
-                        </button>
-                    )}
                 </div>
+            </header>
+            <div className="program-inner">
                 {selectedIndustry && (
                     <nav className="program-breadcrumb" aria-label="Điều hướng chương trình học">
-                        <button onClick={() => onBack('industries')}>Tất cả ngành</button>
+                        <button type="button" onClick={() => onBack('industries')}>Tất cả ngành</button>
                         <span aria-hidden="true">/</span>
-                        <button disabled={!selectedSublevel && viewingPrograms} onClick={() => onBack('sublevels')}>
+                        <button type="button" disabled={!selectedSublevel && viewingPrograms} onClick={() => onBack('sublevels')}>
                             {selectedIndustry.level}
                         </button>
                         {selectedSublevel && <><span aria-hidden="true">/</span><span aria-current="page">{selectedSublevel}</span></>}
                     </nav>
                 )}
-                <div className="program-list">
-                    {!selectedIndustry && industries.map((industry) => {
+                <div className={`program-list ${!selectedIndustry ? 'program-stage-list' : !viewingPrograms ? 'program-sublevel-list' : 'program-content-list'}`}>
+                    {!selectedIndustry && industries.map((industry, index) => {
                         const programCount = getProgramsForIndustry(programs, industry.level).length
-                        return <button className="program-category-card" style={{ backgroundColor: industryColorHex[industry.color], color: industry.color === 'pink' || industry.color === 'green-light' ? '#29351d' : 'white' }} key={industry.level} onClick={() => onSelectLevel(industry.level)}>
-                            <span className="program-category-icon">{industry.icon}</span>
-                            <span className="program-category-copy"><strong>{industry.level}</strong><small>{industry.sublevels.length ? `${industry.sublevels.length} phân ngành` : `${programCount} chương trình học`}</small></span>
-                            <ArrowRight size={18} />
-                        </button>
+                        const step = String(index + 1).padStart(2, '0')
+                        return (
+                            <button
+                                type="button"
+                                className="program-category-card"
+                                style={{ '--stage-color': industryColorHex[industry.color] } as CSSProperties}
+                                key={industry.level}
+                                onClick={() => onSelectLevel(industry.level)}
+                            >
+                                <span className="program-step-number" aria-hidden="true">{step}</span>
+                                <span className="program-category-icon" aria-hidden="true">{industry.icon}</span>
+                                <span className="program-category-copy">
+                                    <strong>{industry.level}</strong>
+                                    <small>{industry.sublevels.length ? `${industry.sublevels.length} phân ngành` : `${programCount} chương trình học`}</small>
+                                </span>
+                                <span className="program-stage-arrow" aria-hidden="true"><ArrowRight size={18} /></span>
+                            </button>
+                        )
                     })}
                     {selectedIndustry && !viewingPrograms && selectedIndustry.sublevels.map((sublevel) => {
                         const programCount = getProgramsForSublevel(programs, selectedIndustry.level, sublevel).length
-                        return <button className="program-sublevel-row" key={sublevel} onClick={() => onSelectSublevel(sublevel)}>
+                        return <button type="button" className="program-sublevel-row" style={{ '--stage-color': stageAccent } as CSSProperties} key={sublevel} onClick={() => onSelectSublevel(sublevel)}>
                             <span><strong>{sublevel}</strong><small>{programCount} chương trình học</small></span>
                             <ArrowRight size={18} />
                         </button>

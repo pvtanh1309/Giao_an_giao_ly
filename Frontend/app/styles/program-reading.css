@@ -9,7 +9,7 @@
 .program-reading-meta-edit { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
 .program-reading-meta-edit select { min-width: 0; padding: 10px 12px; border: 1px solid var(--line); background: #fff; color: var(--ink); }
 .program-reading-schedule { padding-top: 27px; }
-.program-reading-schedule h2 { margin: 0 0 16px; color: #8d4d51; font-size: 25px; }
+.program-reading-schedule h2 { margin: 0 0 16px; color: var(--heading-red); font-size: 25px; }
 .program-reading-page .schedule-table { width: max-content; min-width: 100%; table-layout: auto; }
 .program-reading-page .schedule-table th,
 .program-reading-page .schedule-table td { min-width: 170px; max-width: 360px; }
@@ -20,12 +20,12 @@
 .program-schedule-card { padding: 17px; border: 1px solid #e4ddd1; background: #fff; }
 .program-schedule-card + .program-schedule-card { margin-top: 12px; }
 .program-schedule-card header { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 13px; }
-.program-schedule-card h3 { margin: 11px 0; color: #78484b; font: 600 19px var(--font-serif), Georgia, serif; }
+.program-schedule-card h3 { margin: 11px 0; color: var(--heading-red); font: 600 19px var(--font-serif), Georgia, serif; }
 .program-schedule-card dl { display: grid; gap: 10px; margin: 0; }
 .program-schedule-card dl > div { display: grid; gap: 3px; }
-.program-schedule-card dt { color: #8d4d51; font-size: 12px; font-weight: 700; }
+.program-schedule-card dt { color: var(--heading-red); font-size: 12px; font-weight: 700; }
 .program-schedule-card dd { margin: 0; line-height: 1.55; }
-.program-schedule-card-field-topic dd { color: #78484b; font: 600 17px var(--font-serif), Georgia, serif; }
+.program-schedule-card-field-topic dd { color: var(--heading-red); font: 600 17px var(--font-serif), Georgia, serif; }
 .program-schedule-editor { margin-top: 24px; }
 .program-schedule-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .program-schedule-tools { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -85,7 +85,7 @@
 .schedule-column-heading .schedule-row-remove:disabled { border-color: var(--line); background: #f2f0ec; color: #9ca3aa; cursor: not-allowed; }
 .schedule-format-dialog { width: min(100%, 820px); max-height: calc(100dvh - 40px); overflow-y: auto; }
 .schedule-format-dialog .rich-text-content .tiptap { min-height: 220px; max-height: 42vh; overflow-y: auto; }
-.program-schedule-card-topic { margin: 11px 0; color: #78484b; font: 600 19px var(--font-serif), Georgia, serif; }
+.program-schedule-card-topic { margin: 11px 0; color: var(--heading-red); font: 600 19px var(--font-serif), Georgia, serif; }
 .program-schedule-card-topic .program-schedule-cell-content > * { margin: 0; }
 .program-schedule-card-week { text-align: right; }
 .program-schedule-card-week .program-schedule-cell-content { color: var(--muted); font-size: 13px; }

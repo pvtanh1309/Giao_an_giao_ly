@@ -206,6 +206,7 @@
 .rich-text-content .tiptap h2,
 .rich-text-content .tiptap h3 {
   margin: 12px 0 8px;
+  color: var(--heading-red);
   line-height: 1.35;
 }
 

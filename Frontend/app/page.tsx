@@ -63,12 +63,12 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   const { status, user, logout, getAccessToken } = useAuth()
   const personal = usePersonalProfile()
   const onUnauthorized = useUnauthorizedHandler()
-  const accountService = useMemo(() => status === 'authenticated' ? createAccountManagement(createUsersApi({
+  const accountService = useMemo(() => status === 'authenticated' && !user?.localMock ? createAccountManagement(createUsersApi({
     config: getPublicConfig(), getAccessToken, onUnauthorized,
   })) : null, [status, getAccessToken, onUnauthorized])
-  const contentService = useMemo(() => status === 'authenticated' && user ? createContentManagement(createContentApi({
+  const contentService = useMemo(() => status === 'authenticated' && user && !user.localMock ? createContentManagement(createContentApi({
     config: getPublicConfig(), getAccessToken, onUnauthorized,
-  }), user.role === 'admin' || user.role === 'editor') : null, [status, user?.sub, user?.role, getAccessToken, onUnauthorized])
+  }), user.role === 'admin' || user.role === 'editor') : null, [status, user?.sub, user?.role, user?.localMock, getAccessToken, onUnauthorized])
   const [contentLoading, setContentLoading] = useState(true)
   const [contentError, setContentError] = useState('')
   const [contentReload, setContentReload] = useState(0)
@@ -145,7 +145,10 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
     let active = true
     setLessonList([]); setProgramList([]); setReferenceList([])
     setDetailReady(''); setContentError(''); setContentLoading(true)
-    if (!contentService) return
+    if (!contentService) {
+      setContentLoading(false)
+      return
+    }
     void (async () => {
       try {
         const [lessons, programs, references] = await Promise.all([

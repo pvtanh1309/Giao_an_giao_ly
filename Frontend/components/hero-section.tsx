@@ -1,4 +1,4 @@
-import { ArrowRight, Church, Sparkles } from 'lucide-react'
+import { ArrowRight, Sparkles } from 'lucide-react'
 
 type HeroSectionProps = {
     onNavigate: (path: string) => void
@@ -33,11 +33,8 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
                 </div>
             </div>
             <div className="hero-illustration" aria-hidden="true">
-                <div className="sun-disc" />
-                <div className="stained-glass">
-                    <span /><span /><span /><span /><span /><span /><span /><span /><i />
-                </div>
-                <div className="cross-ornament">✠</div>
+                <img className="hero-stained-glass-image" src="/images/stained-glass-hero-expanded.png" alt="" />
+                <span className="hero-canopy-shadows" />
             </div>
         </section>
     )

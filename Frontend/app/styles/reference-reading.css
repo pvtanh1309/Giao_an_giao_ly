@@ -48,7 +48,7 @@
 .reference-reading-page { width: min(100%, 1000px); margin: 0 auto; padding: 28px 36px 76px; }
 .reference-reading-paper { padding: clamp(24px, 5vw, 64px); border: 1px solid #e7e0d2; background: #fffdf8; box-shadow: 0 16px 45px rgba(57, 47, 31, .08); }
 .reference-reading-header { display: grid; justify-items: center; gap: 12px; padding-bottom: 25px; border-bottom: 1px solid #e8e1d5; text-align: center; }
-.reference-reading-header h1 { margin: 0; color: #78484b; font: 500 clamp(30px, 5vw, 42px)/1.2 var(--font-serif), Georgia, serif; }
+.reference-reading-header h1 { margin: 0; color: var(--heading-red); font: 500 clamp(30px, 5vw, 42px)/1.2 var(--font-serif), Georgia, serif; }
 .reference-reading-header p { margin: 0; color: var(--muted); }
 .reference-reading-header input, .reference-reading-header select { width: min(100%, 650px); padding: 11px 13px; border: 1px solid var(--line); background: #fff; color: var(--ink); font: inherit; }
 .reference-reading-content { padding-top: 24px; font: 17px/1.8 var(--font-sans), Arial, sans-serif; }

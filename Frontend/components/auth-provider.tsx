@@ -12,6 +12,7 @@ import {
 } from 'react'
 
 import { createCognitoAuth } from '../lib/auth/cognito.ts'
+import { createLocalMockAuth } from '../lib/auth/local-mock.ts'
 import {
     authReducer,
     completeNewPasswordAuthSession,
@@ -45,7 +46,18 @@ export function AuthProvider({ children, client }: { children: ReactNode; client
 
     const getClient = useCallback(() => {
         if (client) clientRef.current = client
-        if (!clientRef.current) clientRef.current = createCognitoAuth(getPublicConfig())
+        if (!clientRef.current) {
+            const localMockEnabled = process.env.NODE_ENV === 'development'
+                && process.env.NEXT_PUBLIC_ENABLE_LOCAL_AUTH_MOCK === 'true'
+            if (localMockEnabled) {
+                const email = process.env.NEXT_PUBLIC_LOCAL_AUTH_EMAIL
+                const password = process.env.NEXT_PUBLIC_LOCAL_AUTH_PASSWORD
+                if (!email || !password) throw new Error('Local mock credentials are not configured')
+                clientRef.current = createLocalMockAuth({ email, password })
+            } else {
+                clientRef.current = createCognitoAuth(getPublicConfig())
+            }
+        }
         return clientRef.current
     }, [client])
 
