@@ -117,17 +117,17 @@
 - Content API module consumes Lessons/Catalog Lambda ARNs và tạo integration riêng cho từng nhóm route; giữ output `content_api_endpoint`.
 - Environment outputs giữ `content_stream_failure_queue_url` làm alias tương thích và thêm `lessons_stream_failure_queue_url`.
 
-- [ ] **Step 1: Viết `test_terraform_routes_match_python_registry` và `test_lambda_policy_scope_by_domain` trong `Backend/tests/test_routes.py`**. Kiểm tra hai integration có đúng route set 14/18; Catalog policy không có S3/Streams/SQS actions; Lessons policy chỉ cho media prefix, Stream read và failure queue actions đã duyệt.
-- [ ] **Step 2: Chạy hai test mới** và xác nhận thất bại với cấu hình Terraform còn một Lambda/integration và chưa có hai policy domain.
-- [ ] **Step 3: Tạo Lessons Lambda module** với handler `lessons_api.handler.lambda_handler`, log group, Errors/Throttles/IteratorAge alarms, IAM theo lesson/note/media, S3 giới hạn `lesson-media/*`, Stream read và `sqs:SendMessage` tới queue.
-- [ ] **Step 4: Tạo Catalog Lambda module** với handler `catalog_api.handler.lambda_handler`, log group, Errors/Throttles alarms và IAM chỉ cho DynamoDB actions/index cùng CloudWatch Logs; không có S3, Stream hoặc SQS actions.
-- [ ] **Step 5: Cập nhật Content API module** để tạo hai Lambda integrations, Lambda invoke permissions riêng và gán route key đúng domain; giữ nguyên API, authorizer, stage, CORS, access logs, domain, DNS và public endpoint.
-- [ ] **Step 6: Chuyển MEDIA stream mapping sang Lessons** với filter `REMOVE MEDIA#` và giữ nguyên batch/retry/age/bisect/partial response/failure destination. Giữ ACCOUNT mapping Users không đổi.
-- [ ] **Step 7: Bảo toàn queue/state và log lịch sử**: dùng `moved` block cho SQS failure queue, queue alarm và stream mapping nếu địa chỉ đổi; giữ physical queue name/message retention. Dùng `moved` block để giữ CloudWatch log group cũ dưới tên legacy đến hết retention window. Không để hai MEDIA consumers hoạt động đồng thời.
-- [ ] **Step 8: Cập nhật Dev/Prod variables, outputs và CD IAM allowlist** cho hai ZIP/function mới; giữ `content_api_endpoint` và queue output cũ tương thích.
-- [ ] **Step 9: Chạy route/policy tests**: `Push-Location Backend; python -m pytest tests/test_routes.py -q; Pop-Location`; chạy `terraform fmt -check -recursive infrastructure`, rồi Terraform init/validate cho Dev và Prod theo RUNBOOK. Tạo plan hai môi trường để review, chưa apply.
+- [x] **Step 1: Viết `test_terraform_routes_match_python_registry` và `test_lambda_policy_scope_by_domain` trong `Backend/tests/test_routes.py`**. Kiểm tra hai integration có đúng route set 14/18; Catalog policy không có S3/Streams/SQS actions; Lessons policy chỉ cho media prefix, Stream read và failure queue actions đã duyệt.
+- [x] **Step 2: Chạy hai test mới** và xác nhận thất bại với cấu hình Terraform còn một Lambda/integration và chưa có hai policy domain.
+- [x] **Step 3: Tạo Lessons Lambda module** với handler `lessons_api.handler.lambda_handler`, log group, Errors/Throttles/IteratorAge alarms, IAM theo lesson/note/media, S3 giới hạn `lesson-media/*`, Stream read và `sqs:SendMessage` tới queue.
+- [x] **Step 4: Tạo Catalog Lambda module** với handler `catalog_api.handler.lambda_handler`, log group, Errors/Throttles alarms và IAM chỉ cho DynamoDB actions/index cùng CloudWatch Logs; không có S3, Stream hoặc SQS actions.
+- [x] **Step 5: Cập nhật Content API module** để tạo hai Lambda integrations, Lambda invoke permissions riêng và gán route key đúng domain; giữ nguyên API, authorizer, stage, CORS, access logs, domain, DNS và public endpoint.
+- [x] **Step 6: Chuyển MEDIA stream mapping sang Lessons** với filter `REMOVE MEDIA#` và giữ nguyên batch/retry/age/bisect/partial response/failure destination. Giữ ACCOUNT mapping Users không đổi.
+- [x] **Step 7: Bảo toàn queue/state và log lịch sử**: dùng `moved` block cho SQS failure queue, queue alarm và stream mapping nếu địa chỉ đổi; giữ physical queue name/message retention. Dùng `moved` block để giữ CloudWatch log group cũ dưới tên legacy đến hết retention window. Không để hai MEDIA consumers hoạt động đồng thời.
+- [x] **Step 8: Cập nhật Dev/Prod variables, outputs và CD IAM allowlist** cho hai ZIP/function mới; giữ `content_api_endpoint` và queue output cũ tương thích.
+- [x] **Step 9: Run route/policy tests, Terraform fmt, and validate Dev/Prod. Route tests 152/152; full Backend 294/294; terraform validate succeeded in both roots. Terraform plans could not be created because AWS credentials are unavailable; see Step 10.**
 - [ ] **Step 10: Kiểm tra plan**: không thay API ID/domain/authorizer, DynamoDB table, S3 bucket, Cognito hoặc Users resources; không xóa SQS queue có dữ liệu; chỉ có expected Lambda/integration/IAM/alarm/stream changes. Sửa mọi replacement ngoài phạm vi trước khi chấp thuận plan.
-- [ ] **Step 11: Commit riêng** Terraform, IAM policy và parity tests thuộc task.
+- [x] **Step 11: Commit riêng** Terraform, IAM policy và parity tests thuộc task.
 
 ### Task 5: Cập nhật tài liệu vận hành chuẩn
 

@@ -1,3 +1,23 @@
+moved {
+  from = module.content_api.aws_sqs_queue.stream_failures
+  to   = module.lessons_api.aws_sqs_queue.stream_failures
+}
+
+moved {
+  from = module.content_api.aws_cloudwatch_metric_alarm.stream_failures
+  to   = module.lessons_api.aws_cloudwatch_metric_alarm.stream_failures
+}
+
+moved {
+  from = module.content_api.aws_lambda_event_source_mapping.cleanup
+  to   = module.lessons_api.aws_lambda_event_source_mapping.cleanup
+}
+
+moved {
+  from = module.content_api.aws_cloudwatch_log_group.lambda
+  to   = module.content_api.aws_cloudwatch_log_group.legacy_lambda
+}
+
 provider "aws" {
   region = var.aws_region
   default_tags { tags = local.tags }
@@ -43,27 +63,53 @@ resource "aws_sns_topic_subscription" "email" {
   endpoint  = var.notification_email
 }
 
+module "lessons_api" {
+  source             = "../../modules/lessons-api"
+  environment        = var.environment
+  project_name       = var.project_name
+  tags               = local.tags
+  table_name         = module.database.table_name
+  table_arn          = module.database.table_arn
+  stream_arn         = module.database.stream_arn
+  app_bucket_name    = module.app_hosting.app_bucket_name
+  app_bucket_arn     = module.app_hosting.app_bucket_arn
+  user_pool_id       = module.identity.user_pool_id
+  app_client_id      = module.identity.app_client_id
+  lambda_zip_path    = coalesce(var.lessons_lambda_zip_path, "${path.module}/../../../Backend/dist/lessons-api.zip")
+  log_retention_days = var.log_retention_days
+  alarm_topic_arn    = aws_sns_topic.alarms.arn
+}
+
+module "catalog_api" {
+  source             = "../../modules/catalog-api"
+  environment        = var.environment
+  project_name       = var.project_name
+  tags               = local.tags
+  table_name         = module.database.table_name
+  table_arn          = module.database.table_arn
+  user_pool_id       = module.identity.user_pool_id
+  app_client_id      = module.identity.app_client_id
+  lambda_zip_path    = coalesce(var.catalog_lambda_zip_path, "${path.module}/../../../Backend/dist/catalog-api.zip")
+  log_retention_days = var.log_retention_days
+  alarm_topic_arn    = aws_sns_topic.alarms.arn
+}
+
 module "content_api" {
-  source               = "../../modules/content-api"
-  environment          = var.environment
-  project_name         = var.project_name
-  tags                 = local.tags
-  table_name           = module.database.table_name
-  table_arn            = module.database.table_arn
-  stream_arn           = module.database.stream_arn
-  app_bucket_name      = module.app_hosting.app_bucket_name
-  app_bucket_arn       = module.app_hosting.app_bucket_arn
-  user_pool_id         = module.identity.user_pool_id
-  user_pool_arn        = module.identity.user_pool_arn
-  user_pool_issuer_url = module.identity.issuer_url
-  app_client_id        = module.identity.app_client_id
-  allowed_origins      = local.allowed_origins
-  lambda_zip_path      = coalesce(var.content_lambda_zip_path, "${path.module}/../../../Backend/dist/content-api.zip")
-  log_retention_days   = var.log_retention_days
-  alarm_topic_arn      = aws_sns_topic.alarms.arn
-  domain_name          = var.content_api_domain_name
-  certificate_arn      = var.api_certificate_arn
-  hosted_zone_id       = var.hosted_zone_id
+  source                       = "../../modules/content-api"
+  environment                  = var.environment
+  project_name                 = var.project_name
+  tags                         = local.tags
+  user_pool_issuer_url         = module.identity.issuer_url
+  app_client_id                = module.identity.app_client_id
+  lessons_lambda_invoke_arn    = module.lessons_api.lambda_invoke_arn
+  lessons_lambda_function_name = module.lessons_api.lambda_function_name
+  catalog_lambda_invoke_arn    = module.catalog_api.lambda_invoke_arn
+  catalog_lambda_function_name = module.catalog_api.lambda_function_name
+  allowed_origins              = local.allowed_origins
+  log_retention_days           = var.log_retention_days
+  domain_name                  = var.content_api_domain_name
+  certificate_arn              = var.api_certificate_arn
+  hosted_zone_id               = var.hosted_zone_id
 }
 
 module "user_api" {
@@ -105,7 +151,7 @@ resource "aws_budgets_budget" "monthly" {
     notification_type          = "ACTUAL"
     subscriber_email_addresses = [var.budget_email]
   }
-  
+
   # Alert when forecast budget overcome 100  
   notification {
     comparison_operator        = "GREATER_THAN"

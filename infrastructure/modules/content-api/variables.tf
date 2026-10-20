@@ -10,16 +10,12 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
-variable "table_name" { type = string }
-variable "table_arn" { type = string }
-variable "stream_arn" { type = string }
-variable "user_pool_id" { type = string }
-variable "user_pool_arn" { type = string }
 variable "user_pool_issuer_url" { type = string }
 variable "app_client_id" { type = string }
-variable "lambda_zip_path" { type = string }
-variable "app_bucket_name" { type = string }
-variable "app_bucket_arn" { type = string }
+variable "lessons_lambda_invoke_arn" { type = string }
+variable "lessons_lambda_function_name" { type = string }
+variable "catalog_lambda_invoke_arn" { type = string }
+variable "catalog_lambda_function_name" { type = string }
 variable "allowed_origins" { type = list(string) }
 variable "log_retention_days" {
   type    = number

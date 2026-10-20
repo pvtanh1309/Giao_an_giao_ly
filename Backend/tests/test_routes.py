@@ -140,8 +140,43 @@ def test_all_contract_routes_present():
     assert expected == set(CONTENT) | set(USERS)
 
 
-@pytest.mark.parametrize('module,routes', [('content-api', CONTENT), ('user-api', USERS)])
-def test_terraform_routes_match_python_registry(module, routes):
-    source = (Path(__file__).parents[2] / 'infrastructure' / 'modules' / module / 'main.tf').read_text(encoding='utf-8')
-    declared = set(re.findall(r'"((?:GET|POST|PUT|DELETE) /[^"\n]+)"', source))
-    assert declared == set(routes)
+def test_terraform_routes_match_python_registry():
+    root = Path(__file__).parents[2] / "infrastructure" / "modules"
+    content_source = (root / "content-api" / "main.tf").read_text(encoding="utf-8")
+    declared_groups = dict(re.findall(
+        r'^\s*"((?:GET|POST|PUT|DELETE) /[^"\n]+)"\s*=\s*"(lessons|catalog)"\s*$',
+        content_source,
+        re.MULTILINE,
+    ))
+    expected_groups = {
+        **{route: "lessons" for route in LESSONS},
+        **{route: "catalog" for route in CATALOG},
+    }
+    assert declared_groups == expected_groups
+
+    users_source = (root / "user-api" / "main.tf").read_text(encoding="utf-8")
+    declared_users = set(re.findall(r'"((?:GET|POST|PUT|DELETE) /[^"\n]+)"', users_source))
+    assert declared_users == set(USERS)
+
+
+def test_lambda_policy_scope_by_domain():
+    modules = Path(__file__).parents[2] / "infrastructure" / "modules"
+    lessons_policy = (modules / "lessons-api" / "policy.tf").read_text(encoding="utf-8")
+    catalog_policy = (modules / "catalog-api" / "policy.tf").read_text(encoding="utf-8")
+    actions_pattern = r'"((?:logs|dynamodb|sqs|s3):[A-Za-z*]+)"'
+    lesson_actions = set(re.findall(actions_pattern, lessons_policy))
+    catalog_actions = set(re.findall(actions_pattern, catalog_policy))
+    stream_actions = {
+        "dynamodb:DescribeStream",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator",
+        "dynamodb:ListStreams",
+    }
+
+    assert stream_actions <= lesson_actions
+    assert "sqs:SendMessage" in lesson_actions
+    assert {"s3:GetObject", "s3:GetObjectVersion", "s3:PutObject", "s3:DeleteObject", "s3:DeleteObjectVersion", "s3:ListBucketVersions"} <= lesson_actions
+    assert not any(action.startswith(("s3:", "sqs:")) for action in catalog_actions)
+    assert catalog_actions.isdisjoint(stream_actions)
+    assert '"${var.app_bucket_arn}/lesson-media/*"' in lessons_policy
+    assert re.search(r'values\s*=\s*\["lesson-media/\*"\]', lessons_policy)
