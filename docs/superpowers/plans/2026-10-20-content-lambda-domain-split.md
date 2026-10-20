@@ -69,14 +69,14 @@
 - Produces: `lessons_api.handler.lambda_handler(event, context)` và `catalog_api.handler.lambda_handler(event, context)`.
 - Produces: `shared.http.handle(event, context, routes, stream_handler=None)`; nếu event có `Records` mà không có stream handler thì raise lỗi rõ ràng, không trả thành công giả.
 
-- [ ] **Step 1: Viết test route ownership** xác nhận Lessons có 14 route, Catalog 18 route, hai tập không giao nhau và hợp lại đúng 32 route Content cùng contract trong `docs/CONTEXT.md`.
-- [ ] **Step 2: Chạy test mới**: `Push-Location Backend; python -m pytest tests/test_routes.py -q; Pop-Location`. Xác nhận test ownership thất bại vì hai registry chưa tồn tại.
-- [ ] **Step 3: Tạo hai route registry** bằng cách phân nhóm theo service target như Interfaces; không chép hoặc sửa target, group, method/path của route.
-- [ ] **Step 4: Viết test handler** cho dispatch route theo registry, catalog từ chối stream, và lessons gọi media stream handler theo kiểu lazy import; test stream giữ cấu trúc partial batch response hiện tại.
-- [ ] **Step 5: Cập nhật shared HTTP boundary và tạo hai entry point** theo Interfaces. Chỉ import `content_api.services.media.handle_stream` bên trong callback stream của Lessons; không import media handler khi Lambda khởi tạo hoặc xử lý HTTP.
-- [ ] **Step 6: Chuyển test dispatch hiện tại sang entry point/domain registry mới**; giữ nguyên ma trận role và kiểm tra API envelope.
-- [ ] **Step 7: Chạy kiểm tra Backend**: `Push-Location Backend; python -m pytest -q; Pop-Location`. Kết quả mong đợi: PASS, gồm `test_route_partition_is_disjoint_and_complete`, `test_catalog_handler_rejects_stream_event`, `test_lessons_handler_preserves_stream_partial_failures`, `test_private_crud_idempotency_and_no_lesson_mutation` và `test_disabled_and_unpublished_notes_blocked`.
-- [ ] **Step 8: Commit riêng** các file Backend thuộc task.
+- [x] **Step 1: Viết test route ownership** xác nhận Lessons có 14 route, Catalog 18 route, hai tập không giao nhau và hợp lại đúng 32 route Content cùng contract trong `docs/CONTEXT.md`.
+- [x] **Step 2: Chạy test mới**: `Push-Location Backend; python -m pytest tests/test_routes.py -q; Pop-Location`. Xác nhận test ownership thất bại vì hai registry chưa tồn tại.
+- [x] **Step 3: Tạo hai route registry** bằng cách phân nhóm theo service target như Interfaces; không chép hoặc sửa target, group, method/path của route.
+- [x] **Step 4: Viết test handler** cho dispatch route theo registry, catalog từ chối stream, và lessons gọi media stream handler theo kiểu lazy import; test stream giữ cấu trúc partial batch response hiện tại.
+- [x] **Step 5: Cập nhật shared HTTP boundary và tạo hai entry point** theo Interfaces. Chỉ import `content_api.services.media.handle_stream` bên trong callback stream của Lessons; không import media handler khi Lambda khởi tạo hoặc xử lý HTTP.
+- [x] **Step 6: Chuyển test dispatch hiện tại sang entry point/domain registry mới**; giữ nguyên ma trận role và kiểm tra API envelope.
+- [x] **Step 7: Chạy kiểm tra Backend**: `Push-Location Backend; python -m pytest -q; Pop-Location`. Kết quả mong đợi: PASS, gồm `test_route_partition_is_disjoint_and_complete`, `test_catalog_handler_rejects_stream_event`, `test_lessons_handler_preserves_stream_partial_failures`, `test_private_crud_idempotency_and_no_lesson_mutation` và `test_disabled_and_unpublished_notes_blocked`.
+- [x] **Step 8: Commit riêng** các file Backend thuộc task.
 
 ### Task 3: Đóng gói artifact và nối CI/CD
 
