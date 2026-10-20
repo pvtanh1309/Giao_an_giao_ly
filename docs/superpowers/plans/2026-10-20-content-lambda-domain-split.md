@@ -141,12 +141,12 @@
 - Consumes: tên Lambda/module/artifact/outputs thực tế sau Tasks 2–4 và baseline Task 1.
 - Produces: kiến trúc, package/deploy/rollback, metrics/alarms và cách chẩn đoán thống nhất giữa bốn tài liệu.
 
-- [ ] **Step 1: Cập nhật CONTEXT** để mô tả kiến trúc trong source/ Terraform sau Tasks 2–4, đồng thời ghi rõ trạng thái AWS chỉ được xác nhận sau Task 6/7: route ownership, handlers, IAM boundary, stream ownership và API contract.
-- [ ] **Step 2: Cập nhật RUNBOOK** với ba artifact, tên biến/path ZIP, lệnh package/validate/plan/deploy theo environment, output queue mới và output tương thích.
-- [ ] **Step 3: Cập nhật MONITORING** với baseline/sau deploy, tên Lambda mới, phân biệt cold/warm, log queries, alarm/IteratorAge/failure queue và so sánh route tương ứng.
-- [ ] **Step 4: Cập nhật TROUBLESHOOTING** cho ZIP/manifest mismatch, route nhầm integration, missing Lambda permission, stream mapping/filter/retry, IAM AccessDenied và SQS failure messages; liên kết RUNBOOK/MONITORING thay vì lặp quy trình.
-- [ ] **Step 5: Đối chiếu từng tài liệu với Terraform/source và rà link nội bộ**; không ghi hạ tầng AWS là đã chạy trước khi có xác nhận triển khai.
-- [ ] **Step 6: Commit riêng** bốn tài liệu chuẩn.
+- [x] **Step 1: Cập nhật CONTEXT** để mô tả kiến trúc trong source/ Terraform sau Tasks 2–4, đồng thời ghi rõ trạng thái AWS chỉ được xác nhận sau Task 6/7: route ownership, handlers, IAM boundary, stream ownership và API contract.
+- [x] **Step 2: Cập nhật RUNBOOK** với ba artifact, tên biến/path ZIP, lệnh package/validate/plan/deploy theo environment, output queue mới và output tương thích.
+- [x] **Step 3: Cập nhật MONITORING** với baseline/sau deploy, tên Lambda mới, phân biệt cold/warm, log queries, alarm/IteratorAge/failure queue và so sánh route tương ứng.
+- [x] **Step 4: Cập nhật TROUBLESHOOTING** cho ZIP/manifest mismatch, route nhầm integration, missing Lambda permission, stream mapping/filter/retry, IAM AccessDenied và SQS failure messages; liên kết RUNBOOK/MONITORING thay vì lặp quy trình.
+- [x] **Step 5: Đối chiếu từng tài liệu với Terraform/source và rà link nội bộ**; không ghi hạ tầng AWS là đã chạy trước khi có xác nhận triển khai.
+- [x] **Step 6: Commit riêng** bốn tài liệu chuẩn.
 
 ### Task 6: Triển khai và nghiệm thu Dev — cần chấp thuận trước apply
 

@@ -1,33 +1,11 @@
-# thiet-ke-web-giao-ly
+# Frontend
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+Next.js static export, React/TypeScript, TipTap và Cognito SDK. Deploy S3/CloudFront; không có Next.js server runtime.
 
-## Built with v0
+Đọc [CONTEXT](../docs/CONTEXT.md) trước khi code để hiểu quyền, API/DTO, editor, ghi chú cá nhân, local mock và giới hạn build-time config.
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+- Cài/chạy local, test/build, public env và deploy: [RUNBOOK](../docs/RUNBOOK.md).
+- Persistence, font, formatting, login và CORS: [TROUBLESHOOTING](../docs/TROUBLESHOOTING.md).
+- Theo dõi Frontend/API sau deploy: [MONITORING](../docs/MONITORING.md).
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_GnHI2RHlTg44HT9kXlFLjbZpApgq)
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-## Learn More
-
-To learn more, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+Source: [app](app/), [components](components/), [lib](lib/), [tests](tests/). Đọc thêm hướng dẫn Next.js đang cài trong node_modules và block AGENTS do framework sinh khi sửa framework code. Mock local chỉ phục vụ thiết kế UI; nghiệm thu persistence phải dùng API thật hoặc bộ browser regression tương ứng.

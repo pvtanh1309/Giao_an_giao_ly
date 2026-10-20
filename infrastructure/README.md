@@ -1,13 +1,12 @@
-# Terraform application infrastructure
+# Infrastructure
 
-Runbook vận hành CI/CD bằng tiếng Việt: [RUNBOOK-CICD.md](RUNBOOK-CICD.md). Bao gồm thiết lập OIDC/IAM, phát hành phiên bản mới, rollback, các sự cố đã gặp và trade-offs.
+Terraform quản lý hai environment root Dev/Prod và bootstrap state riêng. Modules hiện hành: identity, database, app-hosting, Content API routing, lessons-api, catalog-api và user-api.
 
-Dev/prod roots each call the shared identity, database, app-hosting, content-api and user-api modules. Each environment has an independent Cognito pool, DynamoDB table, versioned S3 bucket, CloudFront distribution, two HTTP APIs and two Lambda functions. Bootstrap/state resources are separate.
+- Kiến trúc, state, quyền và ranh giới dữ liệu: [CONTEXT](../docs/CONTEXT.md).
+- Bootstrap, tfvars, package, OIDC/CD, deploy/rollback/destroy Dev: [RUNBOOK](../docs/RUNBOOK.md).
+- Credentials, state, IAM và các lỗi triển khai đã gặp: [TROUBLESHOOTING](../docs/TROUBLESHOOTING.md).
+- Log/metric, alarm, queue và cold start: [MONITORING](../docs/MONITORING.md).
 
-Build Python artifacts first: `python Backend/scripts/package_lambdas.py` from repo root. Modules consume Backend/dist/content-api.zip and users-api.zip. Configure terraform.tfvars using the environment example, then init, validate and review plan in that environment.
+Source: [bootstrap](bootstrap/), [Dev](environments/dev/), [Prod](environments/prod/), [modules](modules/), [IAM JSON](iam/). Review account/resource IDs và grants chẩn đoán trong IAM JSON trước khi áp dụng; file local không tự đồng bộ policy AWS.
 
-Full steps: [deployment runbook](../Backend/docs/deployment-runbook.md). Terraform >=1.15; AWS provider ~>6.0 locked to6.67.0. Provider lock checksums retain the existing signed release hashes for Windows/Linux portability. Commit lock files; exclude .terraform, state, plans and private tfvars.
-
-Outputs supply all IDs and endpoints for frontend integration. Exact extra frontend origins, alarm/budget emails and existing custom domain certificates are optional. App bucket versioning is required by private media pinning; CloudFront OAC reads frontend/* only. Lambda execution roles grant only their service responsibilities, with DynamoDB ListStreams as the resource-wildcard exception required by AWS.
-
-Offline validation uses `terraform init -backend=false`, does not inspect remote state or AWS resources, and requires normal `terraform init -reconfigure` before real plan. No AWS deployment was performed by the implementation task.
+Runbook cũ và module READMEs đã giữ trong [archive](../docs/archive/README.md). Hướng dẫn vận hành chuẩn chỉ cập nhật tại bốn file trong docs/.
