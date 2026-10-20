@@ -103,7 +103,10 @@ jobs:
           manifest = json.loads((dist / 'release-manifest.json').read_text())
           if manifest.get('schemaVersion') != 1 or manifest.get('sourceSha') != os.environ['RELEASE_SHA']:
               raise SystemExit('Manifest source/schema mismatch')
-          for name in ('content-api.zip', 'users-api.zip'):
+          expected = {'lessons-api.zip', 'catalog-api.zip', 'users-api.zip'}
+          if set(manifest.get('artifacts', {})) != expected:
+              raise SystemExit('Manifest artifact set mismatch')
+          for name in sorted(expected):
               actual = hashlib.sha256((dist / name).read_bytes()).hexdigest()
               if actual != manifest['artifacts'][name]['sha256']:
                   raise SystemExit(f'Checksum mismatch: {name}')

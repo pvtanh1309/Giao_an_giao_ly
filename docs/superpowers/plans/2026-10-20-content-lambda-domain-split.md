@@ -92,13 +92,13 @@
 - Produces: `Backend/dist/lessons-api.zip`, `Backend/dist/catalog-api.zip`, `Backend/dist/users-api.zip` và manifest có đúng ba artifact, SHA-256 từng ZIP và source SHA.
 - Package Lessons gồm `lessons_api`, `shared`, `content_api/routes.py` và các service/repository/validator `content`, `lessons`, `lesson_notes`, `note_anchors`, `media`; Package Catalog gồm `catalog_api`, `shared`, `content_api/routes.py` và service/repository/validator `content`, `programs`, `references`. Mỗi ZIP chỉ chứa các file Python cần cho nhóm này; không đưa service domain còn lại vào chỉ vì chung thư mục.
 
-- [ ] **Step 1: Viết `test_package_artifacts_and_manifest_match_release`** kiểm tra ba tên ZIP chính xác, entry point/module domain cần có, module domain không liên quan bị loại, manifest checksum khớp bytes ZIP và source SHA được giữ.
-- [ ] **Step 2: Chạy test mới**: `Push-Location Backend; python -m pytest tests/test_package_lambdas.py::test_package_artifacts_and_manifest_match_release -q; Pop-Location`. Xác nhận thất bại do packager/manifest vẫn tạo hai artifact.
-- [ ] **Step 3: Cập nhật packager** để dựng ba ZIP tái lập từ dependency pin hiện tại và source allowlist theo miền; giữ nguyên ZIP Users.
-- [ ] **Step 4: Cập nhật manifest và CI** để build, kiểm tra đủ ba artifact và lưu manifest cùng release; fail job nếu ZIP thiếu hoặc checksum/source SHA không khớp.
-- [ ] **Step 5: Cập nhật CD** để xác minh ba artifact trước Terraform và truyền đúng ZIP path vào từng environment; không đổi Frontend build config hay thứ tự release hiện tại.
-- [ ] **Step 6: Chạy package/manifest tests và kiểm tra CI workflow tĩnh** bằng các lệnh project hiện có; xác nhận artifact cuối chỉ có ba ZIP trên.
-- [ ] **Step 7: Commit riêng** script, workflow và test thuộc task.
+- [x] **Step 1: Viết `test_package_artifacts_and_manifest_match_release`** kiểm tra ba tên ZIP chính xác, entry point/module domain cần có, module domain không liên quan bị loại, manifest checksum khớp bytes ZIP và source SHA được giữ.
+- [x] **Step 2: Chạy test mới**: `Push-Location Backend; python -m pytest tests/test_package_lambdas.py::test_package_artifacts_and_manifest_match_release -q; Pop-Location`. Xác nhận thất bại do packager/manifest vẫn tạo hai artifact.
+- [x] **Step 3: Cập nhật packager** để dựng ba ZIP tái lập từ dependency pin hiện tại và source allowlist theo miền; giữ nguyên ZIP Users.
+- [x] **Step 4: Cập nhật manifest và CI** để build, kiểm tra đủ ba artifact và lưu manifest cùng release; fail job nếu ZIP thiếu hoặc checksum/source SHA không khớp.
+- [x] **Step 5: Cập nhật CD** để xác minh ba artifact trước Terraform và truyền đúng ZIP path vào từng environment; không đổi Frontend build config hay thứ tự release hiện tại.
+- [x] **Step 6: Chạy package/manifest tests và kiểm tra CI workflow tĩnh** bằng các lệnh project hiện có; xác nhận artifact cuối chỉ có ba ZIP trên.
+- [x] **Step 7: Commit riêng** script, workflow và test thuộc task.
 
 ### Task 4: Tạo hai module Lambda và chuyển API/stream Terraform
 
