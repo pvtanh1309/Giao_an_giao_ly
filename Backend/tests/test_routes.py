@@ -154,6 +154,17 @@ def test_terraform_routes_match_python_registry():
     }
     assert declared_groups == expected_groups
 
+    route_resource = re.search(
+        r'resource "aws_apigatewayv2_route" "routes"\s*\{(?P<body>.*?)\n\}',
+        content_source,
+        re.DOTALL,
+    )
+    assert route_resource is not None
+    assert re.search(
+        r"depends_on\s*=\s*\[\s*aws_lambda_permission\.gateway\s*\]",
+        route_resource.group("body"),
+    )
+
     users_source = (root / "user-api" / "main.tf").read_text(encoding="utf-8")
     declared_users = set(re.findall(r'"((?:GET|POST|PUT|DELETE) /[^"\n]+)"', users_source))
     assert declared_users == set(USERS)

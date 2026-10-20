@@ -84,6 +84,7 @@ resource "aws_apigatewayv2_route" "routes" {
   authorization_type   = "JWT"
   authorizer_id        = aws_apigatewayv2_authorizer.jwt.id
   authorization_scopes = ["aws.cognito.signin.user.admin"]
+  depends_on           = [aws_lambda_permission.gateway]
 }
 
 resource "aws_apigatewayv2_stage" "default" {
