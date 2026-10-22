@@ -1,3 +1,8 @@
+moved {
+  from = aws_apigatewayv2_integration.lambda
+  to   = aws_apigatewayv2_integration.lambda["lessons"]
+}
+
 locals {
   name = "${var.project_name}-${var.environment}-content-api"
   route_targets = {
@@ -74,6 +79,7 @@ resource "aws_apigatewayv2_integration" "lambda" {
   integration_uri        = each.value
   payload_format_version = "2.0"
   timeout_milliseconds   = 29000
+  depends_on             = [aws_lambda_permission.gateway]
 }
 
 resource "aws_apigatewayv2_route" "routes" {

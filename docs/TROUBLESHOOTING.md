@@ -192,6 +192,10 @@ Khi gặp `AccessDenied`, xác nhận deployed source SHA và execution role: Le
 
 Kiểm tra chỉ có một MEDIA stream mapping đang chạy trên Lessons, filter là `REMOVE` với `OldImage.PK` prefix `MEDIA#`; Users tiếp tục nhận `ACCOUNT#`. Failure queue media vẫn có tên vật lý `*-content-api-stream-failures` và được `moved` trong Terraform để giữ message. Nếu plan muốn thay queue, xóa queue hoặc để hai MEDIA consumer chạy đồng thời, dừng trước apply và review state/plan.
 
+Nếu apply báo `ConflictException: Cannot delete Integration because it is referenced by Routes`, dùng revision mới nhất có `moved` block chuyển integration cũ sang `aws_apigatewayv2_integration.lambda["lessons"]`, sau đó tạo plan mới. Không xóa integration hoặc route thủ công. Apply có thể đã hoàn tất một phần trước lỗi; kiểm tra state và plan mới trước khi chạy lại.
+
+Nếu `iam:CreateRole` bị `AccessDenied`, policy trong repo đã có action này trong `ManageDevExecutionRoles` với ARN giới hạn cho role `content-api`, `lessons-api`, `catalog-api` và `users-api`. Kiểm tra policy thực tế đang gắn vào GitHub CD role, resource ARN, permissions boundary và SCP; cập nhật policy thực tế theo file đã review rồi chạy lại. Không mở rộng sang `iam:*` hoặc `Resource: "*"`.
+
 ### 5.10 Sửa policy vẫn deny / apply lỗi giữa chừng — có thể gặp
 
 Xác minh Save vào đúng role, request mới, action/resource/region/tags, boundary/SCP và CloudTrail nếu được ghi. Không mặc định do propagation. Local policy JSON, simulator và AWS policy thực tế là ba bằng chứng khác nhau.

@@ -201,6 +201,8 @@ terraform "-chdir=$infra" output
 
 Khi chuyển từ content-api cũ sang hai Lambda, xem plan trước khi apply: Content HTTP API ID/stage/domain/authorizer, DynamoDB table, S3 bucket, Cognito và Users API phải được giữ. Queue media phải được chuyển địa chỉ state sang Lessons nhưng giữ nguyên tên vật lý `*-content-api-stream-failures`; stream chỉ có một MEDIA consumer là Lessons. Lambda/IAM cũ content-api được thay bằng Lessons/Catalog, còn log group Lambda cũ được giữ làm legacy. Dừng và không apply nếu plan xóa/thay bảng, queue, API hoặc tài nguyên stateful ngoài dự kiến. Split không cần migration dữ liệu DynamoDB. Terraform tạo quyền invoke Lambda trước khi đổi route API Gateway; nhờ vậy các route được tự triển khai không trỏ tạm thời tới Lambda chưa được cấp quyền gọi.
 
+Trong cutover, integration đơn cũ được chuyển state sang instance `lessons` để giữ nguyên integration ID mà các route hiện hữu đang tham chiếu; `catalog` nhận integration mới. Không xóa integration cũ thủ công.
+
 Package script tạo ba ZIP `lessons-api.zip`, `catalog-api.zip`, `users-api.zip` gồm package domain tương ứng + shared + runtime dependencies đã pin; không chứa docs/tests/password. Terraform mặc định đọc hai biến tùy chọn `lessons_lambda_zip_path` và `catalog_lambda_zip_path` cùng `users_lambda_zip_path` từ `Backend/dist/`. Nếu `terraform.tfvars` cũ còn `content_lambda_zip_path`, bỏ biến cũ và chỉ thêm override cho đường dẫn mới khi cần. Sửa Python cần package/deploy lại; Terraform không tự build code.
 
 ## 5. Frontend config và admin đầu tiên
