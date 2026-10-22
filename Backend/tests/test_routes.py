@@ -170,6 +170,30 @@ def test_terraform_routes_match_python_registry():
     assert declared_users == set(USERS)
 
 
+def test_content_api_migrates_existing_integration_to_lessons_safely():
+    content_source = (
+        Path(__file__).parents[2] / "infrastructure" / "modules" / "content-api" / "main.tf"
+    ).read_text(encoding="utf-8")
+    integration_move = re.search(
+        r'moved\s*\{\s*from\s*=\s*aws_apigatewayv2_integration\.lambda\s+'
+        r'to\s*=\s*aws_apigatewayv2_integration\.lambda\["lessons"\]\s*\}',
+        content_source,
+        re.DOTALL,
+    )
+    integration_resource = re.search(
+        r'resource "aws_apigatewayv2_integration" "lambda"\s*\{(?P<body>.*?)\n\}',
+        content_source,
+        re.DOTALL,
+    )
+
+    assert integration_move is not None
+    assert integration_resource is not None
+    assert re.search(
+        r"depends_on\s*=\s*\[\s*aws_lambda_permission\.gateway\s*\]",
+        integration_resource.group("body"),
+    )
+
+
 def test_lambda_policy_scope_by_domain():
     modules = Path(__file__).parents[2] / "infrastructure" / "modules"
     lessons_policy = (modules / "lessons-api" / "policy.tf").read_text(encoding="utf-8")
