@@ -115,6 +115,8 @@
       ],
       "Resource": [
         "arn:aws:iam::030540333236:role/giaoan-dev-content-api",
+        "arn:aws:iam::030540333236:role/giaoan-dev-lessons-api",
+        "arn:aws:iam::030540333236:role/giaoan-dev-catalog-api",
         "arn:aws:iam::030540333236:role/giaoan-dev-users-api"
       ]
     },
@@ -124,6 +126,8 @@
       "Action": "iam:PassRole",
       "Resource": [
         "arn:aws:iam::030540333236:role/giaoan-dev-content-api",
+        "arn:aws:iam::030540333236:role/giaoan-dev-lessons-api",
+        "arn:aws:iam::030540333236:role/giaoan-dev-catalog-api",
         "arn:aws:iam::030540333236:role/giaoan-dev-users-api"
       ],
       "Condition": {
@@ -153,6 +157,8 @@
       ],
       "Resource": [
         "arn:aws:lambda:ap-southeast-1:030540333236:function:giaoan-dev-content-api",
+        "arn:aws:lambda:ap-southeast-1:030540333236:function:giaoan-dev-lessons-api",
+        "arn:aws:lambda:ap-southeast-1:030540333236:function:giaoan-dev-catalog-api",
         "arn:aws:lambda:ap-southeast-1:030540333236:function:giaoan-dev-users-api"
       ]
     },
@@ -169,6 +175,7 @@
         "ArnEquals": {
           "lambda:FunctionArn": [
             "arn:aws:lambda:ap-southeast-1:030540333236:function:giaoan-dev-content-api",
+            "arn:aws:lambda:ap-southeast-1:030540333236:function:giaoan-dev-lessons-api",
             "arn:aws:lambda:ap-southeast-1:030540333236:function:giaoan-dev-users-api"
           ]
         }

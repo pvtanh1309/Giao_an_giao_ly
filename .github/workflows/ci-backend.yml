@@ -82,7 +82,8 @@ jobs:
         with:
           name: lambda-release-${{ github.sha }}
           path: |
-            Backend/dist/content-api.zip
+            Backend/dist/lessons-api.zip
+            Backend/dist/catalog-api.zip
             Backend/dist/users-api.zip
             Backend/dist/release-manifest.json
           if-no-files-found: error

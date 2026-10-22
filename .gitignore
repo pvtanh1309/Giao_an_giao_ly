@@ -6,7 +6,6 @@
 .agents/
 
 .superpowers/*
-docs/*
 
 infrastructure/bootstrap/terraform.tfvars
 **/.terraform/
@@ -23,7 +22,7 @@ infrastructure/bootstrap/terraform.tfvars
 Frontend/node_modules/
 Frontend/.superpowers
 Frontend/.next/
-Frontend/AGENTS.md 
+Frontend/AGENTS.md
 Frontend/CLAUDE.md
 Frontend/out/*
 Frontend/coverage/
@@ -32,12 +31,6 @@ Frontend/*.log
 Frontend/.env*
 !Frontend/.env.example
 
-Backend/docs/*
-!Backend/docs/api-contract-v1.md
-!Backend/docs/backend-database-design.md
-!Backend/docs/backend-implementation-plan.md
-!Backend/docs/personal-accounts.md
-!Backend/docs/deployment-runbook.md
 .venv/
 .tools/
 .cache/
@@ -45,11 +38,3 @@ Backend/dist/
 **/__pycache__/
 **/.pytest_cache/
 **/*.pyc
-
-TODO-INDEX.md
-**/DEV-RUNBOOK.md
-
-Backend/docs/deployment-runbook.md
-**/infrastructure/RUNBOOK-CICD.md
-**/Backend/docs/api-contract-v1.md
-**/Backend/docs/personal-accounts.md

@@ -304,7 +304,7 @@ def test_s3_presign_versions_and_exact_key_cleanup():
 
 
 def test_http_authorization_and_real_dispatch(monkeypatch):
-    from content_api.handler import lambda_handler
+    from lessons_api.handler import lambda_handler
     import content_api.services.content as content
     store = MemoryStore()
     store.items['ACCOUNT#reader', 'PROFILE'] = {'accountStatus': 'ACTIVE', 'role': 'EDITOR'}

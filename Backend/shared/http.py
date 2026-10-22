@@ -45,8 +45,10 @@ def dispatch(event, routes, request_id=None):
     return getattr(importlib.import_module(module), function)(request, principal)
 
 
-def handle(event, context, routes, stream_handler):
+def handle(event, context, routes, stream_handler=None):
     if "Records" in event:
+        if stream_handler is None:
+            raise RuntimeError("DynamoDB stream event received without a configured stream handler")
         return stream_handler(event, context)
     
     request_id = event.get("requestContext", {}).get("requestId") or getattr(context, "aws_request_id", None) or str(uuid.uuid4())

@@ -27,7 +27,11 @@ variable "allowed_origins" {
     error_message = "Use exact http(s) origins without wildcards or paths."
   }
 }
-variable "content_lambda_zip_path" {
+variable "lessons_lambda_zip_path" {
+  type    = string
+  default = null
+}
+variable "catalog_lambda_zip_path" {
   type    = string
   default = null
 }
