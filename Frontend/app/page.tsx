@@ -36,6 +36,7 @@ import { ReferenceDirectory } from '../components/reference-directory'
 import { ReferenceReadingPage } from '../components/reference-reading-page'
 import { SystemAccountDirectory } from '../components/system-account-directory'
 import { AuthScreen } from '../components/auth-screen'
+import { LoadingIndicator } from '../components/loading-indicator'
 import { useAuth, useUnauthorizedHandler } from '../components/auth-provider'
 import { getPublicConfig } from '../lib/config'
 import { createUsersApi } from '../lib/api/users'
@@ -557,7 +558,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   if (status === 'loading') {
     return (
       <main className="auth-loading-panel" aria-busy="true">
-        <p>Đang khôi phục phiên đăng nhập…</p>
+        <LoadingIndicator message="Đang khôi phục phiên đăng nhập…" />
       </main>
     )
   }
@@ -584,7 +585,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         canManage={currentUser === 'admin' || currentUser === 'editor'}
       />
 
-      {contentLoading && <p role="status" className="content-section">Đang tải thư viện từ máy chủ…</p>}
+      {contentLoading && <LoadingIndicator className="content-section" message="Đang tải thư viện từ máy chủ…" />}
       {contentError && <div role="alert" className="content-section"><p>{contentError}</p><button onClick={() => setContentReload((value) => value + 1)}>Thử tải lại</button></div>}
       {detailError && <div role="alert" className="content-section"><p>{detailError}</p><button onClick={() => { setDetailReady(''); setContentReload((value) => value + 1) }}>Thử tải lại</button></div>}
       {contentBusy && <p role="status" className="content-section">Đang lưu thay đổi trên máy chủ…</p>}
@@ -664,7 +665,9 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
           onDelete={deleteLesson}
         /> : <section className="content-section reading-page-placeholder">
           <button className="secondary-button" onClick={() => returnToList('lessonId')}>Quay lại danh sách bài học</button>
-          <h1>{detailError || contentError ? 'Không tải được giáo án' : 'Đang tải giáo án…'}</h1>
+          {detailError || contentError
+            ? <h1>Không tải được giáo án</h1>
+            : <LoadingIndicator message="Đang tải giáo án…" heading />}
         </section>
       )}
 
@@ -682,7 +685,9 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
           />
           : <section className="reference-reading-page reading-page-placeholder">
             <button className="secondary-button" onClick={backToReferenceList}>Quay lại thư viện tài liệu</button>
-            <h1>{detailError || contentError ? 'Không tải được tài liệu tham khảo' : 'Đang tải tài liệu tham khảo…'}</h1>
+            {detailError || contentError
+              ? <h1>Không tải được tài liệu tham khảo</h1>
+              : <LoadingIndicator message="Đang tải tài liệu tham khảo…" heading />}
           </section>
       )}
       {initialView === 'programs' && selectedProgramId && (
@@ -697,7 +702,9 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         /> : <section className="program-section reading-page-placeholder">
           <div className="program-inner">
             <button className="outline-button light-button" onClick={() => returnToList('programId')}>Quay lại chương trình học</button>
-            <h1>{detailError || contentError ? 'Không tải được chương trình học' : 'Đang tải chương trình học…'}</h1>
+            {detailError || contentError
+              ? <h1>Không tải được chương trình học</h1>
+              : <LoadingIndicator message="Đang tải chương trình học…" heading />}
           </div>
         </section>
       )}

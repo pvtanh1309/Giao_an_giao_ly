@@ -122,7 +122,6 @@
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
-  gap: 7px;
   color: var(--blue);
   font: 11px Arial, sans-serif;
 }
@@ -191,15 +190,6 @@
   opacity: .9;
 }
 
-.card-arrow {
-  width: 31px;
-  height: 31px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, .45);
-  border-radius: 50%;
-}
-
 .card-label {
   display: block;
   margin-top: 30px;
@@ -225,12 +215,6 @@
   padding-top: 15px;
   border-top: 1px solid rgba(255, 255, 255, .28);
   font: 12px Arial, sans-serif;
-}
-
-.view-link {
-  display: flex;
-  align-items: center;
-  gap: 5px;
 }
 
 .program-section {
@@ -458,24 +442,6 @@
   font: 13px Arial, sans-serif;
 }
 
-.program-stage-arrow {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  align-self: flex-end;
-  margin-top: auto;
-  place-items: center;
-  border-radius: 50%;
-  background: #f3ead7;
-  color: #a47a2f;
-  transition: transform .2s ease, background .2s ease;
-}
-
-.program-category-card:hover .program-stage-arrow {
-  transform: translateX(3px);
-  background: #ead9b6;
-}
-
 .program-sublevel-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -559,17 +525,6 @@
   margin-top: 7px;
   color: var(--muted);
   font: 11px Arial, sans-serif;
-}
-
-.round-arrow {
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: var(--paper);
-  color: var(--blue);
 }
 
 footer {
@@ -744,14 +699,6 @@ footer p {
     font-size: 12px;
   }
 
-  .program-stage-arrow {
-    width: 34px;
-    height: 34px;
-    flex: 0 0 34px;
-    align-self: center;
-    margin-top: 0;
-    margin-left: auto;
-  }
 }
 
 @media (max-width: 700px) {

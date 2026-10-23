@@ -5,6 +5,7 @@ import { useMemo, useRef, useState } from 'react'
 import type { AccountStatus, AppRole, Catechist, SystemAccount } from '../lib/content-data'
 import type { AccountForm } from '../lib/api/account-management'
 import { PasswordInput } from './password-input'
+import { LoadingIndicator } from './loading-indicator'
 
 type SystemAccountDirectoryProps = {
   accounts: SystemAccount[]
@@ -136,7 +137,7 @@ export function SystemAccountDirectory({ accounts, catechists, loading = false, 
         <select aria-label="Lọc theo trạng thái" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as 'all' | AccountStatus)}><option value="all">Tất cả trạng thái</option><option>Hoạt động</option><option>Vô hiệu hóa</option><option>Đã lưu trữ</option></select>
       </div>
 
-      {loading && <p role="status">Đang tải danh sách tài khoản…</p>}
+      {loading && <LoadingIndicator compact message="Đang tải danh sách tài khoản…" />}
       {(loadError || actionError) && <p role="alert" className="account-form-error">{loadError || actionError}</p>}
       <fieldset disabled={submitting || loading || Boolean(loadError)} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
       <div className="accounts-table-wrap">

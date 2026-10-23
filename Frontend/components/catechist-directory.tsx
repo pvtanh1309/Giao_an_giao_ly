@@ -3,6 +3,7 @@
 import { Pencil, Plus, Search, Trash2, Users } from 'lucide-react'
 import { useState } from 'react'
 import type { Catechist } from '../lib/content-data'
+import { LoadingIndicator } from './loading-indicator'
 
 type CatechistDirectoryProps = {
     canManage: boolean
@@ -63,7 +64,7 @@ export function CatechistDirectory({
                     )}
                 </div>
             </div>
-            {loading && <p role="status">Đang tải danh sách giáo lý viên…</p>}
+            {loading && <LoadingIndicator compact message="Đang tải danh sách giáo lý viên…" />}
             {loadError && <div role="alert"><p>{loadError}</p><button type="button" className="outline-button" onClick={onRetry}>Thử tải lại</button></div>}
             {!loading && !loadError && <div className="catechist-grid">
                 {catechists.map((catechist) => (

@@ -17,4 +17,5 @@
 @import './styles/lesson-reading.css';
 @import './styles/program-reading.css';
 @import './styles/reference-reading.css';
+@import './styles/loading-indicator.css';
 @custom-variant dark (&:is(.dark *));

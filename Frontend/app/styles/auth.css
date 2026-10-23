@@ -314,10 +314,6 @@
     min-width: calc(100% - 60px);
   }
 
-  .round-arrow {
-    margin-left: auto;
-  }
-
   .footer {
     padding: 28px 24px;
     flex-wrap: wrap;

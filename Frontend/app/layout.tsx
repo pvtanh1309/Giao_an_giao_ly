@@ -30,19 +30,17 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
+        url: '/images/logo-thieu-nhi-icon-32.png',
+        type: 'image/png',
+        sizes: '32x32',
       },
       {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
+        url: '/images/logo-thieu-nhi-icon-180.png',
+        type: 'image/png',
+        sizes: '180x180',
       },
     ],
-    apple: '/apple-icon.png',
+    apple: '/images/logo-thieu-nhi-icon-180.png',
   },
 }
 

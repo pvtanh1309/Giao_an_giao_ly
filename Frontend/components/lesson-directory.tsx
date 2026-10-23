@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowRight, BookOpenText, Plus, Search } from 'lucide-react'
+import { BookOpenText, Plus, Search } from 'lucide-react'
 import { industryColorHex, type Industry, type Lesson } from '../lib/content-data'
 import { getLessonSearchText, sortLessonsByNumber } from '../lib/lesson-content'
 
@@ -72,7 +72,7 @@ export function LessonDirectory({
                                 <small>{lesson.excerpt}</small>
                             </span>
                             <span className="lesson-search-meta">
-                                {lesson.level} <ArrowRight size={15} />
+                                {lesson.level}
                             </span>
                         </button>
                     ))}
@@ -89,28 +89,26 @@ export function LessonDirectory({
                         >
                             <div className="card-top">
                                 <span className="card-icon">{industry.icon}</span>
-                                <span className="card-arrow"><ArrowRight size={18} /></span>
                             </div>
                             <span className="card-label">NGÀNH {industry.level.toUpperCase()}</span>
                             <h3>{industry.level}</h3>
                             <p>{industry.subtitle}</p>
                             <div className="card-foot">
                                 <span>{lessons.filter((lesson) => lesson.level === industry.level).length} giáo án</span>
-                                <span className="view-link">Khám phá <ArrowRight size={14} /></span>
+                                <span>Khám phá</span>
                             </div>
                         </button>
                     ))}
                     <button className="reference-library-card" onClick={onOpenReferences}>
                         <div className="card-top">
                             <span className="card-icon"><BookOpenText size={22} /></span>
-                            <span className="card-arrow"><ArrowRight size={18} /></span>
                         </div>
                         <span className="card-label">THƯ VIỆN BỔ TRỢ</span>
                         <h3>Tài liệu tham khảo</h3>
                         <p>Hoạt động sinh hoạt và kỹ năng đồng hành cùng các em.</p>
                         <div className="card-foot">
                             <span>2 nhóm tài liệu</span>
-                            <span className="view-link">Khám phá <ArrowRight size={14} /></span>
+                            <span>Khám phá</span>
                         </div>
                     </button>
                 </div>

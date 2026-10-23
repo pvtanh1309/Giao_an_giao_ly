@@ -130,15 +130,6 @@
   color: color-mix(in srgb, var(--stage-color) 66%, #15222e);
 }
 
-.dark .program-stage-arrow {
-  background: #393321;
-  color: var(--gold);
-}
-
-.dark .program-category-card:hover .program-stage-arrow {
-  background: #4a4029;
-}
-
 .dark .program-sublevel-row,
 .dark .program-row {
   border-color: var(--line);
