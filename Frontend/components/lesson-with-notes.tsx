@@ -12,6 +12,7 @@ import type { Lesson } from '../lib/content-data'
 import { beforeAppNavigation, canLeaveCurrentPage } from '../lib/unsaved-work'
 import { LessonNotesContext } from './lesson-notes-context'
 import { useDialogFocus } from './use-dialog-focus'
+import { LoadingIndicator } from './loading-indicator'
 import { MessageSquarePlus, NotebookPen } from 'lucide-react'
 
 function selectedTextPosition() {
@@ -125,7 +126,7 @@ function NotesListDialog({ notes, resolvedIds, error, loading, onOpen, onClose, 
     useDialogFocus(root)
     return <div className="personal-profile-backdrop" onClick={(event) => { if (event.target === event.currentTarget) onClose() }} onKeyDown={(event) => { if (event.key === 'Escape') { event.stopPropagation(); onClose() } }}><section ref={root} className="personal-profile-dialog personal-notes-list" role="dialog" aria-modal="true" aria-labelledby="notes-list-title">
         <h2 id="notes-list-title">Ghi chú của tôi ({notes.length})</h2>
-        {loading && <p role="status">Đang tải ghi chú…</p>}{error && <p role="alert">{error}</p>}
+        {loading && <LoadingIndicator compact message="Đang tải ghi chú…" />}{error && <p role="alert">{error}</p>}
         <ul>{notes.map((note) => <li key={note.noteId}><button type="button" onClick={() => onOpen(note.noteId)}><q>{note.anchor.exactQuote}</q><span>{note.body}</span>{!resolvedIds.includes(note.noteId) && <small>Đoạn gốc đã thay đổi hoặc chưa xác định được vị trí.</small>}</button></li>)}</ul>
         <div className="personal-profile-actions"><button type="button" className="secondary-button" disabled={loading} onClick={onReload}>Tải lại</button><button type="button" className="primary-button" onClick={onClose}>Đóng</button></div>
     </section></div>

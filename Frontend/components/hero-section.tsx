@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 
 type HeroSectionProps = {
     onNavigate: (path: string) => void
@@ -22,7 +22,7 @@ export function HeroSection({ onNavigate }: HeroSectionProps) {
                 </p>
                 <div className="hero-actions">
                     <button className="primary-button" onClick={() => onNavigate('/lesson-plans')}>
-                        Khám phá giáo án <ArrowRight size={17} />
+                        Khám phá giáo án
                     </button>
                     <button className="text-button" onClick={() => onNavigate('/programs')}>
                         Xem chương trình học

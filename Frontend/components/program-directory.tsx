@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowRight, FileText, Plus, Trash2 } from 'lucide-react'
+import { FileText, Plus, Trash2 } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { industryColorHex, type Industry, type Program } from '../lib/content-data'
 import { getProgramsForDirectIndustry, getProgramsForIndustry, getProgramsForSublevel } from '../lib/program-navigation'
@@ -60,7 +60,6 @@ export function ProgramDirectory({
                 <p>{program.level}{program.sublevel ? ` · ${program.sublevel}` : ''} · {program.desc}</p>
                 <span className="program-lessons">{program.lessons}</span>
             </div>
-            <button className="round-arrow" aria-label={`Xem ${program.title}`}><ArrowRight size={17} /></button>
             {canManage && (
                 <span className="admin-card-actions">
                     <button type="button" onClick={(event) => { event.stopPropagation(); onDelete(program) }}>
@@ -87,7 +86,7 @@ export function ProgramDirectory({
                             </button>
                         ) : (
                             <button type="button" className="outline-button light-button" onClick={() => onBack('industries')}>
-                                Xem toàn bộ <ArrowRight size={16} />
+                                Xem toàn bộ
                             </button>
                         )}
                     </div>
@@ -122,7 +121,6 @@ export function ProgramDirectory({
                                     <strong>{industry.level}</strong>
                                     <small>{industry.sublevels.length ? `${industry.sublevels.length} phân ngành` : `${programCount} chương trình học`}</small>
                                 </span>
-                                <span className="program-stage-arrow" aria-hidden="true"><ArrowRight size={18} /></span>
                             </button>
                         )
                     })}
@@ -130,7 +128,6 @@ export function ProgramDirectory({
                         const programCount = getProgramsForSublevel(programs, selectedIndustry.level, sublevel).length
                         return <button type="button" className="program-sublevel-row" style={{ '--stage-color': stageAccent } as CSSProperties} key={sublevel} onClick={() => onSelectSublevel(sublevel)}>
                             <span><strong>{sublevel}</strong><small>{programCount} chương trình học</small></span>
-                            <ArrowRight size={18} />
                         </button>
                     })}
                     {selectedIndustry && viewingPrograms && visiblePrograms.map(renderProgram)}
