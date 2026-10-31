@@ -265,6 +265,7 @@ UI đã có toolbar bám vùng soạn, giữ ký tự đầu dòng `1. `/`- `/`*
 Các lựa chọn giao diện cần giữ khi tiếp tục thiết kế:
 
 - Năm ngành giữ màu nhận diện trong [content-data.ts](../Frontend/lib/content-data.ts): Chiên con hồng, Ấu nhi xanh lá nhạt, Thiếu Nhi xanh dương, Nghĩa sĩ vàng, Hiệp sĩ nâu.
+- Desktop giữ bố cục tổng quan hai cột, có ảnh kính màu bên phải. Ở màn hình điện thoại, header giữ logo và tên thương hiệu trên một hàng, ảnh kính màu làm họa tiết mờ bên phải của hero, thống kê và footer thu gọn theo chiều ngang; các điều chỉnh chỉ áp dụng dưới 600px.
 - Trang chương trình hiện dùng các thẻ theo timeline/số thứ tự; tiêu đề, mô tả và nút thêm ở banner đầu. Người dùng muốn bám sát mock đã duyệt; không suy ra đã khớp từng pixel chỉ từ việc có các thành phần này.
 - Nền banner chương trình hiện là `Frontend/public/images/program-hero-background.png`, được tái tạo sạch từ ảnh crop người dùng chọn. Ảnh trang Tổng quan là `stained-glass-hero-expanded.png`, là asset khác; đã có lần lấy nhầm ảnh này cho chương trình.
 - Lời Chúa ở đầu bài căn giữa; cột có đường kẻ phân cách và nội dung bắt đầu cùng hàng. Trên điện thoại giữ cách đọc gần desktop, dùng cuộn ngang cho bảng khi cần.

@@ -1,0 +1,192 @@
+@media (max-width: 600px) {
+  .topbar-inner {
+    gap: 8px;
+    padding-inline: 12px;
+  }
+
+  .brand {
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: 8px;
+    white-space: nowrap;
+  }
+
+  .brand .parish-logo-image {
+    width: 38px;
+    height: 38px;
+  }
+
+  .brand > span {
+    min-width: 0;
+  }
+
+  .brand strong {
+    overflow: hidden;
+    font-size: 13px;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .brand small {
+    display: none;
+  }
+
+  .header-actions {
+    flex: 0 0 auto;
+    gap: 4px;
+  }
+
+  .account-menu-trigger {
+    width: 40px;
+    min-height: 40px;
+    padding: 3px;
+    justify-content: center;
+  }
+
+  .account-menu-trigger > span:nth-child(2),
+  .account-menu-trigger > svg {
+    display: none;
+  }
+
+  .account-menu-avatar {
+    flex-basis: 32px;
+    height: 32px;
+  }
+
+  .menu-button {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+  }
+
+  .hero-section {
+    --hero-frame-inset-x: 8px;
+    --hero-frame-inset-y: 8px;
+    min-height: 0;
+    padding: 44px 22px 28px;
+  }
+
+  .hero-section::before {
+    border-radius: 22px;
+  }
+
+  .hero-pattern {
+    inset-inline-start: 42%;
+  }
+
+  .hero-content {
+    width: 100%;
+    max-width: none;
+  }
+
+  .eyebrow {
+    max-width: 100%;
+    gap: 6px;
+    font-size: 9px;
+    letter-spacing: .09em;
+  }
+
+  .eyebrow-line {
+    flex: 0 0 22px;
+  }
+
+  .hero-content h1 {
+    margin: 18px 0 13px;
+    font-size: clamp(32px, 9vw, 40px);
+    line-height: 1.03;
+  }
+
+  .hero-copy {
+    max-width: 32ch;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .hero-actions {
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 20px;
+  }
+
+  .hero-actions .primary-button {
+    padding: 11px 14px;
+    font-size: 12px;
+  }
+
+  .hero-actions .text-button {
+    font-size: 12px;
+  }
+
+  .hero-note {
+    flex-wrap: wrap;
+    gap: 5px 7px;
+    margin-top: 22px;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .hero-illustration {
+    top: var(--hero-frame-inset-y);
+    right: var(--hero-frame-inset-x);
+    bottom: var(--hero-frame-inset-y);
+    width: 50%;
+    aspect-ratio: auto;
+    border-radius: 0 22px 22px 0;
+    opacity: .62;
+  }
+
+  .hero-stained-glass-image {
+    object-position: 65% center;
+  }
+
+  .stats-strip {
+    padding: 14px 20px;
+    gap: 12px 10px;
+  }
+
+  .stats-strip .stat {
+    min-width: 0;
+    gap: 7px;
+    font-size: 10px;
+  }
+
+  .stats-strip .stat svg {
+    flex: 0 0 auto;
+    width: 17px;
+    height: 17px;
+  }
+
+  .stats-strip .stat-academic-year {
+    grid-column: 1 / -1;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
+  .stats-strip .stat-academic-year > span {
+    white-space: nowrap;
+  }
+
+  .stats-strip .stat-quote {
+    grid-column: 1 / -1;
+  }
+
+  footer {
+    padding: 24px 20px 28px;
+    gap: 12px;
+  }
+
+  footer p {
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .footer-brand strong {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .dark .hero-illustration { opacity: .55; }
+}

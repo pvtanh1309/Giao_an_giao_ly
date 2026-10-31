@@ -40,4 +40,4 @@ Backend/dist/
 **/*.pyc
 **/superpowers/**
 docs/*.md  
-docs/** 
+docs/CONTEXT.md
