@@ -13,7 +13,7 @@ def main():
     if not base or set(base) == {"0"}:
         paths = ["."]
     else:
-        if os.environ.get("DIFF MODE") == "three-dot":
+        if os.environ.get("DIFF_MODE") == "three-dot":
             revision = f"{base}...{head}"
         else: 
             revision = f"{base}..{head}"

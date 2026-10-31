@@ -313,7 +313,7 @@ Các mục dưới đây là việc cần đánh giá, **chưa phải tính năn
 5. Release không atomic: Terraform apply trước Frontend build; lỗi build có thể để backend mới đi cùng UI cũ. CD chưa tự gate toàn bộ CI độc lập.
 6. Chưa có dashboard, alarm latency/error-rate API, X-Ray/tracing hay log timing từng bước trong Terraform. API access log hiện chưa ghi integration latency; log Lambda lỗi ứng dụng chỉ có request ID/type tối thiểu.
 7. IAM JSON CD chứa grant chẩn đoán/hardcode ID và quyền logging rộng theo region; không coi đó là bộ policy production đã kiểm chứng cho mọi cấu hình.
-8. `scripts/ci/detect_changes.py` đang đọc `DIFF MODE` trong khi workflow truyền `DIFF_MODE`; PR three-dot có thể không được chọn đúng. Đây là quan sát source cần task sửa riêng, chưa xử lý trong đợt gom tài liệu.
+8. CI phân loại đường dẫn qua `scripts/ci/detect_changes.py`: PR dùng `DIFF_MODE=three-dot`, push/merge group dùng two-dot. Backend vẫn tạo artifact trên mỗi push main để giữ hợp đồng release hiện tại; cache dependencies/build không thay thế kiểm thử hay xác minh SHA/checksum. Chi tiết cache ở RUNBOOK.
 9. Frontend note textarea đếm UTF-16 trong khi Backend đếm code point; nội dung nhiều emoji có thể chạm giới hạn Frontend sớm hơn. Ghi nhận lịch sử cần kiểm tra lại khi sửa.
 
 ## 12. Quy tắc giữ tài liệu đúng

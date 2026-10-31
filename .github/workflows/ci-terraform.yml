@@ -27,6 +27,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Test change detection
+        run: python3 -m unittest discover -s scripts/ci/tests -v
+
       - name: Classify changed paths
         id: filter
         env:
@@ -40,6 +43,8 @@ jobs:
     needs: changes
     if: needs.changes.outputs.relevant == 'true'
     runs-on: ubuntu-latest
+    env:
+      TF_PLUGIN_CACHE_DIR: ${{ runner.temp }}/terraform-plugin-cache
     steps:
       - name: Check out source
         uses: actions/checkout@v7 # v7.0.1
@@ -57,6 +62,15 @@ jobs:
         with:
           terraform_version: 1.15.0
           terraform_wrapper: false
+
+      - name: Prepare Terraform provider cache
+        run: mkdir -p "$TF_PLUGIN_CACHE_DIR"
+
+      - name: Cache Terraform providers
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ env.TF_PLUGIN_CACHE_DIR }}
+          key: ${{ runner.os }}-${{ runner.arch }}-terraform-1.15.0-${{ hashFiles('infrastructure/environments/*/.terraform.lock.hcl') }}
 
       - name: Check Terraform formatting
         run: terraform fmt -recursive infrastructure

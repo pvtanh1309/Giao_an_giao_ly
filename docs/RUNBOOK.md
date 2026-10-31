@@ -289,6 +289,17 @@ CD checkout đúng toàn repo theo SHA artifact, kiểm tra manifest/checksum, b
 
 CD chờ `distribution-deployed` rồi `invalidation-completed`, sau đó summary trả frontend URL và CloudFront URL. Concurrency theo môi trường không tự ngăn một operator chạy local apply; remote state lock vẫn cần.
 
+### Cache và chọn job CI/CD
+
+Cả ba workflow CI chạy bộ lọc chung sau kiểm thử offline `python3 -m unittest discover -s scripts/ci/tests -v`. PR dùng three-dot; push/merge group dùng two-dot. Frontend/Terraform chỉ chạy job thành phần khi liên quan; Backend chỉ lọc ở job, không dùng PR path filter tại trigger, để các thay đổi script dùng chung vẫn được kiểm tra. Backend push main vẫn test/đóng gói cả ba ZIP cho release theo SHA hiện tại.
+
+- CI Frontend và CD cache pnpm store theo OS + hash lockfile; vẫn chạy `pnpm install --frozen-lockfile`.
+- CI Frontend cache riêng `Frontend/.next/cache` với namespace placeholder. CD dùng namespace riêng theo môi trường và hash toàn bộ `NEXT_PUBLIC_*` đã lấy từ outputs. Khóa Next còn gồm OS/architecture, Node 22, lockfile, next.config và source SHA; restore prefix cho phép dùng cache từ source trước có cùng cấu hình. Thay giá trị placeholder trong CI phải tăng `placeholder-v1` trong khóa cache.
+- Terraform CI/CD chỉ cache thư mục provider ở `TF_PLUGIN_CACHE_DIR` trong runner temp, theo OS/architecture + phiên bản Terraform + hash lockfiles. Vẫn init với `-lockfile=readonly` và kiểm tra provider qua lockfile.
+- Không cache state, tfvars, plan, tokens, `out/` hoặc toàn bộ `.terraform/`. Cache Next chỉ là dữ liệu biên dịch; CI/CD vẫn test/type-check/build và CD vẫn xác minh release, apply, upload, chờ CloudFront và smoke test như trước.
+
+Lần chạy đầu hoặc cache bị GitHub thu hồi sẽ là cache miss và cài/build bình thường. Xem bước cache và thời lượng job trong Actions để đo lợi ích; chưa có số đo tốc độ trên runner cho cấu hình mới. Nếu nghi cache lỗi, xóa đúng cache trong Actions → Caches rồi chạy lại, hoặc tăng namespace trong workflow qua commit review. Phạm vi truy cập cache tuân theo GitHub: cache của PR không trở thành cache của main; không lưu secret vào bất kỳ cache nào. Deploy từng thành phần dựa trên lần deploy thành công gần nhất vẫn là bước cải tiến tiếp theo, chưa triển khai.
+
 ## 7. Build và upload Frontend thủ công
 
 Chỉ dùng khi chọn deploy thủ công; làm theo cùng SHA/config với Backend. Từ root, sau khi `.env.local` đã khớp outputs:

@@ -146,7 +146,7 @@ Xác minh run event push/main, source SHA, job package đã chạy và artifact 
 
 ### 5.2 Required check pending / CI skipped không như dự kiến — có thể gặp
 
-Phân biệt workflow không trigger và job được skip có chủ đích. Kiểm tra branch/path filters, base/head SHA và output detect-changes. Quan sát source hiện tại: script đọc `DIFF MODE` nhưng workflow truyền `DIFF_MODE`, nên cần sửa bằng task riêng nếu gặp khác biệt PR/two-dot/three-dot. Không sửa branch protection để che lỗi filter.
+Phân biệt workflow không trigger và job được skip có chủ đích. Kiểm tra branch/path filters, base/head SHA và output detect-changes. Script hiện đọc `DIFF_MODE` đúng như workflow truyền: PR dùng three-dot để chỉ xét thay đổi từ merge-base; push/merge group dùng two-dot. Lỗi cũ đọc nhầm `DIFF MODE` đã được sửa và có kiểm thử với hai nhánh phân kỳ. Chạy `python -m unittest discover -s scripts/ci/tests -v` từ root để kiểm tra offline. Không sửa branch protection để che lỗi filter.
 
 ### 5.3 CD checkout/script sai thứ tự hoặc YAML indentation — đã gặp
 
