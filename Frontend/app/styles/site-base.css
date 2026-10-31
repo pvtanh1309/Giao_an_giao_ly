@@ -102,6 +102,41 @@ button {
   backdrop-filter: blur(14px);
 }
 
+.session-pending-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 220px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font: 11px Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.session-skeleton {
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+  background: linear-gradient(100deg, rgba(113, 132, 150, .12) 20%, rgba(113, 132, 150, .26) 43%, rgba(113, 132, 150, .12) 66%);
+  background-size: 220% 100%;
+  animation: session-skeleton-shimmer 1.55s ease-in-out infinite;
+}
+
+@keyframes session-skeleton-shimmer {
+  to { background-position-x: -220%; }
+}
+
+.stats-count-skeleton {
+  display: inline-block;
+  width: 30px;
+  height: 14px;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
 .topbar-inner {
   max-width: 1180px;
   height: var(--site-header-height);
@@ -179,6 +214,15 @@ button {
   letter-spacing: .04em;
 }
 
+.session-restoring-shell > footer {
+  margin-top: auto;
+}
+
+.session-restoring-shell {
+  display: flex;
+  flex-direction: column;
+}
+
 .brand small,
 .footer-brand small {
   margin-top: 2px;
@@ -186,6 +230,22 @@ button {
   font: 10px/1.2 Arial, sans-serif;
   letter-spacing: .08em;
   text-transform: uppercase;
+}
+
+@media (max-width: 800px) {
+  .session-pending-status {
+    min-width: 0;
+    min-height: 38px;
+    padding: 0 9px;
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .session-skeleton {
+    animation: none;
+    background-position: 50% 0;
+  }
 }
 
 .main-nav {

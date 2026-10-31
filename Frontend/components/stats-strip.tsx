@@ -10,9 +10,10 @@ type StatsStripProps = {
     lessonCount: number
     industryCount: number
     canManage: boolean
+    loading?: boolean
 }
 
-export function StatsStrip({ lessonCount, industryCount, canManage }: StatsStripProps) {
+export function StatsStrip({ lessonCount, industryCount, canManage, loading = false }: StatsStripProps) {
     const [academicYear, setAcademicYear] = useState(DEFAULT_ACADEMIC_YEAR)
     const [yearDraft, setYearDraft] = useState(DEFAULT_ACADEMIC_YEAR)
     const [editingYear, setEditingYear] = useState(false)
@@ -40,9 +41,9 @@ export function StatsStrip({ lessonCount, industryCount, canManage }: StatsStrip
     }
 
     return (
-        <section className="stats-strip" aria-label="Thống kê kho giáo lý">
-            <div className="stat"><BookOpen size={19} /><span><b>{lessonCount}</b> giáo án</span></div>
-            <div className="stat"><Users size={19} /><span><b>{industryCount}</b> ngành có giáo án</span></div>
+        <section className="stats-strip" aria-label="Thống kê kho giáo lý" aria-busy={loading}>
+            <div className="stat"><BookOpen size={19} /><span>{loading ? <span className="session-skeleton stats-count-skeleton" aria-hidden="true" /> : <><b>{lessonCount}</b> giáo án</>}</span></div>
+            <div className="stat"><Users size={19} /><span>{loading ? <span className="session-skeleton stats-count-skeleton" aria-hidden="true" /> : <><b>{industryCount}</b> ngành có giáo án</>}</span></div>
             <div className="stat stat-academic-year">
                 <CalendarDays size={19} />
                 {editingYear ? <form className="academic-year-form" onSubmit={saveAcademicYear}>
@@ -56,6 +57,7 @@ export function StatsStrip({ lessonCount, industryCount, canManage }: StatsStrip
                 </>}
             </div>
             <div className="stat stat-quote"><Heart size={17} fill="currentColor" /><span>Phục vụ sứ mạng loan báo Tin Mừng</span></div>
+            {loading && <span className="sr-only" role="status">Đang tải thống kê kho giáo lý…</span>}
         </section>
     )
 }

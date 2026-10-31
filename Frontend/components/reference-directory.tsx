@@ -7,6 +7,9 @@ import { filterReferences } from '../lib/reference-content'
 
 type ReferenceDirectoryProps = {
     references: ReferenceDocument[]
+    loading?: boolean
+    loadError?: string
+    onRetry?: () => void
     category: ReferenceCategory | null
     query: string
     canManage: boolean
@@ -21,6 +24,9 @@ const categories: ReferenceCategory[] = ['Sinh hoạt', 'Kỹ năng']
 
 export function ReferenceDirectory({
     references,
+    loading = false,
+    loadError = '',
+    onRetry,
     category,
     query,
     canManage,
@@ -34,7 +40,7 @@ export function ReferenceDirectory({
     const items = filterReferences(references, category, query, canManage, includeDeleted)
 
     return (
-        <section className="reference-directory content-section" aria-label="Thư viện tài liệu tham khảo">
+        <section className="reference-directory content-section" aria-label="Thư viện tài liệu tham khảo" aria-busy={loading}>
             <div className="reference-directory-heading">
                 <button className="secondary-button" onClick={onBack}><ArrowLeft size={16} /> Giáo án</button>
                 <div>
@@ -64,7 +70,9 @@ export function ReferenceDirectory({
                 Hiển thị tài liệu đã xóa
             </label>}
 
-            {items.length ? <div className="reference-list">
+            {loading ? <div className="reference-list" aria-hidden="true">
+                {Array.from({ length: 4 }, (_, index) => <div className="reference-list-item reference-list-item-skeleton" key={index}><span className="session-skeleton session-skeleton-icon" /><span className="reference-skeleton-copy"><span className="session-skeleton session-skeleton-line" /><span className="session-skeleton session-skeleton-line short" /></span></div>)}
+            </div> : loadError ? <div className="directory-load-error" role="alert"><p>{loadError}</p><button type="button" className="outline-button" onClick={onRetry}>Thử tải lại</button></div> : items.length ? <div className="reference-list">
                 {items.map((item) => (
                     <button className="reference-list-item" key={item.id} onClick={() => onOpenReference(references.find((reference) => reference.id === item.id)!)}>
                         <span className="reference-list-icon"><BookOpenText size={20} /></span>

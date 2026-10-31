@@ -5,7 +5,6 @@ import {
   BookOpen,
   CalendarDays,
   ChevronDown,
-  Church,
   FileText,
   Heart,
   LayoutDashboard,
@@ -21,6 +20,8 @@ import {
   X,
 } from 'lucide-react'
 import { SiteHeader } from '../components/site-header'
+import { SiteFooter } from '../components/site-footer'
+import { SessionRestoringShell } from '../components/session-restoring-shell'
 import { usePersonalProfile } from '../components/personal-profile-provider'
 import { canLeaveCurrentPage, guardHistoryNavigation } from '../lib/unsaved-work'
 import { CatechistDirectory } from '../components/catechist-directory'
@@ -36,7 +37,6 @@ import { ReferenceDirectory } from '../components/reference-directory'
 import { ReferenceReadingPage } from '../components/reference-reading-page'
 import { SystemAccountDirectory } from '../components/system-account-directory'
 import { AuthScreen } from '../components/auth-screen'
-import { LoadingIndicator } from '../components/loading-indicator'
 import { useAuth, useUnauthorizedHandler } from '../components/auth-provider'
 import { getPublicConfig } from '../lib/config'
 import { createUsersApi } from '../lib/api/users'
@@ -58,7 +58,18 @@ import {
 } from '../lib/content-data'
 import { createEmptyLessonStructuredContent, createLessonFromDraft, type LessonStructuredContent } from '../lib/lesson-content'
 import { getDashboardMetrics } from '../lib/dashboard-metrics'
+import { getPageDataPlan } from '../lib/page-data-plan'
 import type { ReferenceCategory, ReferenceDocument } from '../lib/reference-content'
+
+function ReadingPending({ message }: { message: string }) {
+  return <div className="reading-pending-skeleton" aria-busy="true">
+    <span className="sr-only" role="status">{message}</span>
+    <span className="session-skeleton reading-pending-title" aria-hidden="true" />
+    <span className="session-skeleton reading-pending-line" aria-hidden="true" />
+    <span className="session-skeleton reading-pending-line reading-pending-line-short" aria-hidden="true" />
+    <span className="session-skeleton reading-pending-block" aria-hidden="true" />
+  </div>
+}
 
 export default function Page({ initialView = 'overview' }: { initialView?: 'overview' | 'lessons' | 'programs' | 'catechists' | 'accounts' }) {
   const { status, user, logout, getAccessToken } = useAuth()
@@ -73,6 +84,9 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   const [contentLoading, setContentLoading] = useState(true)
   const [contentError, setContentError] = useState('')
   const [contentReload, setContentReload] = useState(0)
+  const [referencesLoading, setReferencesLoading] = useState(false)
+  const [referencesError, setReferencesError] = useState('')
+  const [referencesReload, setReferencesReload] = useState(0)
   const [contentBusy, setContentBusy] = useState(false)
   const contentInFlight = useRef(false)
   const mediaUploadsInFlight = useRef(0)
@@ -85,6 +99,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   const [detailError, setDetailError] = useState('')
   const [accountsLoading, setAccountsLoading] = useState(true)
   const [accountsError, setAccountsError] = useState('')
+  const [accountsReload, setAccountsReload] = useState(0)
   const [activeNav, setActiveNav] = useState(initialView === 'lessons' ? 'Giáo án' : initialView === 'programs' ? 'Chương trình học' : initialView === 'catechists' ? 'Giáo lý viên' : initialView === 'accounts' ? 'Tài khoản hệ thống' : 'Tổng quan')
   const [mobileMenu, setMobileMenu] = useState(false)
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null)
@@ -141,36 +156,68 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   const selectedReferenceForReading = referenceList.find((reference) => reference.id === selectedReferenceId)
   const selectedProgramForReading = programList.find((program) => program.id === selectedProgramId)
   const dashboardMetrics = getDashboardMetrics(lessonList)
+  const primaryCatalog = getPageDataPlan(initialView, referenceLibraryOpen, selectedReferenceId, selectedLessonId, selectedProgramId).primaryCatalog
+  const loadReferences = getPageDataPlan(initialView, referenceLibraryOpen, selectedReferenceId).loadReferences
 
   useEffect(() => {
     let active = true
-    setLessonList([]); setProgramList([]); setReferenceList([])
-    setDetailReady(''); setContentError(''); setContentLoading(true)
-    if (!contentService) {
+    setDetailReady(''); setContentError('')
+    if (!contentService || !primaryCatalog) {
       setContentLoading(false)
-      return
+      return () => { active = false }
     }
+    if (primaryCatalog === 'lessons') setProgramList([])
+    else setLessonList([])
+    setContentLoading(true)
     void (async () => {
       try {
-        const [lessons, programs, references] = await Promise.all([
-          contentService.lessons.list(), contentService.programs.list(), contentService.references.list(),
-        ])
-        if (active) { setLessonList(lessons); setProgramList(programs); setReferenceList(references) }
+        if (primaryCatalog === 'lessons') {
+          const lessons = await contentService.lessons.list()
+          if (active) setLessonList(lessons)
+        } else {
+          const programs = await contentService.programs.list()
+          if (active) setProgramList(programs)
+        }
       } catch (error) {
-        if (active) setContentError(error instanceof Error ? error.message : 'Không tải được thư viện nội dung.')
+        if (active) setContentError(error instanceof Error ? error.message : `Không tải được ${primaryCatalog === 'lessons' ? 'giáo án' : 'chương trình học'}.`)
       } finally {
         if (active) setContentLoading(false)
       }
     })()
     return () => { active = false }
-  }, [contentService, contentReload])
+  }, [contentService, primaryCatalog, contentReload])
+
+  useEffect(() => {
+    let active = true
+    setReferencesError('')
+    if (!contentService || !loadReferences) {
+      setReferencesLoading(false)
+      if (!loadReferences && !selectedReferenceId) setReferenceList([])
+      return () => { active = false }
+    }
+    setReferenceList([])
+    setReferencesLoading(true)
+    void contentService.references.list().then((references) => {
+      if (active) setReferenceList(references)
+    }).catch((error) => {
+      if (active) setReferencesError(error instanceof Error ? error.message : 'Không tải được tài liệu tham khảo.')
+    }).finally(() => {
+      if (active) setReferencesLoading(false)
+    })
+    return () => { active = false }
+  }, [contentService, loadReferences, selectedReferenceId, referencesReload])
 
   const selectedDetailKey = initialView === 'lessons'
     ? selectedReferenceId ? `references/${selectedReferenceId}` : selectedLessonId ? `lessons/${selectedLessonId}` : ''
     : initialView === 'programs' && selectedProgramId ? `programs/${selectedProgramId}` : ''
   const selectedReferenceDeleted = selectedReferenceForReading?.status === 'DELETED'
+  const detailCatalogLoading = (selectedDetailKey.startsWith('lessons/') && primaryCatalog === 'lessons')
+    || (selectedDetailKey.startsWith('programs/') && primaryCatalog === 'programs')
+      ? contentLoading
+      : false
+  const detailCatalogError = selectedDetailKey.startsWith('references/') ? referencesError : contentError
   useEffect(() => {
-    if (!contentService || contentLoading || contentError || !selectedDetailKey || detailReady === selectedDetailKey) return
+    if (!contentService || detailCatalogLoading || detailCatalogError || !selectedDetailKey || detailReady === selectedDetailKey) return
     let active = true
     setDetailError('')
     if (selectedReferenceId?.startsWith('new-reference-') || selectedReferenceDeleted) {
@@ -195,7 +242,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
       }
     })()
     return () => { active = false }
-  }, [contentService, contentLoading, contentError, selectedDetailKey, selectedLessonId, selectedProgramId, selectedReferenceId, selectedReferenceDeleted, detailReady, contentReload])
+  }, [contentService, detailCatalogLoading, detailCatalogError, selectedDetailKey, selectedLessonId, selectedProgramId, selectedReferenceId, selectedReferenceDeleted, detailReady, contentReload, referencesReload])
 
   const runContentAction = async (action: () => Promise<void>, message: string): Promise<boolean> => {
     if (contentInFlight.current || !contentService) return false
@@ -224,7 +271,12 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
     setCatechistList([])
     setCatechistsError('')
     setCatechistsLoading(true)
-    if (!accountService || initialView !== 'catechists') return
+    if (initialView !== 'catechists') return
+    if (!accountService) {
+      setCatechistsLoading(false)
+      if (user?.localMock) setCatechistsError('Danh bạ giáo lý viên không khả dụng trong phiên xem thử.')
+      return
+    }
     void accountService.listProfiles().then((profiles) => {
       if (active) setCatechistList(profiles)
     }).catch((error) => {
@@ -234,16 +286,27 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
   }, [accountService, initialView, user?.sub, user?.role, catechistsReload])
 
   useEffect(() => {
-    if (!accountService || initialView !== 'accounts' || user?.role !== 'admin') return
+    if (initialView !== 'accounts' || user?.role !== 'admin') return
     let active = true
     setAccountsLoading(true)
     setAccountsError('')
     setAccountList([])
     setCatechistList([])
+    if (!accountService) {
+      setAccountsLoading(false)
+      if (user?.localMock) setAccountsError('Quản lý tài khoản không khả dụng trong phiên xem thử.')
+      return () => { active = false }
+    }
     void (async () => {
       try {
-        const profiles = await accountService.listProfiles()
-        const accounts = await accountService.listAccounts(profiles)
+        const [profiles, accountRows] = await Promise.all([
+          accountService.listProfiles(),
+          accountService.listAccounts([]),
+        ])
+        const accounts = accountRows.map((account) => ({
+          ...account,
+          linkedCatechistEmail: profiles.find((profile) => profile.id === account.linkedCatechistId)?.email,
+        }))
         if (active) {
           setCatechistList(profiles)
           setAccountList(accounts)
@@ -255,7 +318,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
       }
     })()
     return () => { active = false }
-  }, [accountService, initialView, user?.sub, user?.role])
+  }, [accountService, initialView, user?.sub, user?.role, accountsReload])
 
   useEffect(() => {
     const syncSelectionFromUrl = () => {
@@ -557,9 +620,14 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
 
   if (status === 'loading') {
     return (
-      <main className="auth-loading-panel" aria-busy="true">
-        <LoadingIndicator message="Đang khôi phục phiên đăng nhập…" />
-      </main>
+      <SessionRestoringShell
+        initialView={initialView}
+        activeNav={activeNav}
+        mobileMenu={mobileMenu}
+        referenceLibraryOpen={referenceLibraryOpen || Boolean(selectedReferenceId)}
+        onNavigate={navigateTo}
+        onToggleMenu={() => setMobileMenu(!mobileMenu)}
+      />
     )
   }
 
@@ -583,20 +651,21 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         lessonCount={dashboardMetrics.lessonCount}
         industryCount={dashboardMetrics.industryCount}
         canManage={currentUser === 'admin' || currentUser === 'editor'}
+        loading={initialView === 'overview' && contentLoading}
       />
 
-      {contentLoading && <LoadingIndicator className="content-section" message="Đang tải thư viện từ máy chủ…" />}
-      {contentError && <div role="alert" className="content-section"><p>{contentError}</p><button onClick={() => setContentReload((value) => value + 1)}>Thử tải lại</button></div>}
-      {detailError && <div role="alert" className="content-section"><p>{detailError}</p><button onClick={() => { setDetailReady(''); setContentReload((value) => value + 1) }}>Thử tải lại</button></div>}
       {contentBusy && <p role="status" className="content-section">Đang lưu thay đổi trên máy chủ…</p>}
       {mediaUploads > 0 && <p role="status" className="content-section">Đang tải ảnh lên. Hãy đợi trước khi lưu hoặc rời trang.</p>}
 
-      <fieldset disabled={contentBusy || mediaUploads > 0 || contentLoading || Boolean(contentError)} inert={contentBusy || mediaUploads > 0} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
+      <fieldset disabled={contentBusy || mediaUploads > 0} inert={contentBusy || mediaUploads > 0} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
 
       {!(initialView === 'lessons' && (selectedLessonId || referenceLibraryOpen)) && <LessonDirectory
         canManage={currentUser === 'admin' || currentUser === 'editor'}
         industries={lessonPlans}
         lessons={lessonList}
+        loading={primaryCatalog === 'lessons' && contentLoading}
+        loadError={primaryCatalog === 'lessons' ? contentError : ''}
+        onRetry={() => setContentReload((value) => value + 1)}
         query={lessonQuery}
         onQueryChange={setLessonQuery}
         onAdd={() => {
@@ -619,6 +688,9 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
 
       {initialView === 'lessons' && referenceLibraryOpen && !selectedReferenceId && <ReferenceDirectory
         references={referenceList}
+        loading={referencesLoading}
+        loadError={referencesError}
+        onRetry={() => setReferencesReload((value) => value + 1)}
         category={selectedReferenceCategory}
         query={referenceQuery}
         canManage={currentUser === 'admin' || currentUser === 'editor'}
@@ -633,6 +705,9 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         canManage={currentUser === 'admin' || currentUser === 'editor'}
         industries={lessonPlans}
         programs={programList}
+        loading={primaryCatalog === 'programs' && contentLoading}
+        loadError={primaryCatalog === 'programs' ? contentError : ''}
+        onRetry={() => setContentReload((value) => value + 1)}
         selectedLevel={selectedProgramLevel}
         selectedSublevel={selectedProgramSublevel}
         onSelectLevel={selectProgramLevel}
@@ -666,8 +741,8 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         /> : <section className="content-section reading-page-placeholder">
           <button className="secondary-button" onClick={() => returnToList('lessonId')}>Quay lại danh sách bài học</button>
           {detailError || contentError
-            ? <h1>Không tải được giáo án</h1>
-            : <LoadingIndicator message="Đang tải giáo án…" heading />}
+            ? <div role="alert"><h1>Không tải được giáo án</h1><p>{detailError || contentError}</p><button className="secondary-button" onClick={() => setContentReload((value) => value + 1)}>Thử tải lại</button></div>
+            : <ReadingPending message="Đang tải giáo án…" />}
         </section>
       )}
 
@@ -685,9 +760,9 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
           />
           : <section className="reference-reading-page reading-page-placeholder">
             <button className="secondary-button" onClick={backToReferenceList}>Quay lại thư viện tài liệu</button>
-            {detailError || contentError
-              ? <h1>Không tải được tài liệu tham khảo</h1>
-              : <LoadingIndicator message="Đang tải tài liệu tham khảo…" heading />}
+            {detailError || referencesError || contentError
+              ? <div role="alert"><h1>Không tải được tài liệu tham khảo</h1><p>{detailError || referencesError || contentError}</p><button className="secondary-button" onClick={() => setReferencesReload((value) => value + 1)}>Thử tải lại</button></div>
+              : <ReadingPending message="Đang tải tài liệu tham khảo…" />}
           </section>
       )}
       {initialView === 'programs' && selectedProgramId && (
@@ -703,8 +778,8 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
           <div className="program-inner">
             <button className="outline-button light-button" onClick={() => returnToList('programId')}>Quay lại chương trình học</button>
             {detailError || contentError
-              ? <h1>Không tải được chương trình học</h1>
-              : <LoadingIndicator message="Đang tải chương trình học…" heading />}
+              ? <div role="alert"><h1>Không tải được chương trình học</h1><p>{detailError || contentError}</p><button className="outline-button light-button" onClick={() => setContentReload((value) => value + 1)}>Thử tải lại</button></div>
+              : <ReadingPending message="Đang tải chương trình học…" />}
           </div>
         </section>
       )}
@@ -717,7 +792,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
           loading={catechistsLoading}
           busy={contentBusy}
           loadError={catechistsError}
-          onRetry={() => setCatechistsReload((value) => value + 1)}
+          onRetry={accountService ? () => setCatechistsReload((value) => value + 1) : undefined}
           catechists={matchingCatechists}
           query={catechistQuery}
           onQueryChange={setCatechistQuery}
@@ -748,6 +823,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
           catechists={catechistList}
           loading={accountsLoading}
           loadError={accountsError}
+          onRetry={accountService ? () => setAccountsReload((value) => value + 1) : undefined}
           onCreate={async (account) => {
             if (!accountService) throw new Error('Cần đăng nhập để tạo tài khoản.')
             const saved = await accountService.createAccount(account, catechistList)
@@ -783,21 +859,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         </section>
       )}
 
-      <footer>
-        <div className="footer-brand">
-          <span className="brand-mark">
-            <Church size={18} />
-          </span>
-          <span>
-            <strong>Giáo Phận Xuân Lộc</strong>
-            <small>Giáo xứ Thái An</small>
-          </span>
-        </div>
-        <p>
-          Góp phần xây dựng một thế hệ trẻ sống đức tin và yêu mến Giáo Hội.
-        </p>
-        <span className="footer-copy">© 2025 Giáo lý Công giáo</span>
-      </footer>
+      <SiteFooter />
 
       <LessonDialogs
         browser={lessonBrowser}

@@ -9,6 +9,9 @@ type ProgramDirectoryProps = {
     canManage: boolean
     industries: Industry[]
     programs: Program[]
+    loading?: boolean
+    loadError?: string
+    onRetry?: () => void
     selectedLevel: string | null
     selectedSublevel: string | null
     onSelectLevel: (level: string) => void
@@ -23,6 +26,9 @@ export function ProgramDirectory({
     canManage,
     industries,
     programs,
+    loading = false,
+    loadError = '',
+    onRetry,
     selectedLevel,
     selectedSublevel,
     onSelectLevel,
@@ -92,7 +98,8 @@ export function ProgramDirectory({
                     </div>
                 </div>
             </header>
-            <div className="program-inner">
+            <div className="program-inner" aria-busy={loading}>
+                {loadError && <div className="directory-load-error program-load-error" role="alert"><p>{loadError}</p><button type="button" className="outline-button light-button" onClick={onRetry}>Thử tải lại</button></div>}
                 {selectedIndustry && (
                     <nav className="program-breadcrumb" aria-label="Điều hướng chương trình học">
                         <button type="button" onClick={() => onBack('industries')}>Tất cả ngành</button>
@@ -119,7 +126,7 @@ export function ProgramDirectory({
                                 <span className="program-category-icon" aria-hidden="true">{industry.icon}</span>
                                 <span className="program-category-copy">
                                     <strong>{industry.level}</strong>
-                                    <small>{industry.sublevels.length ? `${industry.sublevels.length} phân ngành` : `${programCount} chương trình học`}</small>
+                                <small>{industry.sublevels.length ? `${industry.sublevels.length} phân ngành` : loading ? <span className="session-skeleton program-count-skeleton" aria-hidden="true" /> : loadError ? '— chương trình học' : `${programCount} chương trình học`}</small>
                                 </span>
                             </button>
                         )
@@ -127,11 +134,12 @@ export function ProgramDirectory({
                     {selectedIndustry && !viewingPrograms && selectedIndustry.sublevels.map((sublevel) => {
                         const programCount = getProgramsForSublevel(programs, selectedIndustry.level, sublevel).length
                         return <button type="button" className="program-sublevel-row" style={{ '--stage-color': stageAccent } as CSSProperties} key={sublevel} onClick={() => onSelectSublevel(sublevel)}>
-                            <span><strong>{sublevel}</strong><small>{programCount} chương trình học</small></span>
+                            <span><strong>{sublevel}</strong><small>{loading ? <span className="session-skeleton program-count-skeleton" aria-hidden="true" /> : loadError ? '— chương trình học' : `${programCount} chương trình học`}</small></span>
                         </button>
                     })}
+                    {selectedIndustry && viewingPrograms && loading && Array.from({ length: 4 }, (_, index) => <div className="program-row program-row-skeleton" aria-hidden="true" key={`loading-${index}`}><span className="session-skeleton session-skeleton-icon" /><span className="program-row-skeleton-copy"><span className="session-skeleton session-skeleton-line" /><span className="session-skeleton session-skeleton-line short" /></span></div>)}
                     {selectedIndustry && viewingPrograms && visiblePrograms.map(renderProgram)}
-                    {selectedIndustry && viewingPrograms && !visiblePrograms.length && <p className="program-empty">Chưa có chương trình học cho {selectedSublevel ?? selectedIndustry.level}.</p>}
+                    {selectedIndustry && viewingPrograms && !loading && !loadError && !visiblePrograms.length && <p className="program-empty">Chưa có chương trình học cho {selectedSublevel ?? selectedIndustry.level}.</p>}
                 </div>
             </div>
         </section>

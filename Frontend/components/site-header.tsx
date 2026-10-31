@@ -13,6 +13,7 @@ type SiteHeaderProps = {
     onLogout: () => void
     onToggleMenu: () => void
     currentUser: AppRole
+    sessionPending?: boolean
 }
 
 export function SiteHeader({
@@ -22,6 +23,7 @@ export function SiteHeader({
     onLogout,
     onToggleMenu,
     currentUser,
+    sessionPending = false,
 }: SiteHeaderProps) {
     const navigation = [
         { label: 'Tổng quan', path: '/dashboard' },
@@ -68,7 +70,9 @@ export function SiteHeader({
                 </nav>
                 <div className="header-actions">
                     <ThemeToggle />
-                    <AccountMenu onLogout={onLogout} />
+                    {sessionPending
+                        ? <span className="session-pending-status" role="status">Đang kiểm tra phiên…</span>
+                        : <AccountMenu onLogout={onLogout} />}
                     <button
                         className="menu-button"
                         onClick={onToggleMenu}

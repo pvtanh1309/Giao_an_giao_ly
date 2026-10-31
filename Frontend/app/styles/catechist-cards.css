@@ -49,6 +49,36 @@
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
 }
 
+.catechist-count-skeleton {
+  display: inline-block;
+  width: 76px;
+  height: 12px;
+  border-radius: 5px;
+  vertical-align: middle;
+}
+
+.catechist-card-skeleton {
+  min-height: 104px;
+  cursor: wait;
+}
+
+.session-skeleton-avatar {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+}
+
+.catechist-card-skeleton-copy {
+  display: grid;
+  flex: 1;
+  gap: 10px;
+}
+
+.catechist-card-skeleton-copy .session-skeleton-line { width: min(72%, 240px); }
+.catechist-card-skeleton-copy .session-skeleton-line.short { width: min(46%, 150px); }
+.session-catechist-skeleton-grid { min-height: 245px; }
+
 .catechist-card:hover {
   transform: translateY(-3px);
   border-color: rgba(117, 246, 209, .72);

@@ -55,6 +55,7 @@
 .account-summary article:nth-child(3) { color: var(--gold); }
 .account-summary span, .account-profile { display: grid; gap: 3px; }
 .account-summary strong { font: 700 22px/1 var(--font-serif), Georgia, serif; color: var(--ink); }
+.account-summary-skeleton { width: 32px; height: 20px; border-radius: 4px; }
 .account-summary small, .account-profile small { color: var(--muted); font: 11px Arial, sans-serif; }
 
 .account-tools {
@@ -79,6 +80,12 @@
 .accounts-table { width: 100%; min-width: 860px; border-collapse: collapse; text-align: left; }
 .accounts-table th { padding: 14px 16px; background: #faf7f1; color: var(--muted); font: 700 10px Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .accounts-table td { padding: 15px 16px; border-top: 1px solid var(--line); color: #42546a; font-size: 13px; vertical-align: middle; }
+.account-row-skeleton td .session-skeleton { width: min(100%, 130px); height: 13px; border-radius: 5px; }
+.account-row-skeleton td:nth-child(1) .session-skeleton { width: min(100%, 190px); }
+.account-row-skeleton td:nth-child(3) .session-skeleton { width: min(100%, 160px); }
+.account-row-skeleton td:nth-child(6) .session-skeleton { width: 58px; }
+.session-account-skeleton { display: grid; gap: 13px; margin-top: 32px; padding: 18px 16px; border: 1px solid var(--line); background: var(--paper); }
+.session-account-skeleton .session-skeleton { height: 38px; border-radius: 5px; }
 .account-email { display: inline-flex; align-items: center; gap: 9px; color: var(--blue-deep); font-weight: 700; }
 .role-badge, .account-status { display: inline-flex; align-items: center; width: fit-content; padding: 5px 8px; border-radius: 99px; font: 700 10px Arial, sans-serif; }
 .role-badge.admin { background: #e7eff5; color: var(--blue-deep); }

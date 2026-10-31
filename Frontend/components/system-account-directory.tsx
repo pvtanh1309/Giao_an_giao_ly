@@ -5,13 +5,13 @@ import { useMemo, useRef, useState } from 'react'
 import type { AccountStatus, AppRole, Catechist, SystemAccount } from '../lib/content-data'
 import type { AccountForm } from '../lib/api/account-management'
 import { PasswordInput } from './password-input'
-import { LoadingIndicator } from './loading-indicator'
 
 type SystemAccountDirectoryProps = {
   accounts: SystemAccount[]
   catechists: Catechist[]
   loading?: boolean
   loadError?: string
+  onRetry?: () => void
   onCreate: (account: AccountForm) => Promise<void>
   onResetPassword: (account: SystemAccount, password: string) => Promise<void>
   onUpdateStatus: (account: SystemAccount, status: AccountStatus) => Promise<void>
@@ -32,7 +32,7 @@ const roleLabel: Record<AppRole, string> = {
   reader: 'Tài khoản giáo lý viên',
 }
 
-export function SystemAccountDirectory({ accounts, catechists, loading = false, loadError = '', onCreate, onResetPassword, onUpdateStatus, onUpdateLink }: SystemAccountDirectoryProps) {
+export function SystemAccountDirectory({ accounts, catechists, loading = false, loadError = '', onRetry, onCreate, onResetPassword, onUpdateStatus, onUpdateLink }: SystemAccountDirectoryProps) {
   const [submitting, setSubmitting] = useState(false)
   const pending = useRef(false)
   const [actionError, setActionError] = useState('')
@@ -115,7 +115,7 @@ export function SystemAccountDirectory({ accounts, catechists, loading = false, 
   const linkedCatechist = (account: SystemAccount) => catechists.find((item) => item.id === account.linkedCatechistId)
 
   return (
-    <section className="accounts-section">
+    <section className="accounts-section" aria-busy={loading}>
       <div className="accounts-heading">
         <div>
           <span className="section-kicker">Quản trị hệ thống</span>
@@ -126,24 +126,29 @@ export function SystemAccountDirectory({ accounts, catechists, loading = false, 
       </div>
 
       <div className="account-summary" aria-label="Tóm tắt tài khoản">
-        <article><ShieldCheck size={19} /><span><strong>{accounts.filter((account) => account.role === 'admin').length}</strong><small>Admin</small></span></article>
-        <article><UserRoundCheck size={19} /><span><strong>{accounts.filter((account) => account.role === 'editor').length}</strong><small>Editor</small></span></article>
-        <article><UsersRound size={19} /><span><strong>{accounts.filter((account) => account.role === 'reader').length}</strong><small>Reader</small></span></article>
+        <article><ShieldCheck size={19} /><span><strong>{loading ? <span className="session-skeleton account-summary-skeleton" aria-hidden="true" /> : loadError ? '—' : accounts.filter((account) => account.role === 'admin').length}</strong><small>Admin</small></span></article>
+        <article><UserRoundCheck size={19} /><span><strong>{loading ? <span className="session-skeleton account-summary-skeleton" aria-hidden="true" /> : loadError ? '—' : accounts.filter((account) => account.role === 'editor').length}</strong><small>Editor</small></span></article>
+        <article><UsersRound size={19} /><span><strong>{loading ? <span className="session-skeleton account-summary-skeleton" aria-hidden="true" /> : loadError ? '—' : accounts.filter((account) => account.role === 'reader').length}</strong><small>Reader</small></span></article>
       </div>
 
       <div className="account-tools">
-        <label className="directory-search"><Search size={17} aria-hidden="true" /><input type="search" aria-label="Tìm tài khoản" placeholder="Tìm theo email hoặc vai trò" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
-        <select aria-label="Lọc theo vai trò" value={roleFilter} onChange={(event) => setRoleFilter(event.target.value as 'all' | AppRole)}><option value="all">Tất cả vai trò</option><option value="admin">Admin</option><option value="editor">Editor</option><option value="reader">Reader</option></select>
-        <select aria-label="Lọc theo trạng thái" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as 'all' | AccountStatus)}><option value="all">Tất cả trạng thái</option><option>Hoạt động</option><option>Vô hiệu hóa</option><option>Đã lưu trữ</option></select>
+        <label className="directory-search"><Search size={17} aria-hidden="true" /><input type="search" aria-label="Tìm tài khoản" placeholder="Tìm theo email hoặc vai trò" value={query} disabled={loading} onChange={(event) => setQuery(event.target.value)} /></label>
+        <select aria-label="Lọc theo vai trò" value={roleFilter} disabled={loading} onChange={(event) => setRoleFilter(event.target.value as 'all' | AppRole)}><option value="all">Tất cả vai trò</option><option value="admin">Admin</option><option value="editor">Editor</option><option value="reader">Reader</option></select>
+        <select aria-label="Lọc theo trạng thái" value={statusFilter} disabled={loading} onChange={(event) => setStatusFilter(event.target.value as 'all' | AccountStatus)}><option value="all">Tất cả trạng thái</option><option>Hoạt động</option><option>Vô hiệu hóa</option><option>Đã lưu trữ</option></select>
       </div>
 
-      {loading && <LoadingIndicator compact message="Đang tải danh sách tài khoản…" />}
-      {(loadError || actionError) && <p role="alert" className="account-form-error">{loadError || actionError}</p>}
+      {actionError && <p role="alert" className="account-form-error">{actionError}</p>}
+      {loadError && <div className="directory-load-error" role="alert"><p>{loadError}</p>{onRetry && <button type="button" className="outline-button" onClick={onRetry}>Thử tải lại</button>}</div>}
       <fieldset disabled={submitting || loading || Boolean(loadError)} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
       <div className="accounts-table-wrap">
-        <table className="accounts-table">
+        <table className="accounts-table" aria-busy={loading}>
           <thead><tr><th>Tài khoản</th><th>Vai trò</th><th>Hồ sơ giáo lý viên</th><th>Trạng thái</th><th>Ngày cấp</th><th><span className="sr-only">Thao tác</span></th></tr></thead>
-          <tbody>{filteredAccounts.map((account) => {
+          <tbody>{loading ? <>
+            <tr className="account-row-skeleton" aria-hidden="true"><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td></tr>
+            <tr className="account-row-skeleton" aria-hidden="true"><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td></tr>
+            <tr className="account-row-skeleton" aria-hidden="true"><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td></tr>
+            <tr className="account-row-skeleton" aria-hidden="true"><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td><td><span className="session-skeleton" /></td></tr>
+          </> : filteredAccounts.map((account) => {
             const profile = linkedCatechist(account)
             const isOnlyAdmin = account.role === 'admin'
             return <tr key={account.id}>
@@ -161,6 +166,7 @@ export function SystemAccountDirectory({ accounts, catechists, loading = false, 
             </tr>
           })}</tbody>
         </table>
+        {loading && <span className="sr-only" role="status">Đang tải danh sách tài khoản…</span>}
         {!loading && !loadError && !filteredAccounts.length && <p className="account-empty">Không tìm thấy tài khoản phù hợp.</p>}
       </div>
 

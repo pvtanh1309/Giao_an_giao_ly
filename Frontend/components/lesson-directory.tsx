@@ -8,6 +8,9 @@ type LessonDirectoryProps = {
     canManage: boolean
     industries: Industry[]
     lessons: Lesson[]
+    loading?: boolean
+    loadError?: string
+    onRetry?: () => void
     query: string
     onQueryChange: (query: string) => void
     onAdd: () => void
@@ -20,6 +23,9 @@ export function LessonDirectory({
     canManage,
     industries,
     lessons,
+    loading = false,
+    loadError = '',
+    onRetry,
     query,
     onQueryChange,
     onAdd,
@@ -49,11 +55,12 @@ export function LessonDirectory({
                             aria-label="Tìm giáo án"
                             placeholder="Tìm giáo án theo tên hoặc nội dung"
                             value={query}
+                            disabled={loading}
                             onChange={(event) => onQueryChange(event.target.value)}
                         />
                     </label>
                     {canManage && (
-                        <button className="outline-button" onClick={onAdd}>
+                        <button className="outline-button" disabled={loading} onClick={onAdd}>
                             <Plus size={16} /> Thêm giáo án
                         </button>
                     )}
@@ -61,7 +68,9 @@ export function LessonDirectory({
             </div>
             {query.trim() ? (
                 <div className="lesson-search-results">
-                    {matchingLessons.map((lesson) => (
+                    {loading && Array.from({ length: 4 }, (_, index) => <div className="lesson-search-result lesson-search-result-skeleton" aria-hidden="true" key={`loading-${index}`} />)}
+                    {loadError && <div className="directory-load-error" role="alert"><p>{loadError}</p><button type="button" className="outline-button" onClick={onRetry}>Thử tải lại</button></div>}
+                    {!loading && !loadError && matchingLessons.map((lesson) => (
                         <button
                             className="lesson-search-result"
                             key={lesson.id}
@@ -76,13 +85,16 @@ export function LessonDirectory({
                             </span>
                         </button>
                     ))}
-                    {!matchingLessons.length && <p>Không tìm thấy giáo án phù hợp.</p>}
+                    {!loading && !loadError && !matchingLessons.length && <p>Không tìm thấy giáo án phù hợp.</p>}
                 </div>
             ) : (
-                <div className="lesson-grid">
+                <>
+                {loadError && <div className="directory-load-error" role="alert"><p>{loadError}</p><button type="button" className="outline-button" onClick={onRetry}>Thử tải lại</button></div>}
+                <div className="lesson-grid" aria-busy={loading}>
                     {industries.map((industry) => (
                         <button
                             className="lesson-card"
+                            disabled={loading || Boolean(loadError)}
                             style={{ backgroundColor: industryColorHex[industry.color], color: industry.color === 'pink' || industry.color === 'green-light' ? '#29351d' : 'white' }}
                             key={industry.level}
                             onClick={() => onOpenIndustry(industry)}
@@ -94,7 +106,7 @@ export function LessonDirectory({
                             <h3>{industry.level}</h3>
                             <p>{industry.subtitle}</p>
                             <div className="card-foot">
-                                <span>{lessons.filter((lesson) => lesson.level === industry.level).length} giáo án</span>
+                                <span>{loading ? <span className="session-skeleton lesson-count-skeleton" aria-hidden="true" /> : loadError ? '— giáo án' : `${lessons.filter((lesson) => lesson.level === industry.level).length} giáo án`}</span>
                                 <span>Khám phá</span>
                             </div>
                         </button>
@@ -112,6 +124,7 @@ export function LessonDirectory({
                         </div>
                     </button>
                 </div>
+                </>
             )}
         </section>
     )

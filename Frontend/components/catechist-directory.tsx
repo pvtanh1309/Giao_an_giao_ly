@@ -3,7 +3,6 @@
 import { Pencil, Plus, Search, Trash2, Users } from 'lucide-react'
 import { useState } from 'react'
 import type { Catechist } from '../lib/content-data'
-import { LoadingIndicator } from './loading-indicator'
 
 type CatechistDirectoryProps = {
     canManage: boolean
@@ -50,6 +49,7 @@ export function CatechistDirectory({
                             aria-label="Tìm giáo lý viên"
                             placeholder="Tìm theo tên, email, lớp hoặc trạng thái"
                             value={query}
+                            disabled={loading}
                             onChange={(event) => onQueryChange(event.target.value)}
                         />
                     </label>
@@ -58,14 +58,19 @@ export function CatechistDirectory({
                             <Plus size={16} /> Thêm giáo lý viên
                         </button>
                     ) : (
-                        <span className="catechist-count">
-                            <Users size={17} /> {catechists.length} giáo lý viên
+                        <span className="catechist-count" aria-busy={loading}>
+                            <Users size={17} /> {loading ? <span className="session-skeleton catechist-count-skeleton" aria-hidden="true" /> : `${catechists.length} giáo lý viên`}
                         </span>
                     )}
                 </div>
             </div>
-            {loading && <LoadingIndicator compact message="Đang tải danh sách giáo lý viên…" />}
-            {loadError && <div role="alert"><p>{loadError}</p><button type="button" className="outline-button" onClick={onRetry}>Thử tải lại</button></div>}
+            {loading && <div className="catechist-grid catechist-grid-skeleton" aria-hidden="true">
+                {Array.from({ length: 4 }, (_, index) => <article className="catechist-card catechist-card-skeleton" key={index}>
+                    <span className="session-skeleton session-skeleton-avatar" />
+                    <span className="catechist-card-skeleton-copy"><span className="session-skeleton session-skeleton-line" /><span className="session-skeleton session-skeleton-line short" /></span>
+                </article>)}
+            </div>}
+            {loadError && <div role="alert"><p>{loadError}</p>{onRetry && <button type="button" className="outline-button" onClick={onRetry}>Thử tải lại</button>}</div>}
             {!loading && !loadError && <div className="catechist-grid">
                 {catechists.map((catechist) => (
                     <article className="catechist-card" key={catechist.id ?? catechist.email}>
