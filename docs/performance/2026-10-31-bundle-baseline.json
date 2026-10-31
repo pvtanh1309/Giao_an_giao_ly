@@ -1,0 +1,1499 @@
+{
+  "measuredAt": "2026-10-31T10:45:29.252Z",
+  "commit": "aedc72295da8e01ffc8b8ff21414fdd469e12c88",
+  "build": "Next.js 16.3.8, production, Webpack, output export, existing .env.local",
+  "compression": "Per-file gzip level 9 and Brotli quality 11, summed; estimates without HTTP headers, no browser timing or API latency measurement",
+  "moduleSizes": "Webpack JavaScript leaf module sizes before final minification, excluding orphan/runtime-only groups; attribution only, not transferred bytes",
+  "routes": [
+    {
+      "route": "/",
+      "files": [
+        {
+          "file": "_next/static/chunks/21ed800a-4d44b65c146974fb.js",
+          "raw": 201051,
+          "gzip": 63155,
+          "brotli": 54095
+        },
+        {
+          "file": "_next/static/chunks/210-935e1c47e84769ad.js",
+          "raw": 241456,
+          "gzip": 66745,
+          "brotli": 53763
+        },
+        {
+          "file": "_next/static/chunks/main-app-e318e17ef8479079.js",
+          "raw": 513,
+          "gzip": 222,
+          "brotli": 201
+        },
+        {
+          "file": "_next/static/chunks/317-a0c373a856e29324.js",
+          "raw": 84901,
+          "gzip": 24360,
+          "brotli": 21412
+        },
+        {
+          "file": "_next/static/chunks/675-ef774a3c8e7079e8.js",
+          "raw": 14412,
+          "gzip": 5157,
+          "brotli": 4591
+        },
+        {
+          "file": "_next/static/chunks/app/layout-7616b875c5b5210f.js",
+          "raw": 3953,
+          "gzip": 1713,
+          "brotli": 1496
+        },
+        {
+          "file": "_next/static/chunks/35ae2ebf-b9cfd627b1e2ae00.js",
+          "raw": 89613,
+          "gzip": 28133,
+          "brotli": 24804
+        },
+        {
+          "file": "_next/static/chunks/011222a6-3973941e801013ce.js",
+          "raw": 97230,
+          "gzip": 30868,
+          "brotli": 27426
+        },
+        {
+          "file": "_next/static/chunks/837-75789161a1c3417a.js",
+          "raw": 296170,
+          "gzip": 96021,
+          "brotli": 80494
+        },
+        {
+          "file": "_next/static/chunks/287-62e2ad22a585dd5a.js",
+          "raw": 159158,
+          "gzip": 40531,
+          "brotli": 33820
+        },
+        {
+          "file": "_next/static/chunks/app/page-52d4877dca26c4fc.js",
+          "raw": 198,
+          "gzip": 173,
+          "brotli": 157
+        },
+        {
+          "file": "_next/static/chunks/webpack-e1908640f714cae6.js",
+          "raw": 3415,
+          "gzip": 1750,
+          "brotli": 1550
+        }
+      ],
+      "total": {
+        "raw": 1192070,
+        "gzip": 358828,
+        "brotli": 303809
+      },
+      "legacy": [
+        {
+          "file": "_next/static/chunks/polyfills-42372ed130431b0a.js",
+          "raw": 112594,
+          "gzip": 39520,
+          "brotli": 35158
+        }
+      ]
+    },
+    {
+      "route": "/dashboard",
+      "files": [
+        {
+          "file": "_next/static/chunks/21ed800a-4d44b65c146974fb.js",
+          "raw": 201051,
+          "gzip": 63155,
+          "brotli": 54095
+        },
+        {
+          "file": "_next/static/chunks/210-935e1c47e84769ad.js",
+          "raw": 241456,
+          "gzip": 66745,
+          "brotli": 53763
+        },
+        {
+          "file": "_next/static/chunks/main-app-e318e17ef8479079.js",
+          "raw": 513,
+          "gzip": 222,
+          "brotli": 201
+        },
+        {
+          "file": "_next/static/chunks/317-a0c373a856e29324.js",
+          "raw": 84901,
+          "gzip": 24360,
+          "brotli": 21412
+        },
+        {
+          "file": "_next/static/chunks/675-ef774a3c8e7079e8.js",
+          "raw": 14412,
+          "gzip": 5157,
+          "brotli": 4591
+        },
+        {
+          "file": "_next/static/chunks/app/layout-7616b875c5b5210f.js",
+          "raw": 3953,
+          "gzip": 1713,
+          "brotli": 1496
+        },
+        {
+          "file": "_next/static/chunks/35ae2ebf-b9cfd627b1e2ae00.js",
+          "raw": 89613,
+          "gzip": 28133,
+          "brotli": 24804
+        },
+        {
+          "file": "_next/static/chunks/011222a6-3973941e801013ce.js",
+          "raw": 97230,
+          "gzip": 30868,
+          "brotli": 27426
+        },
+        {
+          "file": "_next/static/chunks/837-75789161a1c3417a.js",
+          "raw": 296170,
+          "gzip": 96021,
+          "brotli": 80494
+        },
+        {
+          "file": "_next/static/chunks/287-62e2ad22a585dd5a.js",
+          "raw": 159158,
+          "gzip": 40531,
+          "brotli": 33820
+        },
+        {
+          "file": "_next/static/chunks/app/dashboard/page-df613108c93fd89c.js",
+          "raw": 214,
+          "gzip": 182,
+          "brotli": 167
+        },
+        {
+          "file": "_next/static/chunks/webpack-e1908640f714cae6.js",
+          "raw": 3415,
+          "gzip": 1750,
+          "brotli": 1550
+        }
+      ],
+      "total": {
+        "raw": 1192086,
+        "gzip": 358837,
+        "brotli": 303819
+      },
+      "legacy": [
+        {
+          "file": "_next/static/chunks/polyfills-42372ed130431b0a.js",
+          "raw": 112594,
+          "gzip": 39520,
+          "brotli": 35158
+        }
+      ]
+    },
+    {
+      "route": "/lesson-plans",
+      "files": [
+        {
+          "file": "_next/static/chunks/21ed800a-4d44b65c146974fb.js",
+          "raw": 201051,
+          "gzip": 63155,
+          "brotli": 54095
+        },
+        {
+          "file": "_next/static/chunks/210-935e1c47e84769ad.js",
+          "raw": 241456,
+          "gzip": 66745,
+          "brotli": 53763
+        },
+        {
+          "file": "_next/static/chunks/main-app-e318e17ef8479079.js",
+          "raw": 513,
+          "gzip": 222,
+          "brotli": 201
+        },
+        {
+          "file": "_next/static/chunks/317-a0c373a856e29324.js",
+          "raw": 84901,
+          "gzip": 24360,
+          "brotli": 21412
+        },
+        {
+          "file": "_next/static/chunks/675-ef774a3c8e7079e8.js",
+          "raw": 14412,
+          "gzip": 5157,
+          "brotli": 4591
+        },
+        {
+          "file": "_next/static/chunks/app/layout-7616b875c5b5210f.js",
+          "raw": 3953,
+          "gzip": 1713,
+          "brotli": 1496
+        },
+        {
+          "file": "_next/static/chunks/35ae2ebf-b9cfd627b1e2ae00.js",
+          "raw": 89613,
+          "gzip": 28133,
+          "brotli": 24804
+        },
+        {
+          "file": "_next/static/chunks/011222a6-3973941e801013ce.js",
+          "raw": 97230,
+          "gzip": 30868,
+          "brotli": 27426
+        },
+        {
+          "file": "_next/static/chunks/837-75789161a1c3417a.js",
+          "raw": 296170,
+          "gzip": 96021,
+          "brotli": 80494
+        },
+        {
+          "file": "_next/static/chunks/287-62e2ad22a585dd5a.js",
+          "raw": 159158,
+          "gzip": 40531,
+          "brotli": 33820
+        },
+        {
+          "file": "_next/static/chunks/app/lesson-plans/page-df613108c93fd89c.js",
+          "raw": 214,
+          "gzip": 182,
+          "brotli": 167
+        },
+        {
+          "file": "_next/static/chunks/webpack-e1908640f714cae6.js",
+          "raw": 3415,
+          "gzip": 1750,
+          "brotli": 1550
+        }
+      ],
+      "total": {
+        "raw": 1192086,
+        "gzip": 358837,
+        "brotli": 303819
+      },
+      "legacy": [
+        {
+          "file": "_next/static/chunks/polyfills-42372ed130431b0a.js",
+          "raw": 112594,
+          "gzip": 39520,
+          "brotli": 35158
+        }
+      ]
+    },
+    {
+      "route": "/programs",
+      "files": [
+        {
+          "file": "_next/static/chunks/21ed800a-4d44b65c146974fb.js",
+          "raw": 201051,
+          "gzip": 63155,
+          "brotli": 54095
+        },
+        {
+          "file": "_next/static/chunks/210-935e1c47e84769ad.js",
+          "raw": 241456,
+          "gzip": 66745,
+          "brotli": 53763
+        },
+        {
+          "file": "_next/static/chunks/main-app-e318e17ef8479079.js",
+          "raw": 513,
+          "gzip": 222,
+          "brotli": 201
+        },
+        {
+          "file": "_next/static/chunks/317-a0c373a856e29324.js",
+          "raw": 84901,
+          "gzip": 24360,
+          "brotli": 21412
+        },
+        {
+          "file": "_next/static/chunks/675-ef774a3c8e7079e8.js",
+          "raw": 14412,
+          "gzip": 5157,
+          "brotli": 4591
+        },
+        {
+          "file": "_next/static/chunks/app/layout-7616b875c5b5210f.js",
+          "raw": 3953,
+          "gzip": 1713,
+          "brotli": 1496
+        },
+        {
+          "file": "_next/static/chunks/35ae2ebf-b9cfd627b1e2ae00.js",
+          "raw": 89613,
+          "gzip": 28133,
+          "brotli": 24804
+        },
+        {
+          "file": "_next/static/chunks/011222a6-3973941e801013ce.js",
+          "raw": 97230,
+          "gzip": 30868,
+          "brotli": 27426
+        },
+        {
+          "file": "_next/static/chunks/837-75789161a1c3417a.js",
+          "raw": 296170,
+          "gzip": 96021,
+          "brotli": 80494
+        },
+        {
+          "file": "_next/static/chunks/287-62e2ad22a585dd5a.js",
+          "raw": 159158,
+          "gzip": 40531,
+          "brotli": 33820
+        },
+        {
+          "file": "_next/static/chunks/app/programs/page-df613108c93fd89c.js",
+          "raw": 214,
+          "gzip": 182,
+          "brotli": 167
+        },
+        {
+          "file": "_next/static/chunks/webpack-e1908640f714cae6.js",
+          "raw": 3415,
+          "gzip": 1750,
+          "brotli": 1550
+        }
+      ],
+      "total": {
+        "raw": 1192086,
+        "gzip": 358837,
+        "brotli": 303819
+      },
+      "legacy": [
+        {
+          "file": "_next/static/chunks/polyfills-42372ed130431b0a.js",
+          "raw": 112594,
+          "gzip": 39520,
+          "brotli": 35158
+        }
+      ]
+    },
+    {
+      "route": "/catechists",
+      "files": [
+        {
+          "file": "_next/static/chunks/21ed800a-4d44b65c146974fb.js",
+          "raw": 201051,
+          "gzip": 63155,
+          "brotli": 54095
+        },
+        {
+          "file": "_next/static/chunks/210-935e1c47e84769ad.js",
+          "raw": 241456,
+          "gzip": 66745,
+          "brotli": 53763
+        },
+        {
+          "file": "_next/static/chunks/main-app-e318e17ef8479079.js",
+          "raw": 513,
+          "gzip": 222,
+          "brotli": 201
+        },
+        {
+          "file": "_next/static/chunks/317-a0c373a856e29324.js",
+          "raw": 84901,
+          "gzip": 24360,
+          "brotli": 21412
+        },
+        {
+          "file": "_next/static/chunks/675-ef774a3c8e7079e8.js",
+          "raw": 14412,
+          "gzip": 5157,
+          "brotli": 4591
+        },
+        {
+          "file": "_next/static/chunks/app/layout-7616b875c5b5210f.js",
+          "raw": 3953,
+          "gzip": 1713,
+          "brotli": 1496
+        },
+        {
+          "file": "_next/static/chunks/35ae2ebf-b9cfd627b1e2ae00.js",
+          "raw": 89613,
+          "gzip": 28133,
+          "brotli": 24804
+        },
+        {
+          "file": "_next/static/chunks/011222a6-3973941e801013ce.js",
+          "raw": 97230,
+          "gzip": 30868,
+          "brotli": 27426
+        },
+        {
+          "file": "_next/static/chunks/837-75789161a1c3417a.js",
+          "raw": 296170,
+          "gzip": 96021,
+          "brotli": 80494
+        },
+        {
+          "file": "_next/static/chunks/287-62e2ad22a585dd5a.js",
+          "raw": 159158,
+          "gzip": 40531,
+          "brotli": 33820
+        },
+        {
+          "file": "_next/static/chunks/app/catechists/page-df613108c93fd89c.js",
+          "raw": 214,
+          "gzip": 182,
+          "brotli": 167
+        },
+        {
+          "file": "_next/static/chunks/webpack-e1908640f714cae6.js",
+          "raw": 3415,
+          "gzip": 1750,
+          "brotli": 1550
+        }
+      ],
+      "total": {
+        "raw": 1192086,
+        "gzip": 358837,
+        "brotli": 303819
+      },
+      "legacy": [
+        {
+          "file": "_next/static/chunks/polyfills-42372ed130431b0a.js",
+          "raw": 112594,
+          "gzip": 39520,
+          "brotli": 35158
+        }
+      ]
+    },
+    {
+      "route": "/accounts",
+      "files": [
+        {
+          "file": "_next/static/chunks/21ed800a-4d44b65c146974fb.js",
+          "raw": 201051,
+          "gzip": 63155,
+          "brotli": 54095
+        },
+        {
+          "file": "_next/static/chunks/210-935e1c47e84769ad.js",
+          "raw": 241456,
+          "gzip": 66745,
+          "brotli": 53763
+        },
+        {
+          "file": "_next/static/chunks/main-app-e318e17ef8479079.js",
+          "raw": 513,
+          "gzip": 222,
+          "brotli": 201
+        },
+        {
+          "file": "_next/static/chunks/317-a0c373a856e29324.js",
+          "raw": 84901,
+          "gzip": 24360,
+          "brotli": 21412
+        },
+        {
+          "file": "_next/static/chunks/675-ef774a3c8e7079e8.js",
+          "raw": 14412,
+          "gzip": 5157,
+          "brotli": 4591
+        },
+        {
+          "file": "_next/static/chunks/app/layout-7616b875c5b5210f.js",
+          "raw": 3953,
+          "gzip": 1713,
+          "brotli": 1496
+        },
+        {
+          "file": "_next/static/chunks/35ae2ebf-b9cfd627b1e2ae00.js",
+          "raw": 89613,
+          "gzip": 28133,
+          "brotli": 24804
+        },
+        {
+          "file": "_next/static/chunks/011222a6-3973941e801013ce.js",
+          "raw": 97230,
+          "gzip": 30868,
+          "brotli": 27426
+        },
+        {
+          "file": "_next/static/chunks/837-75789161a1c3417a.js",
+          "raw": 296170,
+          "gzip": 96021,
+          "brotli": 80494
+        },
+        {
+          "file": "_next/static/chunks/287-62e2ad22a585dd5a.js",
+          "raw": 159158,
+          "gzip": 40531,
+          "brotli": 33820
+        },
+        {
+          "file": "_next/static/chunks/app/accounts/page-df613108c93fd89c.js",
+          "raw": 214,
+          "gzip": 182,
+          "brotli": 167
+        },
+        {
+          "file": "_next/static/chunks/webpack-e1908640f714cae6.js",
+          "raw": 3415,
+          "gzip": 1750,
+          "brotli": 1550
+        }
+      ],
+      "total": {
+        "raw": 1192086,
+        "gzip": 358837,
+        "brotli": 303819
+      },
+      "legacy": [
+        {
+          "file": "_next/static/chunks/polyfills-42372ed130431b0a.js",
+          "raw": 112594,
+          "gzip": 39520,
+          "brotli": 35158
+        }
+      ]
+    }
+  ],
+  "chunks": [
+    {
+      "id": 837,
+      "file": "_next/static/chunks/837-75789161a1c3417a.js",
+      "raw": 296170,
+      "gzip": 96021,
+      "brotli": 80494,
+      "packages": [
+        {
+          "name": "prosemirror-model",
+          "size": 124855
+        },
+        {
+          "name": "prosemirror-tables",
+          "size": 92246
+        },
+        {
+          "name": "prosemirror-transform",
+          "size": 84671
+        },
+        {
+          "name": "next",
+          "size": 65136
+        },
+        {
+          "name": "linkifyjs",
+          "size": 63515
+        },
+        {
+          "name": "@tiptap/react",
+          "size": 55189
+        },
+        {
+          "name": "@tiptap/extension-list",
+          "size": 54020
+        },
+        {
+          "name": "lucide-react",
+          "size": 43521
+        },
+        {
+          "name": "prosemirror-state",
+          "size": 36285
+        },
+        {
+          "name": "prosemirror-commands",
+          "size": 34656
+        },
+        {
+          "name": "@tiptap/extension-table",
+          "size": 29375
+        },
+        {
+          "name": "fast-equals",
+          "size": 27208
+        },
+        {
+          "name": "@tiptap/extensions",
+          "size": 24462
+        },
+        {
+          "name": "@tiptap/extension-link",
+          "size": 22426
+        },
+        {
+          "name": "prosemirror-history",
+          "size": 18498
+        },
+        {
+          "name": "@tiptap/extension-text-style",
+          "size": 13318
+        },
+        {
+          "name": "prosemirror-schema-list",
+          "size": 13076
+        },
+        {
+          "name": "@tiptap/extension-code-block",
+          "size": 9657
+        },
+        {
+          "name": "prosemirror-gapcursor",
+          "size": 8620
+        },
+        {
+          "name": "rope-sequence",
+          "size": 7310
+        },
+        {
+          "name": "prosemirror-dropcursor",
+          "size": 6798
+        },
+        {
+          "name": "use-sync-external-store",
+          "size": 5148
+        },
+        {
+          "name": "prosemirror-keymap",
+          "size": 4909
+        },
+        {
+          "name": "orderedmap",
+          "size": 4433
+        },
+        {
+          "name": "@tiptap/extension-blockquote",
+          "size": 4351
+        },
+        {
+          "name": "@tiptap/starter-kit",
+          "size": 4074
+        },
+        {
+          "name": "@tiptap/extension-code",
+          "size": 3665
+        },
+        {
+          "name": "@tiptap/extension-bold",
+          "size": 2770
+        },
+        {
+          "name": "@tiptap/extension-paragraph",
+          "size": 2727
+        },
+        {
+          "name": "w3c-keyname",
+          "size": 2630
+        },
+        {
+          "name": "@tiptap/extension-italic",
+          "size": 2542
+        },
+        {
+          "name": "@tiptap/core",
+          "size": 2491
+        },
+        {
+          "name": "@tiptap/extension-horizontal-rule",
+          "size": 2388
+        },
+        {
+          "name": "@tiptap/extension-heading",
+          "size": 2353
+        },
+        {
+          "name": "@tiptap/extension-text-align",
+          "size": 2189
+        },
+        {
+          "name": "@tiptap/extension-strike",
+          "size": 1908
+        },
+        {
+          "name": "@tiptap/extension-hard-break",
+          "size": 1850
+        },
+        {
+          "name": "@tiptap/extension-underline",
+          "size": 1847
+        },
+        {
+          "name": "@tiptap/extension-document",
+          "size": 551
+        },
+        {
+          "name": "@tiptap/extension-text",
+          "size": 508
+        },
+        {
+          "name": "@tiptap/extension-font-family",
+          "size": 236
+        },
+        {
+          "name": "@tiptap/extension-color",
+          "size": 191
+        },
+        {
+          "name": "@tiptap/pm",
+          "size": 47
+        }
+      ]
+    },
+    {
+      "id": 210,
+      "file": "_next/static/chunks/210-935e1c47e84769ad.js",
+      "raw": 241456,
+      "gzip": 66745,
+      "brotli": 53763,
+      "packages": [
+        {
+          "name": "next",
+          "size": 1004385
+        },
+        {
+          "name": "@swc/helpers",
+          "size": 1431
+        }
+      ]
+    },
+    {
+      "id": 878,
+      "file": "_next/static/chunks/21ed800a-4d44b65c146974fb.js",
+      "raw": 201051,
+      "gzip": 63155,
+      "brotli": 54095,
+      "packages": [
+        {
+          "name": "next",
+          "size": 616647
+        }
+      ]
+    },
+    {
+      "id": 593,
+      "file": "_next/static/chunks/framework-b58295b7adc139ea.js",
+      "raw": 189662,
+      "gzip": 59751,
+      "brotli": 50970,
+      "packages": [
+        {
+          "name": "react-dom",
+          "size": 545403
+        },
+        {
+          "name": "react",
+          "size": 18589
+        },
+        {
+          "name": "scheduler",
+          "size": 10375
+        }
+      ]
+    },
+    {
+      "id": 287,
+      "file": "_next/static/chunks/287-62e2ad22a585dd5a.js",
+      "raw": 159158,
+      "gzip": 40531,
+      "brotli": 33820,
+      "packages": [
+        {
+          "name": "application",
+          "size": 454638
+        }
+      ]
+    },
+    {
+      "id": 792,
+      "file": "_next/static/chunks/main-ae9e91a7a0c9c8ae.js",
+      "raw": 133756,
+      "gzip": 38400,
+      "brotli": 32808,
+      "packages": [
+        {
+          "name": "next",
+          "size": 391056
+        },
+        {
+          "name": "@swc/helpers",
+          "size": 1431
+        },
+        {
+          "name": "application",
+          "size": 15
+        }
+      ]
+    },
+    {
+      "id": 790,
+      "file": "_next/static/chunks/011222a6-3973941e801013ce.js",
+      "raw": 97230,
+      "gzip": 30868,
+      "brotli": 27426,
+      "packages": [
+        {
+          "name": "prosemirror-view",
+          "size": 248851
+        }
+      ]
+    },
+    {
+      "id": 318,
+      "file": "_next/static/chunks/35ae2ebf-b9cfd627b1e2ae00.js",
+      "raw": 89613,
+      "gzip": 28133,
+      "brotli": 24804,
+      "packages": [
+        {
+          "name": "@tiptap/core",
+          "size": 290546
+        }
+      ]
+    },
+    {
+      "id": 317,
+      "file": "_next/static/chunks/317-a0c373a856e29324.js",
+      "raw": 84901,
+      "gzip": 24360,
+      "brotli": 21412,
+      "packages": [
+        {
+          "name": "amazon-cognito-identity-js",
+          "size": 140872
+        },
+        {
+          "name": "buffer",
+          "size": 48590
+        },
+        {
+          "name": "@aws-crypto/sha256-js",
+          "size": 32489
+        },
+        {
+          "name": "tslib",
+          "size": 10274
+        },
+        {
+          "name": "@aws-crypto/util",
+          "size": 9863
+        },
+        {
+          "name": "base64-js",
+          "size": 3932
+        },
+        {
+          "name": "js-cookie",
+          "size": 3409
+        },
+        {
+          "name": "@aws-sdk/util-utf8-browser",
+          "size": 2483
+        },
+        {
+          "name": "ieee754",
+          "size": 2154
+        },
+        {
+          "name": "next",
+          "size": 181
+        },
+        {
+          "name": "isarray",
+          "size": 132
+        }
+      ]
+    },
+    {
+      "id": 675,
+      "file": "_next/static/chunks/675-ef774a3c8e7079e8.js",
+      "raw": 14412,
+      "gzip": 5157,
+      "brotli": 4591,
+      "packages": [
+        {
+          "name": "application",
+          "size": 34035
+        }
+      ]
+    },
+    {
+      "id": 619,
+      "file": "_next/static/chunks/619.2278068e13f1ebd1.js",
+      "raw": 4753,
+      "gzip": 2004,
+      "brotli": 1705,
+      "packages": [
+        {
+          "name": "next",
+          "size": 14951
+        }
+      ]
+    },
+    {
+      "id": 177,
+      "file": "_next/static/chunks/app/layout-7616b875c5b5210f.js",
+      "raw": 3953,
+      "gzip": 1713,
+      "brotli": 1496,
+      "packages": [
+        {
+          "name": "@vercel/analytics",
+          "size": 6423
+        },
+        {
+          "name": "next",
+          "size": 2460
+        },
+        {
+          "name": "application",
+          "size": 637
+        }
+      ]
+    },
+    {
+      "id": 68,
+      "file": "_next/static/chunks/webpack-e1908640f714cae6.js",
+      "raw": 3415,
+      "gzip": 1750,
+      "brotli": 1550,
+      "packages": []
+    },
+    {
+      "id": 492,
+      "file": "_next/static/chunks/app/_not-found/page-de0b52f84b5fc914.js",
+      "raw": 2667,
+      "gzip": 993,
+      "brotli": 822,
+      "packages": [
+        {
+          "name": "next",
+          "size": 5799
+        }
+      ]
+    },
+    {
+      "id": 294,
+      "file": "_next/static/chunks/294.045cd28891f54e5c.js",
+      "raw": 753,
+      "gzip": 420,
+      "brotli": 362,
+      "packages": [
+        {
+          "name": "next",
+          "size": 1600
+        }
+      ]
+    },
+    {
+      "id": 358,
+      "file": "_next/static/chunks/main-app-e318e17ef8479079.js",
+      "raw": 513,
+      "gzip": 222,
+      "brotli": 201,
+      "packages": [
+        {
+          "name": "next",
+          "size": 1790
+        },
+        {
+          "name": "application",
+          "size": 15
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "file": "_next/static/chunks/app/dashboard/page-df613108c93fd89c.js",
+      "raw": 214,
+      "gzip": 182,
+      "brotli": 167,
+      "packages": [
+        {
+          "name": "next",
+          "size": 113
+        }
+      ]
+    },
+    {
+      "id": 339,
+      "file": "_next/static/chunks/app/accounts/page-df613108c93fd89c.js",
+      "raw": 214,
+      "gzip": 182,
+      "brotli": 167,
+      "packages": [
+        {
+          "name": "next",
+          "size": 113
+        }
+      ]
+    },
+    {
+      "id": 522,
+      "file": "_next/static/chunks/app/lesson-plans/page-df613108c93fd89c.js",
+      "raw": 214,
+      "gzip": 182,
+      "brotli": 167,
+      "packages": [
+        {
+          "name": "next",
+          "size": 113
+        }
+      ]
+    },
+    {
+      "id": 822,
+      "file": "_next/static/chunks/app/programs/page-df613108c93fd89c.js",
+      "raw": 214,
+      "gzip": 182,
+      "brotli": 167,
+      "packages": [
+        {
+          "name": "next",
+          "size": 113
+        }
+      ]
+    },
+    {
+      "id": 958,
+      "file": "_next/static/chunks/app/catechists/page-df613108c93fd89c.js",
+      "raw": 214,
+      "gzip": 182,
+      "brotli": 167,
+      "packages": [
+        {
+          "name": "next",
+          "size": 113
+        }
+      ]
+    },
+    {
+      "id": 974,
+      "file": "_next/static/chunks/app/page-52d4877dca26c4fc.js",
+      "raw": 198,
+      "gzip": 173,
+      "brotli": 157,
+      "packages": [
+        {
+          "name": "next",
+          "size": 84
+        }
+      ]
+    },
+    {
+      "id": 337,
+      "file": "_next/static/chunks/next/dist/client/components/builtin/global-error-0edaa7e4160633c2.js",
+      "raw": 179,
+      "gzip": 160,
+      "brotli": 155,
+      "packages": [
+        {
+          "name": "next",
+          "size": 224
+        }
+      ]
+    },
+    {
+      "id": 167,
+      "file": "_next/static/chunks/next/dist/client/components/builtin/unauthorized-b4dbc598907e75da.js",
+      "raw": 147,
+      "gzip": 136,
+      "brotli": 123,
+      "packages": [
+        {
+          "name": "next",
+          "size": 1
+        }
+      ]
+    },
+    {
+      "id": 819,
+      "file": "_next/static/chunks/next/dist/client/components/builtin/app-error-b4dbc598907e75da.js",
+      "raw": 147,
+      "gzip": 136,
+      "brotli": 123,
+      "packages": [
+        {
+          "name": "next",
+          "size": 1
+        }
+      ]
+    },
+    {
+      "id": 851,
+      "file": "_next/static/chunks/next/dist/client/components/builtin/not-found-b4dbc598907e75da.js",
+      "raw": 147,
+      "gzip": 136,
+      "brotli": 123,
+      "packages": [
+        {
+          "name": "next",
+          "size": 1
+        }
+      ]
+    },
+    {
+      "id": 896,
+      "file": "_next/static/chunks/app/_global-error/page-b4dbc598907e75da.js",
+      "raw": 147,
+      "gzip": 136,
+      "brotli": 123,
+      "packages": [
+        {
+          "name": "next",
+          "size": 1
+        }
+      ]
+    },
+    {
+      "id": 988,
+      "file": "_next/static/chunks/next/dist/client/components/builtin/forbidden-b4dbc598907e75da.js",
+      "raw": 147,
+      "gzip": 136,
+      "brotli": 123,
+      "packages": [
+        {
+          "name": "next",
+          "size": 1
+        }
+      ]
+    }
+  ],
+  "packages": [
+    {
+      "name": "next",
+      "size": 2104427
+    },
+    {
+      "name": "react-dom",
+      "size": 545403
+    },
+    {
+      "name": "application",
+      "size": 489325
+    },
+    {
+      "name": "@tiptap/core",
+      "size": 293037
+    },
+    {
+      "name": "prosemirror-view",
+      "size": 248851
+    },
+    {
+      "name": "amazon-cognito-identity-js",
+      "size": 140872
+    },
+    {
+      "name": "prosemirror-model",
+      "size": 124855
+    },
+    {
+      "name": "prosemirror-tables",
+      "size": 92246
+    },
+    {
+      "name": "prosemirror-transform",
+      "size": 84671
+    },
+    {
+      "name": "linkifyjs",
+      "size": 63515
+    },
+    {
+      "name": "@tiptap/react",
+      "size": 55189
+    },
+    {
+      "name": "@tiptap/extension-list",
+      "size": 54020
+    },
+    {
+      "name": "buffer",
+      "size": 48590
+    },
+    {
+      "name": "lucide-react",
+      "size": 43521
+    },
+    {
+      "name": "prosemirror-state",
+      "size": 36285
+    },
+    {
+      "name": "prosemirror-commands",
+      "size": 34656
+    },
+    {
+      "name": "@aws-crypto/sha256-js",
+      "size": 32489
+    },
+    {
+      "name": "@tiptap/extension-table",
+      "size": 29375
+    },
+    {
+      "name": "fast-equals",
+      "size": 27208
+    },
+    {
+      "name": "@tiptap/extensions",
+      "size": 24462
+    },
+    {
+      "name": "@tiptap/extension-link",
+      "size": 22426
+    },
+    {
+      "name": "react",
+      "size": 18589
+    },
+    {
+      "name": "prosemirror-history",
+      "size": 18498
+    },
+    {
+      "name": "@tiptap/extension-text-style",
+      "size": 13318
+    },
+    {
+      "name": "prosemirror-schema-list",
+      "size": 13076
+    },
+    {
+      "name": "scheduler",
+      "size": 10375
+    },
+    {
+      "name": "tslib",
+      "size": 10274
+    },
+    {
+      "name": "@aws-crypto/util",
+      "size": 9863
+    },
+    {
+      "name": "@tiptap/extension-code-block",
+      "size": 9657
+    },
+    {
+      "name": "prosemirror-gapcursor",
+      "size": 8620
+    },
+    {
+      "name": "rope-sequence",
+      "size": 7310
+    },
+    {
+      "name": "prosemirror-dropcursor",
+      "size": 6798
+    },
+    {
+      "name": "@vercel/analytics",
+      "size": 6423
+    },
+    {
+      "name": "use-sync-external-store",
+      "size": 5148
+    },
+    {
+      "name": "prosemirror-keymap",
+      "size": 4909
+    },
+    {
+      "name": "orderedmap",
+      "size": 4433
+    },
+    {
+      "name": "@tiptap/extension-blockquote",
+      "size": 4351
+    },
+    {
+      "name": "@tiptap/starter-kit",
+      "size": 4074
+    },
+    {
+      "name": "base64-js",
+      "size": 3932
+    },
+    {
+      "name": "@tiptap/extension-code",
+      "size": 3665
+    },
+    {
+      "name": "js-cookie",
+      "size": 3409
+    },
+    {
+      "name": "@swc/helpers",
+      "size": 2862
+    },
+    {
+      "name": "@tiptap/extension-bold",
+      "size": 2770
+    },
+    {
+      "name": "@tiptap/extension-paragraph",
+      "size": 2727
+    },
+    {
+      "name": "w3c-keyname",
+      "size": 2630
+    },
+    {
+      "name": "@tiptap/extension-italic",
+      "size": 2542
+    },
+    {
+      "name": "@aws-sdk/util-utf8-browser",
+      "size": 2483
+    },
+    {
+      "name": "@tiptap/extension-horizontal-rule",
+      "size": 2388
+    },
+    {
+      "name": "@tiptap/extension-heading",
+      "size": 2353
+    },
+    {
+      "name": "@tiptap/extension-text-align",
+      "size": 2189
+    },
+    {
+      "name": "ieee754",
+      "size": 2154
+    },
+    {
+      "name": "@tiptap/extension-strike",
+      "size": 1908
+    },
+    {
+      "name": "@tiptap/extension-hard-break",
+      "size": 1850
+    },
+    {
+      "name": "@tiptap/extension-underline",
+      "size": 1847
+    },
+    {
+      "name": "@tiptap/extension-document",
+      "size": 551
+    },
+    {
+      "name": "@tiptap/extension-text",
+      "size": 508
+    },
+    {
+      "name": "@tiptap/extension-font-family",
+      "size": 236
+    },
+    {
+      "name": "@tiptap/extension-color",
+      "size": 191
+    },
+    {
+      "name": "isarray",
+      "size": 132
+    },
+    {
+      "name": "@tiptap/pm",
+      "size": 47
+    }
+  ],
+  "largestApplicationModules": [
+    {
+      "name": "./components/system-account-directory.tsx",
+      "size": 58187,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./app/page.tsx",
+      "size": 55845,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./components/program-schedule-editor.tsx",
+      "size": 32954,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./components/lesson-with-notes.tsx",
+      "size": 21438,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./components/rich-text-toolbar.tsx",
+      "size": 18596,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./components/program-reading-page.tsx",
+      "size": 17318,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./components/lesson-reading-page.tsx",
+      "size": 17239,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./components/program-directory.tsx",
+      "size": 15382,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./components/session-restoring-shell.tsx",
+      "size": 12744,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./components/lesson-directory.tsx",
+      "size": 12392,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./components/loading-indicator.tsx",
+      "size": 11932,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./components/auth-screen.tsx",
+      "size": 11914,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./lib/api/content-management.ts",
+      "size": 11600,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./components/catechist-directory.tsx",
+      "size": 11524,
+      "chunks": [
+        287
+      ]
+    },
+    {
+      "name": "./components/reference-reading-page.tsx",
+      "size": 11208,
+      "chunks": [
+        287
+      ]
+    }
+  ]
+}
