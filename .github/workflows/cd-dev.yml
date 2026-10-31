@@ -118,6 +118,17 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
 
+      - name: Prepare Terraform provider cache
+        run: |
+          mkdir -p "$RUNNER_TEMP/terraform-plugin-cache"
+          echo "TF_PLUGIN_CACHE_DIR=$RUNNER_TEMP/terraform-plugin-cache" >> "$GITHUB_ENV"
+
+      - name: Cache Terraform providers
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ runner.temp }}/terraform-plugin-cache
+          key: ${{ runner.os }}-${{ runner.arch }}-terraform-${{ env.TERRAFORM_VERSION }}-${{ hashFiles('infrastructure/environments/*/.terraform.lock.hcl') }}
+
       - name: Show OIDC identity for trust policy diagnosis
         env:
           DEPLOY_ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
@@ -207,12 +218,49 @@ jobs:
         with:
           node-version: 22.13.0
 
+      - name: Set up pnpm
+        if: inputs.operation == 'deploy'
+        run: npm install --global pnpm@12.3.4
+
+      - name: Get pnpm store path
+        if: inputs.operation == 'deploy'
+        id: pnpm-store
+        working-directory: Frontend
+        run: echo "path=$(pnpm store path)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm store
+        if: inputs.operation == 'deploy'
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('Frontend/pnpm-lock.yaml') }}
+
+      - name: Fingerprint frontend public configuration
+        if: inputs.operation == 'deploy'
+        id: frontend-config
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os
+          config = {key: value for key, value in os.environ.items() if key.startswith('NEXT_PUBLIC_')}
+          digest = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f"hash={digest}\n")
+          PY
+
+      - name: Cache Next build data
+        if: inputs.operation == 'deploy'
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: Frontend/.next/cache
+          key: ${{ runner.os }}-${{ runner.arch }}-next-cd-${{ inputs.environment }}-node22-${{ steps.frontend-config.outputs.hash }}-${{ hashFiles('Frontend/pnpm-lock.yaml', 'Frontend/next.config.mjs') }}-${{ steps.release.outputs.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-next-cd-${{ inputs.environment }}-node22-${{ steps.frontend-config.outputs.hash }}-${{ hashFiles('Frontend/pnpm-lock.yaml', 'Frontend/next.config.mjs') }}-
+
       - name: Test and build frontend with deployed public configuration
         if: inputs.operation == 'deploy'
         working-directory: Frontend
         run: |
           set -euo pipefail
-          npm install --global pnpm@12.3.4
           pnpm install --frozen-lockfile
           pnpm test
           pnpm exec tsc --noEmit

@@ -28,6 +28,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Test change detection
+        run: python3 -m unittest discover -s scripts/ci/tests -v
+
       - name: Classify changed paths
         id: filter
         env:
@@ -76,6 +79,14 @@ jobs:
       - name: Type check Frontend
         working-directory: Frontend
         run: pnpm exec tsc --noEmit
+
+      - name: Cache Next build data
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: Frontend/.next/cache
+          key: ${{ runner.os }}-${{ runner.arch }}-next-ci-placeholder-v1-node22-${{ hashFiles('Frontend/pnpm-lock.yaml', 'Frontend/next.config.mjs') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-next-ci-placeholder-v1-node22-${{ hashFiles('Frontend/pnpm-lock.yaml', 'Frontend/next.config.mjs') }}-
 
       - name: Build Frontend with placeholder public config
         working-directory: Frontend
