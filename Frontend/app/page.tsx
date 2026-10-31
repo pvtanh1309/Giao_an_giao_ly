@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import {
   BookOpen,
   CalendarDays,
@@ -24,18 +25,8 @@ import { SiteFooter } from '../components/site-footer'
 import { SessionRestoringShell } from '../components/session-restoring-shell'
 import { usePersonalProfile } from '../components/personal-profile-provider'
 import { canLeaveCurrentPage, guardHistoryNavigation } from '../lib/unsaved-work'
-import { CatechistDirectory } from '../components/catechist-directory'
 import { HeroSection } from '../components/hero-section'
-import { LessonDirectory } from '../components/lesson-directory'
-import { ProgramDirectory } from '../components/program-directory'
 import { StatsStrip } from '../components/stats-strip'
-import { AdminEditorDialog } from '../components/admin-editor-dialog'
-import { LessonDialogs } from '../components/lesson-dialogs'
-import { LessonWithNotes } from '../components/lesson-with-notes'
-import { ProgramReadingPage } from '../components/program-reading-page'
-import { ReferenceDirectory } from '../components/reference-directory'
-import { ReferenceReadingPage } from '../components/reference-reading-page'
-import { SystemAccountDirectory } from '../components/system-account-directory'
 import { AuthScreen } from '../components/auth-screen'
 import { useAuth, useUnauthorizedHandler } from '../components/auth-provider'
 import { getPublicConfig } from '../lib/config'
@@ -60,6 +51,20 @@ import { createEmptyLessonStructuredContent, createLessonFromDraft, type LessonS
 import { getDashboardMetrics } from '../lib/dashboard-metrics'
 import { getPageDataPlan } from '../lib/page-data-plan'
 import type { ReferenceCategory, ReferenceDocument } from '../lib/reference-content'
+
+const loadingContent = () => <div className="content-section"><ReadingPending message="Đang mở nội dung…" /></div>
+const LessonDirectory = dynamic(() => import('../components/lesson-directory').then((module) => module.LessonDirectory), { loading: loadingContent })
+const ProgramDirectory = dynamic(() => import('../components/program-directory').then((module) => module.ProgramDirectory), { loading: loadingContent })
+const CatechistDirectory = dynamic(() => import('../components/catechist-directory').then((module) => module.CatechistDirectory), { loading: loadingContent })
+const ReferenceDirectory = dynamic(() => import('../components/reference-directory').then((module) => module.ReferenceDirectory), { loading: loadingContent })
+const SystemAccountDirectory = dynamic(() => import('../components/system-account-directory').then((module) => module.SystemAccountDirectory), { loading: loadingContent })
+const LessonWithNotes = dynamic(() => import('../components/lesson-with-notes').then((module) => module.LessonWithNotes), { loading: loadingContent })
+const ProgramReadingPage = dynamic(() => import('../components/program-reading-page').then((module) => module.ProgramReadingPage), { loading: loadingContent })
+const ReferenceReadingPage = dynamic(() => import('../components/reference-reading-page').then((module) => module.ReferenceReadingPage), { loading: loadingContent })
+const LessonDialogs = dynamic(() => import('../components/lesson-dialogs').then((module) => module.LessonDialogs), { loading: loadingContent })
+const AdminEditorDialog = dynamic(() => import('../components/admin-editor-dialog').then((module) => module.AdminEditorDialog), {
+  loading: () => <div className="admin-toast" role="status">Đang mở biểu mẫu…</div>,
+})
 
 function ReadingPending({ message }: { message: string }) {
   return <div className="reading-pending-skeleton" aria-busy="true">
@@ -646,20 +651,20 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         onToggleMenu={() => setMobileMenu(!mobileMenu)}
       />
  
-      <HeroSection onNavigate={navigateTo} />
-      <StatsStrip
+      {initialView === 'overview' && <HeroSection onNavigate={navigateTo} />}
+      {initialView === 'overview' && <StatsStrip
         lessonCount={dashboardMetrics.lessonCount}
         industryCount={dashboardMetrics.industryCount}
         canManage={currentUser === 'admin' || currentUser === 'editor'}
         loading={initialView === 'overview' && contentLoading}
-      />
+      />}
 
       {contentBusy && <p role="status" className="content-section">Đang lưu thay đổi trên máy chủ…</p>}
       {mediaUploads > 0 && <p role="status" className="content-section">Đang tải ảnh lên. Hãy đợi trước khi lưu hoặc rời trang.</p>}
 
       <fieldset disabled={contentBusy || mediaUploads > 0} inert={contentBusy || mediaUploads > 0} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
 
-      {!(initialView === 'lessons' && (selectedLessonId || referenceLibraryOpen)) && <LessonDirectory
+      {initialView === 'lessons' && !selectedLessonId && !selectedReferenceId && !referenceLibraryOpen && <LessonDirectory
         canManage={currentUser === 'admin' || currentUser === 'editor'}
         industries={lessonPlans}
         lessons={lessonList}
@@ -701,7 +706,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         onCreate={createReference}
       />}
 
-      {!(initialView === 'programs' && selectedProgramId) && <ProgramDirectory
+      {initialView === 'programs' && !selectedProgramId && <ProgramDirectory
         canManage={currentUser === 'admin' || currentUser === 'editor'}
         industries={lessonPlans}
         programs={programList}
@@ -861,13 +866,13 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
 
       <SiteFooter />
 
-      <LessonDialogs
+      {lessonBrowser && <LessonDialogs
         browser={lessonBrowser}
         lessons={lessonsInBrowser}
         onCloseBrowser={() => setLessonBrowser(null)}
         onSelectLesson={openLesson}
-      />
-      <AdminEditorDialog
+      />}
+      {adminEditor && <AdminEditorDialog
         editor={adminEditor}
         editingLabel={adminEditingLabel}
         catechist={editingCatechist}
@@ -900,7 +905,7 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
         onClose={closeAdminEditor}
         onDelete={handleDeleteAdminEditor}
         onSave={handleSaveAdminEditor}
-      />
+      />}
       {adminNotice && (
         <div className={`admin-toast ${adminNotice.type}`} role="status">
           <strong>

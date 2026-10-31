@@ -39,4 +39,5 @@ Backend/dist/
 **/.pytest_cache/
 **/*.pyc
 **/superpowers/**
-docs/*
+docs/*.md  
+docs/** 

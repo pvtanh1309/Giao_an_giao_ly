@@ -19,6 +19,7 @@ const python = spawn(pythonPath, [path.join(root, 'Frontend/tests/browser/conten
 const backendPending = new Map()
 let seq = 0, failNextSave = false, completeImageUpload
 const apiCalls = []
+const requestedEditorScripts = new Set()
 createInterface({ input: python.stdout }).on('line', (line) => { const result = JSON.parse(line); backendPending.get(result.id)?.(result); backendPending.delete(result.id) })
 python.stderr.on('data', (data) => process.stderr.write(data))
 const backend = (request) => new Promise((resolve) => { const id = ++seq; backendPending.set(id, resolve); python.stdin.write(JSON.stringify({ id, ...request }) + '\n') })
@@ -34,6 +35,7 @@ const server = createServer(async (req, res) => {
         if (file === '/') file = '/index.html'
         if (!path.extname(file)) file += '.html'
         const body = await readFile(path.join(root, 'Frontend/out', file))
+        if (file.endsWith('.js') && /\bProseMirror\b/.test(body.toString('utf8'))) requestedEditorScripts.add(file)
         res.writeHead(200, { 'Content-Type': mime[path.extname(file)] ?? 'application/octet-stream' }); res.end(body)
     } catch { res.writeHead(404); res.end('Not found') }
 })
@@ -76,6 +78,8 @@ try {
         } catch (error) { process.stderr.write(`Probe network error: ${error.message}\n`) }
     })
     await command('Page.enable'); await command('Runtime.enable'); await command('Fetch.enable', { patterns: [{ urlPattern: '*' }] })
+    await command('Network.enable')
+    await command('Network.setCacheDisabled', { cacheDisabled: true })
     const token = (claims) => `${Buffer.from('{"alg":"none"}').toString('base64url')}.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.local-probe`
     const seed = (role) => {
         const claims = { sub: 'local-ui-editor', email: 'local@example.test', 'cognito:groups': [role], iat: Math.floor(Date.now()/1000), exp: Math.floor(Date.now()/1000)+3600 }
@@ -94,7 +98,7 @@ try {
     }
     const click = (text, selector = 'button') => evaluate(`(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.textContent.trim()===${JSON.stringify(text)});if(!e)throw Error('Missing button');e.click()})()`)
     const fill = (selector, text) => evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing input');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(e,${JSON.stringify(text)});e.dispatchEvent(new Event('input',{bubbles:true}))})()`)
-    const navigate = async (pathname) => { await command('Page.navigate', { url: origin + pathname }); await wait("!document.body.innerText.includes('Đang tải thư viện') && document.querySelector('button') && !document.querySelector('.auth-screen')") }
+    const navigate = async (pathname) => { await command('Page.navigate', { url: origin + pathname }); await wait("document.body && !document.body.innerText.includes('Đang tải thư viện') && document.querySelector('button') && !document.querySelector('.auth-screen')") }
 
     const checkStickyToolbar = async (editorSelector, scrollSelector) => {
         await evaluate(`document.querySelector(${JSON.stringify(editorSelector)}).focus()`)
@@ -114,11 +118,29 @@ try {
         assert.ok(geometry.editorBottom > geometry.toolbarBottom + 100)
     }
 
+    const recordRouteScripts = async (route) => {
+        const files = await evaluate("[...new Set(performance.getEntriesByType('resource').map(entry=>new URL(entry.name).pathname).filter(name=>name.endsWith('.js')))]")
+        console.log(`BUNDLE_ROUTE ${JSON.stringify({ route, files })}`)
+    }
+    for (const [route, selector] of [['/dashboard', '#overview'], ['/programs', '#programs'], ['/catechists', '.catechists-section'], ['/accounts', '.accounts-section']]) {
+        await navigate(route)
+        await wait(`!document.querySelector('.session-restoring-shell') && document.querySelector(${JSON.stringify(selector)}) && document.querySelector(${JSON.stringify(selector)}).getAttribute('aria-busy') !== 'true'`)
+        assert.equal(requestedEditorScripts.size, 0, `${route} must not download ProseMirror before opening content or an editor`)
+        await recordRouteScripts(route)
+        console.log(`PASS ${route} directory loads without the editor bundle`)
+    }
     await navigate('/lesson-plans')
     await wait("[...document.querySelectorAll('button')].some(e=>e.textContent.includes('Thêm giáo án'))")
+    await wait("document.querySelector('#lesson-plans input[type=search]:not(:disabled)')")
+    assert.equal(requestedEditorScripts.size, 0, 'lesson directory must not download ProseMirror before opening content or an editor')
+    await recordRouteScripts('/lesson-plans')
+    console.log('PASS lesson directory does not download the editor bundle')
     await click('Thêm giáo án')
+    await wait("document.querySelector('.admin-editor-modal input')")
     await fill('.admin-editor-modal input', 'Giáo án kiểm tra lưu thật')
     await wait("document.querySelector('.admin-editor-modal [aria-label=\"Ý chính\"]')")
+    assert.ok(requestedEditorScripts.size > 0, 'opening the editor must load its deferred bundle')
+    console.log('PASS opening the lesson form loads the editor bundle on demand')
     await checkStickyToolbar('.admin-editor-modal [aria-label="Ý chính"]', '.admin-editor-modal-lesson')
     await evaluate("(()=>{const e=document.querySelector('.admin-editor-modal [aria-label=\"Ý chính\"]');e.focus();const r=document.createRange();r.selectNodeContents(e);const s=getSelection();s.removeAllRanges();s.addRange(r)})()")
     await command('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Backspace', code: 'Backspace', windowsVirtualKeyCode: 8 })
@@ -239,10 +261,19 @@ try {
     await navigate('/programs')
     await wait("[...document.querySelectorAll('button')].some(e=>e.textContent.includes('Thêm chương trình'))")
     await click('Thêm chương trình')
+    await wait("document.querySelector('.admin-editor-modal input')")
     await fill('.admin-editor-modal input', 'Chương trình kiểm tra lưu thật')
+    await wait("document.querySelector('.admin-editor-modal .program-schedule-editor tbody tr')")
+    await click('Thêm buổi', '.admin-editor-modal button')
+    assert.equal(await evaluate("document.querySelectorAll('.admin-editor-modal .program-schedule-editor tbody tr').length"), 2)
     await click('Lưu nháp', '.admin-editor-modal button')
     await wait("document.querySelector('.program-reading-page h1')?.textContent==='Chương trình kiểm tra lưu thật'")
     await command('Page.reload'); await wait("document.querySelector('.program-reading-page h1')?.textContent==='Chương trình kiểm tra lưu thật'")
+    assert.equal(await evaluate("document.querySelectorAll('.program-reading-page tbody tr').length"), 2)
+    await click('Chỉnh sửa trực tiếp', '.program-reading-page button')
+    await wait("document.querySelector('.program-reading-page .program-schedule-editor tbody tr')")
+    await click('Hủy', '.program-reading-page button')
+    await wait("!document.querySelector('.program-schedule-editor')")
     await click('Xuất bản', '.program-reading-page button')
     await wait("!document.querySelector('.program-reading-page')?.innerText.includes('Bản nháp đã lưu')")
     console.log('PASS program create, reload and publish')
@@ -252,6 +283,9 @@ try {
     await click('Thêm tài liệu')
     await wait("document.querySelector('input[aria-label=\"Tiêu đề tài liệu\"]')")
     await fill('input[aria-label="Tiêu đề tài liệu"]', 'Tài liệu kiểm tra lưu thật')
+    await wait("document.querySelector('.reference-reading-page .tiptap[contenteditable=true]')")
+    await evaluate("document.querySelector('.reference-reading-page .tiptap[contenteditable=true]').focus()")
+    await command('Input.insertText', { text: 'Nội dung tham khảo sau lazy-load' })
     await click('Lưu nháp', '.reference-reading-page button')
     await wait("!location.search.includes('new-reference-') && !!document.querySelector('.reference-reading-page')")
     await command('Page.reload'); await wait("document.querySelector('input[aria-label=\"Tiêu đề tài liệu\"]')?.value==='Tài liệu kiểm tra lưu thật'")

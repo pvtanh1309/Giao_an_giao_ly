@@ -1,11 +1,14 @@
 'use client'
 
 import { ArrowRight, X } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { defaultProgramScheduleColumns, lessonPlans, type Catechist, type Industry, type ProgramScheduleColumn, type ProgramScheduleRow } from '../lib/content-data'
 import { CatechistEditorFields } from './catechist-editor-fields'
-import { LessonEditorFields } from './lesson-editor-fields'
-import { ProgramScheduleEditor } from './program-schedule-editor'
 import type { LessonStructuredContent } from '../lib/lesson-content'
+
+const loadingEditor = () => <p role="status">Đang mở trình soạn thảo…</p>
+const LessonEditorFields = dynamic(() => import('./lesson-editor-fields').then((module) => module.LessonEditorFields), { loading: loadingEditor })
+const ProgramScheduleEditor = dynamic(() => import('./program-schedule-editor').then((module) => module.ProgramScheduleEditor), { loading: loadingEditor })
 
 export type AdminEditorType = 'lesson' | 'program' | 'catechist'
 
