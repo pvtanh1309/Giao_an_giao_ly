@@ -25,6 +25,8 @@ def account(store, request, deleted=False):
 def protect(item):
     if item.get('role') == 'ADMIN':
         raise ApiError(409, 'LAST_ADMIN_PROTECTED', 'Admin accounts are managed outside this API.')
+    if item.get('permanentlyDeleted'):
+        raise ApiError(409, 'ACCOUNT_DELETED', 'Tài khoản đã bị xóa vĩnh viễn.')
 
 
 def list_accounts(request, principal):
@@ -39,7 +41,7 @@ def list_accounts(request, principal):
     items = []
     for entry in store.query_index('DIRECTORY#ACCOUNT'):
         item = store.get(entry['PK'])
-        if not item or item.get('purgeAt', epoch() + 1) <= epoch():
+        if not item or item.get('permanentlyDeleted') or item.get('purgeAt', epoch() + 1) <= epoch():
             continue
         if search not in normalize(item['email']):
             continue
@@ -201,3 +203,34 @@ def archive(request, principal):
 
 def restore(request, principal):
     return transition(request, principal, 'restore', 'ACTIVE')
+
+
+def delete_account(request, principal):
+    """Delete Cognito immediately; retain an unindexed tombstone for TTL cleanup."""
+    require_role(principal, 'admin')
+    fields(request.get('body', {}), set())
+    store, cognito = Store(), Cognito()
+    old = account(store, request, deleted=True)
+    if old.get('permanentlyDeleted') and old.get('role') in ('READER', 'EDITOR'):
+        return {'cognitoSub': old['cognitoSub']}
+    protect(old)
+    if old.get('role') not in ('READER', 'EDITOR') or old['accountStatus'] != 'DISABLED':
+        raise ApiError(409, 'ACCOUNT_MUST_BE_DISABLED', 'Vô hiệu hóa tài khoản trước khi xóa.')
+    if old.get('pendingAction') and (old['pendingAction'] != 'delete' or old.get('pendingUntil', 0) > epoch()):
+        raise ApiError(409, 'VERSION_CONFLICT', 'Account operation in progress; retry after its lease expires.')
+    reserved = touch(old, principal)
+    reserved.update(pendingAction='delete', pendingUntil=epoch() + 120,
+                    pendingToken=new_id('op'), tokenValidAfter=epoch())
+    store.transact([{'put': reserved, 'version': old['version']}])
+    # UserNotFound is success, including retry after a timeout/finalize failure.
+    cognito.delete(reserved.get('cognitoUsername', reserved['cognitoSub']))
+    latest = store.get(reserved['PK'])
+    if not latest or latest.get('pendingToken') != reserved['pendingToken']:
+        raise ApiError(409, 'VERSION_CONFLICT', 'Account changed during deletion.')
+    item = touch(latest, principal)
+    item.update(accountStatus='DELETED', permanentlyDeleted=True, deletedAt=now(), purgeAt=epoch() + RETENTION)
+    for key in ('pendingAction', 'pendingStatus', 'pendingUntil', 'pendingToken', 'GSI1PK', 'GSI1SK', 'catechistId'):
+        item.pop(key, None)
+    store.transact([{'put': item, 'version': latest['version']}]
+                   + link_writes(store, latest, None, latest['cognitoSub'], principal))
+    return {'cognitoSub': item['cognitoSub']}

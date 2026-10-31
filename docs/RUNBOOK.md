@@ -302,6 +302,8 @@ Lần chạy đầu hoặc cache bị GitHub thu hồi sẽ là cache miss và c
 
 ## 7. Build và upload Frontend thủ công
 
+Thay đổi tính năng xóa tài khoản thêm route Users `POST /admin/accounts/{cognitoSub}/delete`: cần triển khai cả Users Lambda, route Terraform và Frontend cùng release. Admin vào Tài khoản hệ thống → vô hiệu hóa Reader/Editor → Xóa tài khoản → xác nhận. Cognito bị xóa ngay sau khi API thành công; hồ sơ giáo lý viên được giữ. Tombstone và ghi chú được TTL/Streams dọn sau thời gian lưu giữ, không có khôi phục cho thao tác xóa này. Lưu trữ 10 ngày vẫn là thao tác khác.
+
 Chỉ dùng khi chọn deploy thủ công; làm theo cùng SHA/config với Backend. Từ root, sau khi `.env.local` đã khớp outputs:
 
 ~~~powershell

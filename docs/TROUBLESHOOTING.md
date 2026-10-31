@@ -287,7 +287,11 @@ Không khẳng định hiệu quả latency cho tới khi ghi baseline trước 
 
 Baseline Backend từng fail vì test patch `shared.db.Store` trong khi auth giữ binding `shared.auth.Store`. Đã có sửa parse groups và mock đúng namespace. Khi tái diễn, tìm binding/dependency bị lọt; không cấp credentials thật hoặc mở mạng để làm unit test pass. Số pass của ledger cũ là lịch sử, phải chạy lại suite phù hợp.
 
-## 8. Ghi một sự cố mới
+## 8. Xóa tài khoản vĩnh viễn bị lỗi hoặc timeout
+
+Chỉ Admin xóa Reader/Editor có trạng thái DISABLED qua `/admin/accounts/{cognitoSub}/delete`. Nếu Cognito/finalize thất bại, account giữ DISABLED với `pendingAction=delete`; đợi lease 120 giây rồi thử lại đúng thao tác xóa. Không enable/restore hoặc xóa marker bằng tay: Cognito có thể đã được xóa dù response lỗi. Retry coi Cognito UserNotFound là thành công và hoàn tất transaction gỡ liên kết/ẩn account. Tài khoản có `permanentlyDeleted=true` không thể restore; ghi chú còn chờ TTL/Streams dọn không đồng nghĩa tài khoản còn đăng nhập được. Lỗi `ACCOUNT_MUST_BE_DISABLED` yêu cầu hoàn tất vô hiệu hóa trước; `LAST_ADMIN_PROTECTED` tiếp tục chặn mọi Admin.
+
+## 9. Ghi một sự cố mới
 
 ~~~text
 Thời điểm / môi trường / SHA:

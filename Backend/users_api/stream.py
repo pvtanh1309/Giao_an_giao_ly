@@ -32,7 +32,10 @@ def handle_stream(event, context):
                 store.transact([{'check': {'PK': item['PK'], 'SK': 'PROFILE'}, 'exists': False}]
                     + [{'delete': {'PK': row['PK'], 'SK': row['SK']}, 'version': row.get('version')}
                        for row in rows[offset:offset + 24]])
-            Cognito().delete(item.get('cognitoUsername', sub))
+            # Permanent deletion already removed Cognito synchronously. Never
+            # delete that username again after a new account might reuse it.
+            if not item.get('permanentlyDeleted'):
+                Cognito().delete(item.get('cognitoUsername', sub))
             if item.get('catechistId'):
                 store.delete('CATECHIST#' + item['catechistId'], 'ACCOUNT#' + sub)
         except Exception:
