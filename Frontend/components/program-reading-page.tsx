@@ -1,13 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { ArrowLeft, Save, Trash2, X } from 'lucide-react'
 import type { Program } from '../lib/content-data'
 import { defaultProgramScheduleColumns, lessonPlans } from '../lib/content-data'
 import { ProgramScheduleCellContent } from './program-schedule-cell-content'
-import { ProgramScheduleEditor } from './program-schedule-editor'
 import { getProgramScheduleCellGroup, isProgramScheduleCellCovered } from '../lib/program-schedule-merges'
 import { getProgramCellBackground } from '../lib/program-schedule-backgrounds'
+
+const ProgramScheduleEditor = dynamic(() => import('./program-schedule-editor').then((module) => module.ProgramScheduleEditor), {
+    loading: () => <p role="status">Đang mở trình soạn chương trình…</p>,
+})
 
 export type ProgramReadingPageProps = {
     program: Program

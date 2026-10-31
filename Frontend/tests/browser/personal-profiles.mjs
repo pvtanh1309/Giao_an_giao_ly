@@ -95,7 +95,7 @@ try {
     }
     const click = (text, selector = 'button') => evaluate(`(()=>{const e=[...document.querySelectorAll(${JSON.stringify(selector)})].find(e=>e.textContent.trim()===${JSON.stringify(text)});if(!e)throw Error('Missing button');e.click()})()`)
     const fill = (selector, text) => evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});if(!e)throw Error('Missing input');Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(e,${JSON.stringify(text)});e.dispatchEvent(new Event('input',{bubbles:true}))})()`)
-    const navigate = async (pathname) => { await command('Page.navigate', { url: origin + pathname }); await wait("!document.body.innerText.includes('Đang tải thư viện') && document.querySelector('button') && !document.querySelector('.auth-screen')") }
+    const navigate = async (pathname) => { await command('Page.navigate', { url: origin + pathname }); await wait("document.body && !document.body.innerText.includes('Đang tải thư viện') && document.querySelector('button') && !document.querySelector('.auth-screen')") }
 
 
     await navigate('/lesson-plans')
