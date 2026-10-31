@@ -6,7 +6,7 @@
   "packageManager": "pnpm@12.3.4",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "test:content-ui": "node tests/browser/content-persistence.mjs",
     "test:personal-ui": "node tests/browser/personal-profiles.mjs",
