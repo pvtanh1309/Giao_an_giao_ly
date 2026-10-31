@@ -15,6 +15,7 @@ locals {
     "POST /admin/accounts/{cognitoSub}/reset-password",
     "POST /admin/accounts/{cognitoSub}/disable",
     "POST /admin/accounts/{cognitoSub}/enable",
+    "POST /admin/accounts/{cognitoSub}/delete",
     "DELETE /admin/accounts/{cognitoSub}",
     "POST /admin/accounts/{cognitoSub}/restore"
   ])

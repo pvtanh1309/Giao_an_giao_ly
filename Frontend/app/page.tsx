@@ -846,6 +846,12 @@ export default function Page({ initialView = 'overview' }: { initialView?: 'over
             setAccountList((items) => items.map((item) => item.id === saved.id ? saved : item))
             setAdminNotice({ type: 'success', text: status === 'Đã lưu trữ' ? `Đã lưu trữ ${account.email} trong 10 ngày.` : `Đã cập nhật trạng thái ${account.email}.` })
           }}
+          onDelete={async (account) => {
+            if (!accountService) throw new Error('Cần đăng nhập để xóa tài khoản.')
+            await accountService.deleteAccount(account)
+            setAccountList((items) => items.filter((item) => item.id !== account.id))
+            setAdminNotice({ type: 'success', text: `Đã xóa tài khoản ${account.email}.` })
+          }}
           onUpdateLink={async (account, linkedCatechistId) => {
             if (!accountService) throw new Error('Cần đăng nhập để cập nhật liên kết.')
             const saved = await accountService.updateLink(account, linkedCatechistId, catechistList)

@@ -14,6 +14,29 @@ function service(fetchImpl) {
 }
 const response = (data, meta = {}) => new Response(JSON.stringify({ data, meta }))
 
+test('permanent account deletion requires a disabled non-admin target and sends an authorized POST', async () => {
+    let calls = 0
+    const api = service(async (url, init) => {
+        calls++
+        assert.equal(url, 'https://users.example.test/admin/accounts/real-cognito-sub/delete')
+        assert.equal(init.method, 'POST')
+        assert.equal(init.headers.get('Authorization'), 'Bearer verified-access-token')
+        return response({ cognitoSub: reader.cognitoSub })
+    })
+    const target = { id: reader.cognitoSub, role: 'reader', status: 'Vô hiệu hóa' }
+    await assert.rejects(api.deleteAccount({ ...target, status: 'Hoạt động' }))
+    await assert.rejects(api.deleteAccount({ ...target, role: 'admin' }))
+    assert.equal(calls, 0)
+    await api.deleteAccount(target)
+    await api.deleteAccount({ ...target, role: 'editor' })
+    assert.equal(calls, 2)
+})
+
+test('account deletion surfaces server failure instead of reporting success', async () => {
+    const api = service(async () => new Response(JSON.stringify({ error: { code: 'VERSION_CONFLICT', message: 'Retry later' } }), { status: 409 }))
+    await assert.rejects(api.deleteAccount({ id: 'sub', role: 'reader', status: 'Vô hiệu hóa' }))
+})
+
 test('reader creation sends a real authorized POST and uses Cognito sub from the response', async () => {
     const api = service(async (url, init) => {
         assert.equal(url, 'https://users.example.test/admin/accounts')

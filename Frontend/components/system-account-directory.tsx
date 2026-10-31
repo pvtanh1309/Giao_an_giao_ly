@@ -1,6 +1,6 @@
 'use client'
 
-import { Archive, KeyRound, LockKeyhole, Pencil, Plus, RotateCcw, Search, ShieldCheck, UserRoundCheck, UsersRound, X } from 'lucide-react'
+import { Archive, KeyRound, LockKeyhole, Pencil, Plus, RotateCcw, Search, ShieldCheck, Trash2, UserRoundCheck, UsersRound, X } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import type { AccountStatus, AppRole, Catechist, SystemAccount } from '../lib/content-data'
 import type { AccountForm } from '../lib/api/account-management'
@@ -16,6 +16,7 @@ type SystemAccountDirectoryProps = {
   onResetPassword: (account: SystemAccount, password: string) => Promise<void>
   onUpdateStatus: (account: SystemAccount, status: AccountStatus) => Promise<void>
   onUpdateLink: (account: SystemAccount, linkedCatechistId: string) => Promise<void>
+  onDelete: (account: SystemAccount) => Promise<void>
 }
 
 const emptyForm: AccountForm = {
@@ -32,7 +33,7 @@ const roleLabel: Record<AppRole, string> = {
   reader: 'Tài khoản giáo lý viên',
 }
 
-export function SystemAccountDirectory({ accounts, catechists, loading = false, loadError = '', onRetry, onCreate, onResetPassword, onUpdateStatus, onUpdateLink }: SystemAccountDirectoryProps) {
+export function SystemAccountDirectory({ accounts, catechists, loading = false, loadError = '', onRetry, onCreate, onResetPassword, onUpdateStatus, onUpdateLink, onDelete }: SystemAccountDirectoryProps) {
   const [submitting, setSubmitting] = useState(false)
   const pending = useRef(false)
   const [actionError, setActionError] = useState('')
@@ -41,7 +42,7 @@ export function SystemAccountDirectory({ accounts, catechists, loading = false, 
   const [statusFilter, setStatusFilter] = useState<'all' | AccountStatus>('all')
   const [form, setForm] = useState<AccountForm>(emptyForm)
   const [formError, setFormError] = useState('')
-  const [dialog, setDialog] = useState<'create' | 'reset' | 'link' | null>(null)
+  const [dialog, setDialog] = useState<'create' | 'reset' | 'link' | 'delete' | null>(null)
   const [selectedAccount, setSelectedAccount] = useState<SystemAccount | null>(null)
 
   const filteredAccounts = useMemo(() => accounts.filter((account) => {
@@ -158,6 +159,7 @@ export function SystemAccountDirectory({ accounts, catechists, loading = false, 
               <td><span className={`account-status ${account.status === 'Hoạt động' ? 'active' : account.status === 'Vô hiệu hóa' ? 'disabled' : 'archived'}`}>{account.status}</span></td>
               <td>{account.createdAt}</td>
               <td><div className="account-actions">
+                {account.role !== 'admin' && <button type="button" disabled={account.status !== 'Vô hiệu hóa'} title={account.status === 'Vô hiệu hóa' ? 'Xóa tài khoản' : 'Vô hiệu hóa tài khoản trước khi xóa'} aria-label={`Xóa tài khoản ${account.email}`} onClick={() => { setFormError(''); setSelectedAccount(account); setDialog('delete') }}><Trash2 size={15} /></button>}
                 {account.role !== 'admin' && <button type="button" onClick={() => { setFormError(''); setSelectedAccount(account); setForm({ ...emptyForm, linkedCatechistId: account.linkedCatechistId ?? '' }); setDialog('link') }} title="Đổi hồ sơ liên kết"><Pencil size={15} /></button>}
                 {account.status !== 'Đã lưu trữ' && <button type="button" disabled={isOnlyAdmin} onClick={() => { setFormError(''); setSelectedAccount(account); setForm(emptyForm); setDialog('reset') }} title="Đặt lại mật khẩu"><RotateCcw size={15} /></button>}
                 {account.status !== 'Đã lưu trữ' && <button type="button" disabled={isOnlyAdmin} onClick={() => void runAction(() => onUpdateStatus(account, account.status === 'Hoạt động' ? 'Vô hiệu hóa' : 'Hoạt động'), false)} title={account.status === 'Hoạt động' ? 'Vô hiệu hóa' : 'Kích hoạt'}><LockKeyhole size={15} /></button>}
@@ -172,6 +174,7 @@ export function SystemAccountDirectory({ accounts, catechists, loading = false, 
 
       {dialog && <div className="account-dialog-backdrop" role="presentation"><section className="account-dialog" role="dialog" aria-modal="true" aria-labelledby="account-dialog-title">
         <button className="dialog-close" onClick={closeDialog} aria-label="Đóng"><X size={18} /></button>
+        {dialog === 'delete' && selectedAccount && <div><h2 id="account-dialog-title">Xóa tài khoản?</h2><p>Xóa vĩnh viễn tài khoản <strong>{selectedAccount.email}</strong> và thông tin đăng nhập. Tài khoản này không thể khôi phục. Hồ sơ giáo lý viên vẫn được giữ lại.</p>{formError && <p className="account-form-error" role="alert">{formError}</p>}<div className="dialog-actions"><button type="button" className="secondary-button" onClick={closeDialog}>Hủy</button><button type="button" className="admin-danger-button" onClick={() => void runAction(() => onDelete(selectedAccount))}>Xóa tài khoản</button></div></div>}
         {dialog === 'create' && <form onSubmit={submitCreate}><span className="section-kicker">Quản trị hệ thống</span><h2 id="account-dialog-title">Cấp tài khoản</h2><p>Mỗi giáo lý viên có một tài khoản riêng liên kết với hồ sơ của mình. Tài khoản Admin được quản lý riêng.</p>
           <label>Email<input required type="email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} placeholder="email@giaoxuthaian.vn" /></label>
           <label>Vai trò<select value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value as AccountForm['role'], linkedCatechistId: '' })}><option value="editor">Editor</option><option value="reader">Reader</option></select></label>

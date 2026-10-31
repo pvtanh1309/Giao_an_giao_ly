@@ -113,6 +113,10 @@ export function createAccountManagement(api: ApiClient) {
         async resetPassword(account: SystemAccount, password: string) {
             await api.request(`/admin/accounts/${encodeURIComponent(account.id)}/reset-password`, { method: 'POST', body: { password } })
         },
+        async deleteAccount(account: SystemAccount) {
+            if (account.role === 'admin' || account.status !== 'Vô hiệu hóa') throw new Error('Chỉ xóa Reader/Editor đã vô hiệu hóa.')
+            await api.request(`/admin/accounts/${encodeURIComponent(account.id)}/delete`, { method: 'POST', body: {} })
+        },
         async updateStatus(account: SystemAccount, status: AccountStatus, profiles: Catechist[]) {
             const base = `/admin/accounts/${encodeURIComponent(account.id)}`
             const action = status === 'Đã lưu trữ' ? '' : status === 'Vô hiệu hóa' ? '/disable'

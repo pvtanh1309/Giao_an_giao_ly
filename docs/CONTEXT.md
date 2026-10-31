@@ -14,7 +14,7 @@
 - Giáo án/chương trình/tài liệu lưu TipTap JSON, không lưu HTML hoặc chuỗi JSON thay cho document.
 - Lưu nháp và xuất bản là hai hành động khác nhau. Reader chỉ đọc bản đã xuất bản.
 - Ghi chú riêng thuộc JWT `sub`, không chỉnh sửa nội dung giáo án chung.
-- Terraform trong repository hiện định nghĩa **hai API Gateway HTTP API và ba Lambda**: Content API chia route cho Lessons (14) và Catalog (18), còn Users giữ nguyên (16). Đây là trạng thái source/config; chưa xác nhận split đã được apply lên AWS. Trước cutover, môi trường có thể vẫn chạy content-api cũ.
+- Terraform trong repository hiện định nghĩa **hai API Gateway HTTP API và ba Lambda**: Content API chia route cho Lessons (14) và Catalog (18), còn Users có 17 route. Đây là trạng thái source/config; chưa xác nhận split đã được apply lên AWS. Trước cutover, môi trường có thể vẫn chạy content-api cũ.
 
 ## 2. Kiến trúc hiện hành
 
@@ -152,11 +152,13 @@ Vòng đời nội dung:
 
 Account transitions có marker `pendingAction/pendingUntil/pendingToken`, lease 120 giây để retry khi Cognito và DB chưa đồng bộ. Retry cùng action sau lease; không đổi sang action đối nghịch để né lỗi.
 
+Admin có thể xóa vĩnh viễn Reader/Editor chỉ khi account đã DISABLED. Luồng `/delete` giữ marker `pendingAction=delete`, gọi xóa Cognito ngay rồi gỡ liên kết hồ sơ và bỏ account khỏi index trong transaction. Hồ sơ giáo lý viên được giữ; tombstone `permanentlyDeleted=true` giữ 10 ngày cho TTL/Streams dọn ghi chú cá nhân, không thể restore hay sửa liên kết. Lỗi Cognito/finalize giữ account DISABLED và marker để thử lại sau lease; Cognito đã mất được coi là thành công khi retry. Luồng archive/restore cũ vẫn độc lập. Mọi account ADMIN tiếp tục được bảo vệ.
+
 Prod bật DynamoDB PITR/deletion protection và Cognito deletion protection. Restore DB không tự phục hồi Cognito user hoặc S3 bytes; xem RUNBOOK trước thao tác khôi phục.
 
 ## 7. Hợp đồng HTTP hiện hành
 
-**48 route: Lessons 14, Catalog 18, Users 16.** Ba registry Python và bản đồ route Terraform là nguồn thực thi. [test_routes.py](../Backend/tests/test_routes.py) đối chiếu route của cả ba Lambda với bảng này. Khi thêm route phải sửa context, registry, Terraform và client/test liên quan.
+**49 route: Lessons 14, Catalog 18, Users 17.** Ba registry Python và bản đồ route Terraform là nguồn thực thi. [test_routes.py](../Backend/tests/test_routes.py) đối chiếu route của cả ba Lambda với bảng này. Khi thêm route phải sửa context, registry, Terraform và client/test liên quan.
 
 R/E/A lần lượt là reader/editor/admin. Tất cả route bên dưới yêu cầu xác thực.
 
@@ -215,6 +217,7 @@ R/E/A lần lượt là reader/editor/admin. Tất cả route bên dưới yêu 
 | `POST /admin/accounts/{cognitoSub}/reset-password` | A | `{password}`, permanent password |
 | `POST /admin/accounts/{cognitoSub}/disable` | A | Disable, body rỗng |
 | `POST /admin/accounts/{cognitoSub}/enable` | A | Enable, body rỗng |
+| `POST /admin/accounts/{cognitoSub}/delete` | A | Xóa vĩnh viễn Reader/Editor đã DISABLED; xóa Cognito ngay, body rỗng |
 | `DELETE /admin/accounts/{cognitoSub}` | A | Archive, disable ngay |
 | `POST /admin/accounts/{cognitoSub}/restore` | A | Restore trong retention |
 
