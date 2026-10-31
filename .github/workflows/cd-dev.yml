@@ -52,7 +52,6 @@ jobs:
       TF_INPUT: 'false'
       # Change this through a reviewed commit when upgrading Terraform.
       TERRAFORM_VERSION: '1.15.0'
-      TF_PLUGIN_CACHE_DIR: ${{ runner.temp }}/terraform-plugin-cache
 
     steps:
       - name: Check out workflow source for validation script
@@ -120,12 +119,14 @@ jobs:
           terraform_wrapper: false
 
       - name: Prepare Terraform provider cache
-        run: mkdir -p "$TF_PLUGIN_CACHE_DIR"
+        run: |
+          mkdir -p "$RUNNER_TEMP/terraform-plugin-cache"
+          echo "TF_PLUGIN_CACHE_DIR=$RUNNER_TEMP/terraform-plugin-cache" >> "$GITHUB_ENV"
 
       - name: Cache Terraform providers
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
-          path: ${{ env.TF_PLUGIN_CACHE_DIR }}
+          path: ${{ runner.temp }}/terraform-plugin-cache
           key: ${{ runner.os }}-${{ runner.arch }}-terraform-${{ env.TERRAFORM_VERSION }}-${{ hashFiles('infrastructure/environments/*/.terraform.lock.hcl') }}
 
       - name: Show OIDC identity for trust policy diagnosis
