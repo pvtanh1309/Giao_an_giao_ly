@@ -14,12 +14,23 @@ test('root layout installs the client provider composition', async () => {
     assert.match(providers, /['"]use client['"]/)
 })
 
-test('application page consumes auth context for loading, user role, and screen', async () => {
-    const page = await source('../app/page.tsx')
+test('application keeps the page shell visible while auth restores and protects the login screen', async () => {
+    const [page, header] = await Promise.all([
+        source('../app/page.tsx'),
+        source('../components/site-header.tsx'),
+    ])
     assert.match(page, /useAuth\s*\(\s*\)/)
-    assert.match(page, /status\s*===\s*['"]loading['"]/) 
+    assert.match(page, /status\s*===\s*['"]loading['"][\s\S]*?<SessionRestoringShell/s)
     assert.match(page, /<AuthScreen\s*\/>/)
     assert.match(page, /const currentUser\s*=\s*user\.role/)
+    assert.match(header, /sessionPending/)
+    assert.match(header, /sessionPending[\s\S]*?Đang kiểm tra phiên/s)
+})
+
+test('directories without a local API do not remain in an endless loading state', async () => {
+    const page = await source('../app/page.tsx')
+    assert.match(page, /if \(!accountService\)\s*\{\s*setCatechistsLoading\(false\)/)
+    assert.match(page, /if \(!accountService\)\s*\{\s*setAccountsLoading\(false\)[\s\S]*?setAccountsError/)
 })
 
 test('auth forms clear passwords in finally and block transitional double submits', async () => {

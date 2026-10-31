@@ -800,3 +800,86 @@ footer p {
     transform: none;
   }
 }
+
+.directory-load-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 22px;
+  padding: 14px 16px;
+  border: 1px solid rgba(179, 50, 67, .28);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--heading-red);
+}
+
+.directory-load-error p { margin: 0; }
+.directory-load-error .outline-button { flex: 0 0 auto; }
+.directory-load-error button:disabled { opacity: .6; cursor: wait; }
+
+.lesson-count-skeleton { display: inline-block; width: 48px; height: 11px; border-radius: 4px; vertical-align: middle; }
+.lesson-card:disabled { cursor: wait; }
+.lesson-card:disabled:hover { transform: none; box-shadow: none; }
+
+.lesson-search-result-skeleton {
+  min-height: 68px;
+  border-color: var(--line);
+  background: linear-gradient(90deg, rgba(113, 132, 150, .08), rgba(113, 132, 150, .17), rgba(113, 132, 150, .08));
+  background-size: 220% 100%;
+  animation: session-skeleton-shimmer 1.55s ease-in-out infinite;
+}
+
+.program-count-skeleton { display: inline-block; width: 74px; height: 11px; border-radius: 4px; vertical-align: middle; }
+.program-load-error { margin: 0 0 22px; }
+.program-row-skeleton { cursor: default; }
+.program-row-skeleton .session-skeleton-icon { flex: 0 0 42px; width: 42px; height: 42px; border-radius: 50%; }
+.program-row-skeleton-copy { display: grid; flex: 1; gap: 9px; }
+.session-skeleton-line { width: min(70%, 260px); height: 12px; }
+.session-skeleton-line.short { width: min(42%, 160px); height: 10px; }
+
+.reference-list-item-skeleton { display: flex; align-items: center; gap: 14px; min-height: 74px; padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+.reference-list-item-skeleton .session-skeleton-icon { flex: 0 0 42px; width: 42px; height: 42px; }
+.reference-skeleton-copy { display: grid; flex: 1; gap: 9px; }
+.session-reference-skeleton-list { display: grid; gap: 10px; }
+
+.session-pending-preview[aria-busy="true"] { min-height: 380px; }
+.session-pending-preview .section-heading { align-items: end; }
+.session-pending-search { width: min(42vw, 500px); height: 42px; border-radius: 14px; }
+.session-pending-action { width: 162px; height: 42px; border-radius: 4px; }
+.session-lesson-skeleton-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.session-lesson-skeleton-card { min-height: 285px; border-radius: 18px; }
+.session-program-skeleton-grid { min-height: 370px; }
+.session-program-skeleton-card { --stage-color: var(--gold); cursor: wait; }
+.session-program-skeleton-card .session-skeleton-icon { width: 48px; height: 48px; border-radius: 50%; }
+.session-program-skeleton-card .session-skeleton-line { width: 110px; height: 14px; }
+.session-pending-preview .program-hero { min-height: 210px; }
+.session-pending-preview .program-hero-inner { min-height: 210px; display: flex; align-items: center; }
+
+.reading-pending-skeleton { display: grid; gap: 16px; max-width: 860px; padding: 30px 0 48px; }
+.reading-pending-title { width: min(64%, 480px); height: 42px; border-radius: 7px; }
+.reading-pending-line { width: min(82%, 680px); height: 14px; border-radius: 5px; }
+.reading-pending-line-short { width: min(54%, 430px); }
+.reading-pending-block { width: 100%; height: 220px; margin-top: 12px; border-radius: 10px; }
+.reading-page-placeholder { min-height: 420px; }
+.reference-reading-page.reading-page-placeholder .reading-pending-skeleton { max-width: 920px; margin: 0 auto; }
+.program-section.reading-page-placeholder .reading-pending-skeleton { max-width: 920px; }
+
+@media (max-width: 900px) {
+  .session-lesson-skeleton-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .directory-load-error { align-items: flex-start; flex-direction: column; }
+  .session-pending-preview .section-heading { align-items: flex-start; flex-direction: column; }
+  .session-pending-search { width: 100%; }
+  .session-lesson-skeleton-grid { grid-template-columns: 1fr; }
+  .session-lesson-skeleton-card { min-height: 240px; }
+  .reading-pending-skeleton { padding-top: 24px; }
+  .reading-pending-title { height: 34px; }
+  .reading-pending-block { height: 180px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lesson-search-result-skeleton { animation: none; background-position: 50% 0; }
+}
