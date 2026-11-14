@@ -1,5 +1,7 @@
 'use client'
 
+import { useUnsavedWork } from '../lib/use-unsaved-work'
+
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { ArrowLeft, Save, Trash2, X } from 'lucide-react'
@@ -26,6 +28,7 @@ export type ProgramReadingPageProps = {
 export function ProgramReadingPage({ program, canManage, onSave, onPublish, onDelete, onBack, busy = false }: ProgramReadingPageProps) {
     const [editing, setEditing] = useState(false)
     const [draft, setDraft] = useState(program)
+    const confirmLeave = useUnsavedWork(canManage && editing && draft !== program)
 
     useEffect(() => {
         setDraft(program)
@@ -38,14 +41,14 @@ export function ProgramReadingPage({ program, canManage, onSave, onPublish, onDe
     return (
         <section className="program-reading-page" aria-label="Chi tiết chương trình học" inert={busy} aria-busy={busy}>
             <div className="reading-toolbar">
-                <button type="button" className="secondary-button program-back-button" onClick={onBack}>
+                <button type="button" className="secondary-button program-back-button" onClick={() => { if (confirmLeave()) onBack() }}>
                     <ArrowLeft size={16} aria-hidden="true" />
                     {program.sublevel ? `Quay lại phân ngành ${program.sublevel}` : `Quay lại ngành ${program.level}`}
                 </button>
                 {canManage && !editing && <button className="outline-button" onClick={() => setEditing(true)}>Chỉnh sửa trực tiếp</button>}
                 {canManage && !editing && program.hasDraft && <button className="primary-button" onClick={() => onPublish(program)}>Xuất bản</button>}
                 {canManage && editing && <div className="reading-actions">
-                    <button className="secondary-button" onClick={() => { setDraft(program); setEditing(false) }}><X size={16} /> Hủy</button>
+                    <button className="secondary-button" onClick={() => { if (!confirmLeave()) return; setDraft(program); setEditing(false) }}><X size={16} /> Hủy</button>
                     <button className="primary-button" onClick={async () => { if (await onSave(draft)) setEditing(false) }}><Save size={16} /> Lưu nháp</button>
                     <button className="admin-danger-button" onClick={() => onDelete(program)}><Trash2 size={16} /> Xóa chương trình</button>
                 </div>}

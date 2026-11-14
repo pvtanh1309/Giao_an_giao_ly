@@ -1,5 +1,7 @@
 'use client'
 
+import { useUnsavedWork } from '../lib/use-unsaved-work'
+
 import { useEffect, useState } from 'react'
 import { ArrowLeft, RotateCcw, Save, Trash2, X } from 'lucide-react'
 import type { ReferenceCategory, ReferenceDocument } from '../lib/reference-content'
@@ -24,6 +26,7 @@ export function ReferenceReadingPage({ reference, canManage, onBack, onSaveDraft
     const [category, setCategory] = useState<ReferenceCategory>(reference.category)
     const [content, setContent] = useState(reference.draft?.content ?? reference.published?.content ?? emptyDocument)
     const [validationError, setValidationError] = useState('')
+    const confirmLeave = useUnsavedWork(canManage && editing && (title !== reference.title || category !== reference.category || content !== (reference.draft?.content ?? reference.published?.content ?? emptyDocument)))
 
     useEffect(() => {
         setTitle(reference.title)
@@ -47,10 +50,10 @@ export function ReferenceReadingPage({ reference, canManage, onBack, onSaveDraft
     return (
         <section className="reference-reading-page" aria-label="Chi tiết tài liệu tham khảo" inert={busy} aria-busy={busy}>
             <div className="reading-toolbar">
-                <button className="secondary-button" onClick={onBack}><ArrowLeft size={16} /> Danh sách tài liệu</button>
+                <button className="secondary-button" onClick={() => { if (confirmLeave()) onBack() }}><ArrowLeft size={16} /> Danh sách tài liệu</button>
                 {canManage && reference.status === 'ACTIVE' && !editing && <button className="outline-button" onClick={() => setEditing(true)}>Chỉnh sửa trực tiếp</button>}
                 {canManage && editing && <div className="reading-actions">
-                    <button className="secondary-button" onClick={() => { setTitle(reference.title); setCategory(reference.category); setContent(reference.draft?.content ?? reference.published?.content ?? emptyDocument); setEditing(false) }}><X size={16} /> Hủy</button>
+                    <button className="secondary-button" onClick={() => { if (!confirmLeave()) return; setTitle(reference.title); setCategory(reference.category); setContent(reference.draft?.content ?? reference.published?.content ?? emptyDocument); setEditing(false) }}><X size={16} /> Hủy</button>
                     <button className="secondary-button" onClick={() => {
                         if (!title.trim()) { setValidationError('Vui lòng nhập tiêu đề trước khi lưu.'); return }
                         setValidationError('')

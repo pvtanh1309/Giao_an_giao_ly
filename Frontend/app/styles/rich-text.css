@@ -84,6 +84,23 @@
   cursor: pointer;
 }
 
+.rich-text-color-presets {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.rich-text-toolbar .rich-text-color-presets button {
+  width: 30px;
+  flex-basis: 30px;
+}
+
+.rich-text-color-presets button > span {
+  width: 17px;
+  height: 17px;
+  border: 1px solid #888;
+  border-radius: 3px;
+}
+
 .rich-text-content .tiptap {
   min-height: 220px;
   padding: 14px;
