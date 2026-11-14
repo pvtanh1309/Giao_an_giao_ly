@@ -24,5 +24,9 @@ variable "access_token_hours" {
 }
 variable "refresh_token_days" {
   type    = number
-  default = 30
+  default = 1095
+  validation {
+    condition     = var.refresh_token_days >= 1 && var.refresh_token_days <= 3650 && floor(var.refresh_token_days) == var.refresh_token_days
+    error_message = "Refresh token validity must be a whole number between 1 and 3650 days."
+  }
 }

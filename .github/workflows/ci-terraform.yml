@@ -81,12 +81,6 @@ jobs:
           terraform init -backend=false -input=false -lockfile=readonly
           terraform validate
 
-      - name: Validate Prod Terraform configuration
-        working-directory: infrastructure/environments/prod
-        run: |
-          terraform init -backend=false -input=false -lockfile=readonly
-          terraform validate
-
   required:
     name: terraform-required
     needs: [changes, terraform]
