@@ -50,6 +50,50 @@ export async function optimizeLessonImage(file: File): Promise<File> {
     return blob ? new File([blob], file.name, { type: file.type, lastModified: file.lastModified }) : file
 }
 
+let textColorContext: CanvasRenderingContext2D | null | undefined
+
+function normalizeTextColor(value: unknown): string | undefined {
+    if (typeof value !== 'string') return undefined
+    const color = value.trim()
+    const shortHex = color.match(/^#([\da-f]{3})$/i)
+    if (shortHex) return `#${[...shortHex[1]].map((channel) => channel + channel).join('')}`.toLowerCase()
+    if (/^#[\da-f]{6}$/i.test(color)) return color.toLowerCase()
+
+    if (typeof document === 'undefined') return undefined
+    if (textColorContext === undefined) {
+        const canvas = document.createElement('canvas')
+        canvas.width = 1
+        canvas.height = 1
+        textColorContext = canvas.getContext('2d')
+    }
+    const context = textColorContext
+    if (!context) return undefined
+
+    try {
+        // Canvas accepts browser CSS colors; invalid values leave fillStyle
+        // unchanged. Two sentinels distinguish that case from a real color.
+        context.fillStyle = '#123456'
+        context.fillStyle = color
+        const firstParse = context.fillStyle
+        context.fillStyle = '#abcdef'
+        context.fillStyle = color
+        if (context.fillStyle !== firstParse) return undefined
+
+        // The API stores opaque #RRGGBB only. Flatten alpha colors onto the paper
+        // color so pasted CSS formatting cannot make a draft fail validation.
+        context.globalCompositeOperation = 'copy'
+        context.fillStyle = '#fffdf8'
+        context.fillRect(0, 0, 1, 1)
+        context.globalCompositeOperation = 'source-over'
+        context.fillStyle = color
+        context.fillRect(0, 0, 1, 1)
+        const [red, green, blue] = context.getImageData(0, 0, 1, 1).data
+        return `#${[red, green, blue].map((channel) => channel.toString(16).padStart(2, '0')).join('')}`
+    } catch {
+        return undefined
+    }
+}
+
 export function stripRuntimeImageUrls(document: JSONContent): JSONContent {
     const clean = (value: unknown): unknown => {
         if (Array.isArray(value)) return value.map(clean)
@@ -63,9 +107,16 @@ export function stripRuntimeImageUrls(document: JSONContent): JSONContent {
                 delete attrs.src
                 result[key] = clean(attrs)
             } else if (item.type === 'textStyle' && key === 'attrs' && child && typeof child === 'object') {
-                // Empty style attributes mean the default, including existing
-                // schedule cells produced before the paste parser was fixed.
-                result[key] = clean(Object.fromEntries(Object.entries(child).filter(([, value]) => value !== '')))
+                // Empty style attributes mean the default. Pasted HTML can also
+                // supply valid CSS colors such as rgb(), while the API contract
+                // stores only #RRGGBB; normalize those before sending the draft.
+                const attrs = { ...(child as Record<string, unknown>) }
+                if (attrs.color !== null && attrs.color !== undefined && attrs.color !== '') {
+                    const color = normalizeTextColor(attrs.color)
+                    if (color) attrs.color = color
+                    else delete attrs.color
+                }
+                result[key] = clean(Object.fromEntries(Object.entries(attrs).filter(([, value]) => value !== '')))
             } else {
                 result[key] = clean(child)
             }
