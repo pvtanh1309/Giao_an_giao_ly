@@ -19,8 +19,3 @@ updates:
     directory: /infrastructure/environments/dev
     schedule:
       interval: weekly
-
-  - package-ecosystem: terraform
-    directory: /infrastructure/environments/prod
-    schedule:
-      interval: weekly

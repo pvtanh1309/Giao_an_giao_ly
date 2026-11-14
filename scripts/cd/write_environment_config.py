@@ -9,7 +9,7 @@ def reject_constant(_value):
     raise ValueError("Non-JSON number")
 
 
-def environment_config(raw, domain, certificate):
+def environment_config(raw, domain, certificate, zone_id):
     try:
         config = json.loads(raw, parse_constant=reject_constant)
         if not isinstance(config, dict):
@@ -25,6 +25,9 @@ def environment_config(raw, domain, certificate):
     if domain:
         config["frontend_domain_name"] = domain
         config["frontend_certificate_arn"] = certificate
+    zone_id = zone_id.strip()
+    if zone_id:
+        config["hosted_zone_id"] = zone_id
     return config
 
 
@@ -35,7 +38,8 @@ def main():
     try:
         config = environment_config(os.environ.get("TFVARS_JSON", ""),
                                     os.environ.get("FRONTEND_DOMAIN_NAME", ""),
-                                    os.environ.get("FRONTEND_CERTIFICATE_ARN", ""))
+                                    os.environ.get("FRONTEND_CERTIFICATE_ARN", ""),
+                                    os.environ.get("HOSTED_ZONE_ID", ""))
     except ValueError as error:
         raise SystemExit(str(error)) from None
     args.output.write_text(json.dumps(config, ensure_ascii=False, allow_nan=False,

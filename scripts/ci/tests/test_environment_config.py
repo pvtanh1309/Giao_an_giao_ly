@@ -18,10 +18,11 @@ class EnvironmentConfigTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.output = Path(self.temp.name) / "cd.auto.tfvars.json"
 
-    def run_writer(self, raw, domain="", certificate=""):
+    def run_writer(self, raw, domain="", certificate="", zone_id=""):
         env = dict(os.environ, TFVARS_JSON=raw,
                    FRONTEND_DOMAIN_NAME=domain,
-                   FRONTEND_CERTIFICATE_ARN=certificate)
+                   FRONTEND_CERTIFICATE_ARN=certificate,
+                   HOSTED_ZONE_ID=zone_id)
         return subprocess.run([sys.executable, str(SCRIPT), str(self.output)],
                               env=env, capture_output=True, text=True)
 
@@ -53,6 +54,27 @@ class EnvironmentConfigTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(json.loads(self.output.read_text(encoding="utf-8")),
                                  json.loads(raw))
+
+    def test_hosted_zone_id_overrides_only_the_dns_zone(self):
+        raw = json.dumps({
+            "environment": "dev", "hosted_zone_id": "ZOLDZONE",
+            "frontend_domain_name": "opsvn.io.vn",
+            "frontend_certificate_arn": CERTIFICATE,
+        })
+        result = self.run_writer(raw, zone_id=" ZNEWZONE ")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(self.output.read_text(encoding="utf-8")), {
+            "environment": "dev", "hosted_zone_id": "ZNEWZONE",
+            "frontend_domain_name": "opsvn.io.vn",
+            "frontend_certificate_arn": CERTIFICATE,
+        })
+
+    def test_empty_hosted_zone_id_preserves_the_original_zone(self):
+        raw = '{"environment":"dev","hosted_zone_id":"ZEXISTING"}'
+        result = self.run_writer(raw)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(self.output.read_text(encoding="utf-8")),
+                         json.loads(raw))
 
     def test_incomplete_domain_pair_does_not_overwrite_configuration(self):
         for domain, certificate in (("web.example.test", ""), ("", CERTIFICATE)):

@@ -7,7 +7,7 @@ on:
         description: Target environment
         required: true
         type: choice
-        options: [dev, prod]
+        options: [dev]
       backend_run_id:
         description: Successful Backend CI push run on main containing Lambda artifacts
         required: true
@@ -162,6 +162,7 @@ jobs:
           TFVARS_JSON: ${{ secrets.TFVARS_JSON }}
           FRONTEND_DOMAIN_NAME: ${{ vars.FRONTEND_DOMAIN_NAME }}
           FRONTEND_CERTIFICATE_ARN: ${{ vars.FRONTEND_CERTIFICATE_ARN }}
+          HOSTED_ZONE_ID: ${{ vars.HOSTED_ZONE_ID }}
         run: |
           set -euo pipefail
           python3 scripts/cd/write_environment_config.py "infrastructure/environments/$TARGET_ENV/cd.auto.tfvars.json"
