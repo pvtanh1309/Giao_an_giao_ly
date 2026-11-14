@@ -139,6 +139,20 @@ export function RichTextToolbar({ editor, mode = 'lesson', lessonId, getAccessTo
                 <span>Màu</span>
                 <input type="color" aria-label="Màu chữ" value={formatting.textStyle.color ?? '#000000'} onChange={(event) => editor.chain().focus().setColor(event.target.value).run()} />
             </label>
+            <div className="rich-text-color-presets" role="group" aria-label="Màu chữ có sẵn">
+                {[
+                    { label: 'Đỏ rượu vang', color: '#621927' },
+                    { label: 'Xanh rêu', color: '#495b30' },
+                    { label: 'Đen', color: '#000000' },
+                ].map(({ label, color }) => (
+                    <button key={color} type="button" title={label} aria-label={label}
+                        aria-pressed={(formatting.textStyle.color ?? '#000000').toLowerCase() === color}
+                        onMouseDown={preserveSelection}
+                        onClick={() => editor.chain().focus().setColor(color).run()}>
+                        <span aria-hidden="true" style={{ backgroundColor: color }} />
+                    </button>
+                ))}
+            </div>
             {lessonMode && <>
                 <span className="rich-text-divider" aria-hidden="true" />
                 <button type="button" title={lessonId ? 'Chèn ảnh minh họa' : 'Lưu nháp giáo án trước khi chèn ảnh'} aria-label="Chèn ảnh minh họa" disabled={uploadingImage || !lessonId || !getAccessToken} onMouseDown={preserveSelection} onClick={() => imageInputRef.current?.click()}>

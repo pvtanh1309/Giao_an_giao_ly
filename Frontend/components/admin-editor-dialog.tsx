@@ -1,5 +1,8 @@
 'use client'
 
+import { useState } from 'react'
+import { useUnsavedWork } from '../lib/use-unsaved-work'
+
 import { ArrowRight, X } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { defaultProgramScheduleColumns, lessonPlans, type Catechist, type Industry, type ProgramScheduleColumn, type ProgramScheduleRow } from '../lib/content-data'
@@ -79,6 +82,10 @@ export function AdminEditorDialog({
     onDelete,
     onSave,
 }: AdminEditorDialogProps) {
+    const snapshot = JSON.stringify([catechist, content, level, sublevel, schedule, scheduleColumns, lessonTag, lessonTime, lessonFields])
+    const [initialSnapshot] = useState(snapshot)
+    const confirmLeave = useUnsavedWork(!!editor && snapshot !== initialSnapshot)
+    const requestClose = () => { if (confirmLeave()) onClose() }
     if (!editor) return null
 
     const title = editor === 'catechist'
@@ -88,9 +95,9 @@ export function AdminEditorDialog({
             : 'chương trình học'
 
     return (
-        <div className="modal-backdrop admin-editor-backdrop" onClick={onClose}>
+        <div className="modal-backdrop admin-editor-backdrop">
             <div className={`content-modal admin-editor-modal ${editor === 'lesson' ? 'admin-editor-modal-lesson' : ''}`} onClick={(event) => event.stopPropagation()} inert={busy} aria-busy={busy}>
-                <button className="modal-close" onClick={onClose} aria-label="Đóng biểu mẫu">
+                <button className="modal-close" onClick={requestClose} aria-label="Đóng biểu mẫu">
                     <X size={18} />
                 </button>
                 <span className="section-kicker">
@@ -166,7 +173,7 @@ export function AdminEditorDialog({
                     </>
                 )}
                 <div className="admin-editor-actions">
-                    <button className="secondary-button" onClick={onClose}>Hủy</button>
+                    <button className="secondary-button" onClick={requestClose}>Hủy</button>
                     {editingLabel && <button className="admin-danger-button" onClick={onDelete}>Xóa</button>}
                     <button className="primary-button" onClick={onSave}>
                         {editor === 'catechist' ? 'Lưu thay đổi' : 'Lưu nháp'} <ArrowRight size={17} />
