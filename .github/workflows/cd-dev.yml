@@ -160,10 +160,11 @@ jobs:
       - name: Write environment configuration
         env:
           TFVARS_JSON: ${{ secrets.TFVARS_JSON }}
+          FRONTEND_DOMAIN_NAME: ${{ vars.FRONTEND_DOMAIN_NAME }}
+          FRONTEND_CERTIFICATE_ARN: ${{ vars.FRONTEND_CERTIFICATE_ARN }}
         run: |
           set -euo pipefail
-          test -n "$TFVARS_JSON"
-          printf '%s' "$TFVARS_JSON" > "infrastructure/environments/$TARGET_ENV/cd.auto.tfvars.json"
+          python3 scripts/cd/write_environment_config.py "infrastructure/environments/$TARGET_ENV/cd.auto.tfvars.json"
 
       - name: Initialize and validate Terraform
         run: |

@@ -4,6 +4,7 @@
 .venv/
 .superpowers/
 .agents/
+/github-actions.dev.local.md
 
 .superpowers/*
 
